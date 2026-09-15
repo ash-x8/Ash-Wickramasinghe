@@ -1,0 +1,128 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(26, 31, 46, 0.5);
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #3B82F6, #06B6D4);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #06B6D4, #A855F7);
+}
+
+/* Base Styles */
+html {
+  @apply scroll-smooth;
+}
+
+body {
+  @apply bg-brand-dark text-white antialiased overflow-x-hidden;
+  background: linear-gradient(135deg, #0B0F17 0%, #1A1F2E 50%, #0B0F17 100%);
+  background-attachment: fixed;
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+  @apply font-display font-bold;
+}
+
+p {
+  @apply font-sans leading-relaxed;
+}
+
+code, pre {
+  @apply font-mono text-sm;
+}
+
+/* Anchor Links */
+a {
+  @apply transition-colors duration-300;
+}
+
+a:not(.no-link) {
+  @apply text-brand-cyan hover:text-brand-accent;
+}
+
+/* Selection */
+::selection {
+  @apply bg-brand-accent bg-opacity-30 text-white;
+}
+
+/* Glassmorphism Card Base */
+.glass {
+  @apply backdrop-blur-md bg-white bg-opacity-5 border border-white border-opacity-10 rounded-xl;
+}
+
+.glass-hover {
+  @apply glass hover:bg-opacity-10 hover:border-opacity-20 transition-all duration-300;
+}
+
+/* Gradient Text */
+.gradient-text {
+  @apply bg-gradient-to-r from-brand-accent via-brand-cyan to-brand-purple bg-clip-text text-transparent;
+}
+
+/* Glow Effects */
+.glow-blue {
+  @apply shadow-glow-blue;
+}
+
+.glow-cyan {
+  @apply shadow-glow-cyan;
+}
+
+.glow-purple {
+  @apply shadow-glow-purple;
+}
+
+.glow-pink {
+  @apply shadow-glow-pink;
+}
+
+/* Animation Classes */
+.animate-shimmer {
+  @apply animate-shimmer;
+}
+
+.animate-glow-pulse {
+  @apply animate-glow-pulse;
+}
+
+.animate-float {
+  @apply animate-float;
+}
+
+/* Focus Styles */
+button:focus, a:focus {
+  @apply outline-none ring-2 ring-brand-accent ring-offset-2 ring-offset-brand-dark rounded-lg;
+}
+
+/* Transitions */
+.transition-smooth {
+  @apply transition-all duration-500 ease-in-out;
+}
+
+.transition-fast {
+  @apply transition-all duration-200 ease-in-out;
+}
+
+/* Utilities */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
