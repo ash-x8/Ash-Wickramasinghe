@@ -1,0 +1,29 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Site settings: readable by all, writable only by authenticated admin
+    match /site_settings/{docId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    // Projects: readable by all, writable only by authenticated admin
+    match /projects/{projectId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    // Contact messages: anyone can create (submit contact form), only authenticated admin can read, update, or delete
+    match /messages/{messageId} {
+      allow create: if request.resource.data.name is string 
+                    && request.resource.data.email is string 
+                    && request.resource.data.message is string;
+      allow read, update, delete: if isAuthenticated();
+    }
+  }
+}

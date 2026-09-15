@@ -1,0 +1,58 @@
+{
+  "entities": {
+    "site_settings": {
+      "title": "Site Settings",
+      "description": "Global portfolio configuration, profile details, CV link, and biography",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "title": { "type": "string" },
+        "bio": { "type": "string" },
+        "aboutBio": { "type": "string" },
+        "status": { "type": "string" },
+        "avatarUrl": { "type": "string" },
+        "cvUrl": { "type": "string" },
+        "email": { "type": "string" },
+        "location": { "type": "string" },
+        "github": { "type": "string" },
+        "linkedin": { "type": "string" },
+        "telegram": { "type": "string" },
+        "skills": { "type": "array" },
+        "updatedAt": { "type": "string" }
+      }
+    },
+    "projects": {
+      "title": "Projects",
+      "description": "Portfolio projects showcase",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "category": { "type": "string" },
+        "description": { "type": "string" },
+        "detailedDescription": { "type": "string" },
+        "image": { "type": "string" },
+        "tags": { "type": "array" },
+        "githubUrl": { "type": "string" },
+        "liveUrl": { "type": "string" },
+        "featured": { "type": "boolean" },
+        "order": { "type": "number" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["title", "category", "description"]
+    },
+    "messages": {
+      "title": "Contact Messages",
+      "description": "Inbound contact submissions from the cyber portal",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "subject": { "type": "string" },
+        "message": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "status": { "type": "string" }
+      },
+      "required": ["name", "email", "message"]
+    }
+  }
+}
