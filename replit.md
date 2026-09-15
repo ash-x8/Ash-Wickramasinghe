@@ -1,6 +1,6 @@
 # Ash Wickramasinghe — portfolio
 
-This project is a public, single-page React + TypeScript + Vite portfolio for Ash Wickramasinghe. The visual direction is dark-first editorial, with a coral accent, fluid typography, scroll reveals, hover states, a project lightbox, and reduced-motion support.
+This project is a public, multi-page React + TypeScript + Vite portfolio for Ash Wickramasinghe. The visual direction is dark-first editorial, with a coral accent, optional light mode, fluid typography, scroll reveals, hover states, project detail pages, a view-only CV state, and reduced-motion support.
 
 ## Run locally
 
@@ -25,8 +25,10 @@ Set the Vercel output directory to `dist`. The lockfile is generated against the
 
 - Use “Ash Wickramasinghe” as the current visible professional name.
 - Keep the visible identity focused on Graphic Design, Social Media Management, Digital Content, and Writing.
+- Photography and Photographer are not part of the public site.
 - Do not invent clients, awards, qualifications, certifications, or work history.
-- The public app deliberately has no admin navigation, dashboard hint, or `/admin` route. `/admin` and nested admin paths resolve to the public not-found boundary.
+- Public routes include `/`, `/about`, `/services`, `/projects`, `/projects/:slug`, `/writing`, `/cv`, and `/contact`.
+- The public app deliberately has no admin navigation, dashboard hint, or public admin dashboard. `/admin` and nested admin paths resolve to the public not-found boundary.
 
 ## Later CMS work
 

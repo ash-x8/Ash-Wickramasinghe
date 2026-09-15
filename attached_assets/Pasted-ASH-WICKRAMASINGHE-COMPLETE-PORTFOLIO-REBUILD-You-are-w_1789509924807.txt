@@ -1,0 +1,1088 @@
+ASH WICKRAMASINGHE — COMPLETE PORTFOLIO REBUILD
+
+You are working on my existing website:
+
+https://ash-wickramasinghe.site
+
+I use Replit AI Agent on the FREE plan, so work efficiently and avoid unnecessary rewrites, unnecessary dependencies, and repeated work.
+
+IMPORTANT:
+
+This is NOT a small UI update.
+
+I want you to AUDIT the existing project first and then transform it into a completely redesigned, production-ready, multi-page portfolio website with a real Firebase CMS/Admin Dashboard.
+
+Do NOT create a mockup.
+Do NOT create fake functionality.
+Do NOT stop after designing the frontend.
+
+Build the actual working application.
+
+==================================================
+
+1. FIRST — AUDIT THE EXISTING PROJECT
+   ==================================================
+
+Before changing files:
+
+• inspect the complete project structure
+• identify the framework
+• inspect package.json
+• inspect existing routes
+• inspect components
+• inspect backend/API
+• inspect database
+• inspect authentication
+• inspect existing Firebase configuration
+• inspect deployment configuration
+• inspect environment variables
+• identify build/deploy errors
+• identify broken imports
+• identify unused/dead code
+• identify existing reusable components
+• identify all Photography-related code
+
+Do not blindly delete or rewrite everything.
+
+Reuse useful existing infrastructure where possible.
+
+Then implement the rebuild.
+
+==================================================
+2. BRAND
+
+Public identity:
+
+ASH WICKRAMASINGHE
+
+Do NOT use "Ash X8" as the main public identity.
+
+Remove "Photographer" completely.
+
+Main professional focus:
+
+• Graphic Design
+• Social Media Management
+• Content Editing
+• Content Creation
+• Branding
+• Digital Content
+• Creative Direction
+• Web Management
+• Writing
+
+Do not invent experience, clients, certifications, awards, statistics, or qualifications.
+
+==================================================
+3. REMOVE PHOTOGRAPHY COMPLETELY
+
+Delete/refactor all Photography-specific:
+
+• pages
+• routes
+• navigation
+• components
+• galleries
+• categories
+• database records
+• admin modules
+• services
+• SEO metadata
+• schema
+• filters
+• copy
+• assets that are no longer needed
+
+Remove "Photographer" from public content.
+
+Keep "Photo Editing" only if it is a graphic/design service.
+
+Do NOT recreate Photography anywhere.
+
+==================================================
+4. NOT A SINGLE PAGE
+
+This MUST be a multi-page website.
+
+Create proper routes such as:
+
+/
+/about
+/services
+/projects
+/projects/:slug
+/writing
+/cv
+/contact
+/admin
+
+Admin sub-pages can use:
+
+/admin/dashboard
+/admin/hero
+/admin/about
+/admin/services
+/admin/projects
+/admin/writing
+/admin/media
+/admin/cv
+/admin/navigation
+/admin/socials
+/admin/seo
+/admin/theme
+/admin/settings
+
+Use the routing system appropriate for the existing framework.
+
+Every public page needs its own metadata and proper loading/error states.
+
+==================================================
+5. VISUAL DESIGN
+
+Completely redesign the UI.
+
+Design direction:
+
+PREMIUM
+CYBER
+TECH
+IT
+DIGITAL
+CINEMATIC
+FUTURISTIC
+PROFESSIONAL
+EDITORIAL
+CREATIVE
+
+Think:
+
+Premium creative portfolio
++
+digital agency
++
+modern designer
++
+subtle cyber/IT interface
+
+Do NOT create a cheap hacker website.
+
+Avoid:
+
+• excessive neon
+• excessive gradients
+• excessive glassmorphism
+• generic cards
+• Bootstrap-looking UI
+• template layouts
+• excessive rounded rectangles
+• giant meaningless text
+• excessive glow
+• noisy backgrounds
+• unnecessary animations
+
+Use:
+
+• black/deep charcoal
+• off-white
+• neutral tones
+• ONE configurable accent color
+
+Dark mode must be the primary visual experience.
+
+Also support Light Mode.
+
+Accent color must be editable from Admin Dashboard.
+
+==================================================
+6. ANIMATION
+
+Create a highly animated but professional experience.
+
+Use:
+
+• smooth page transitions
+• route transitions
+• scroll reveal
+• staggered animations
+• image reveal
+• text reveal
+• subtle parallax
+• hover interactions
+• magnetic buttons
+• cursor interaction on desktop
+• project image effects
+• navigation animations
+• modal transitions
+• micro-interactions
+• subtle cyber/digital effects
+
+Animations must be fast and purposeful.
+
+Respect:
+
+prefers-reduced-motion
+
+Do not make the site slow.
+
+On mobile, remove unnecessary cursor effects.
+
+==================================================
+7. HOME
+
+Create a premium cinematic homepage.
+
+Hero:
+
+ASH WICKRAMASINGHE
+
+Graphic Designer
+Social Media Manager
+Content Editor
+
+Hero text must be editable from Admin.
+
+Editable:
+
+• title
+• subtitle
+• description
+• CTA labels
+• CTA links
+• profile image
+• hero image
+• accent
+
+Suggested CTAs:
+
+Explore My Work
+View Projects
+Let's Work Together
+View CV
+
+Do not hard-code these values.
+
+==================================================
+8. ABOUT
+
+Create a dedicated /about page.
+
+Include:
+
+• profile image
+• biography
+• professional summary
+• skills
+• experience
+• interests
+• CV CTA
+• social links
+
+All reasonable content must be editable through Admin.
+
+==================================================
+9. SERVICES
+
+Create /services.
+
+CMS-driven services.
+
+Possible services:
+
+Graphic Design
+Social Media Post Design
+Certificate Design
+Invitation Design
+Tute Design
+CV Design
+Logo Design
+Poster Design
+Photo Editing
+Content Writing
+Creative Direction
+Branding
+Digital Content
+Web Management
+
+Admin must support:
+
+CREATE
+EDIT
+DELETE
+REORDER
+PUBLISH
+UNPUBLISH
+
+Each service can contain:
+
+• title
+• description
+• icon/image
+• category
+• order
+• visibility
+
+==================================================
+10. PROJECTS
+
+Create /projects.
+
+Projects must be Firebase/CMS driven.
+
+Each project supports:
+
+• title
+• slug
+• description
+• full content
+• category
+• year
+• client
+• tools
+• tags
+• cover image
+• gallery
+• external URL
+• GitHub URL if applicable
+• featured status
+• draft/published
+• SEO title
+• SEO description
+• OG image
+
+Categories:
+
+Graphic Design
+Branding
+Social Media
+Posters
+Creative Projects
+Web Projects
+Writing
+Other
+
+NO Photography category.
+
+Create:
+
+/projects/:slug
+
+for individual case studies.
+
+==================================================
+11. CINEXUS
+
+Include my CINEXUS project as a portfolio case study:
+
+https://cinexus-nine.vercel.app/
+
+Do not invent technical information that cannot be verified.
+
+Allow its project content to be edited from Admin.
+
+==================================================
+12. CV
+
+Create a dedicated:
+
+/cv
+
+page.
+
+I will upload my CV from Admin Dashboard.
+
+Admin must be able to:
+
+• upload CV
+• replace CV
+• delete CV
+• publish/unpublish CV
+• see current CV
+• preview CV
+
+Public users can:
+
+VIEW CV
+
+Public users must NOT be given a Download button.
+
+Do not create a "Download CV" CTA.
+
+Use an embedded/document viewer.
+
+Implement reasonable view-only UX restrictions, while understanding that browser-based viewing cannot guarantee that a determined user cannot save the underlying document.
+
+CV must NOT be hard-coded.
+
+==================================================
+13. ADMIN
+
+Create a REAL Admin Dashboard:
+
+https://ash-wickramasinghe.site/admin
+
+Admin access ONLY through Firebase Authentication.
+
+NO:
+
+• hard-coded username/password
+• localStorage-only authentication
+• fake login
+• frontend-only authorization
+• password inside source code
+
+Use Firebase Authentication.
+
+Recommended:
+
+Email + Password authentication.
+
+Do NOT create public registration.
+
+Admin login:
+
+/admin
+
+After authentication:
+
+/admin/dashboard
+
+Unauthenticated users must be blocked/redirected.
+
+Use Firebase auth state listener.
+
+Handle:
+
+• login
+• logout
+• loading
+• invalid credentials
+• session expiration
+• Firebase errors
+
+==================================================
+14. ADMIN MODULES
+
+Create a practical CMS dashboard:
+
+Dashboard
+Hero
+About
+Services
+Projects
+Writing
+Skills
+Experience
+Testimonials
+Media
+Profile
+CV
+Navigation
+Social Links
+SEO
+Theme
+Settings
+Security
+
+Admin should be able to manage website content without editing source code.
+
+==================================================
+15. MEDIA LIBRARY
+
+Use Firebase Storage.
+
+Admin can upload:
+
+• profile image
+• project images
+• hero images
+• service images
+• thumbnails
+• OG images
+• website assets
+
+Support:
+
+UPLOAD
+REPLACE
+DELETE
+PREVIEW
+COPY URL
+ALT TEXT
+SEARCH
+FILTER
+
+Profile photo MUST be replaceable through Admin.
+
+Do not hard-code the profile image URL throughout the application.
+
+==================================================
+16. FIREBASE
+
+Use:
+
+Firebase Authentication
+Cloud Firestore
+Firebase Storage
+
+Firestore can contain collections such as:
+
+siteSettings
+hero
+about
+services
+projects
+writing
+skills
+experience
+testimonials
+navigation
+socialLinks
+seo
+theme
+cv
+media
+
+Use a clean structure.
+
+Do not create unnecessary databases or services.
+
+==================================================
+17. REAL-TIME CMS
+
+Admin changes should update the public website without requiring a code change.
+
+Examples:
+
+Admin changes hero title
+→ public hero updates.
+
+Admin changes profile image
+→ public profile updates.
+
+Admin changes project
+→ project page updates.
+
+Admin uploads CV
+→ /cv displays latest published CV.
+
+Use realtime listeners only where beneficial; avoid unnecessary listeners that waste resources.
+
+==================================================
+18. SECURITY
+
+Use Firebase Security Rules.
+
+Public users:
+
+READ published public content only.
+
+Admin:
+
+CREATE
+READ
+UPDATE
+DELETE
+
+protected content.
+
+Never rely only on frontend checks.
+
+Use authenticated admin authorization.
+
+Prefer Firebase custom claims or another securely validated admin role mechanism.
+
+Protect Firestore.
+
+Protect Storage.
+
+Do NOT expose Firebase Admin SDK service-account private keys.
+
+Do NOT place private server credentials in client-side code.
+
+Firebase Security Rules should be treated as part of the application's security architecture, not as an afterthought. Firebase specifically recommends restricting production access and testing rules before deployment.
+
+==================================================
+19. NAVIGATION
+
+Public navigation:
+
+Home
+About
+Services
+Projects
+Writing
+CV
+Contact
+
+Admin can:
+
+• rename
+• reorder
+• hide/show
+• change links
+
+Admin routes must never appear in public navigation.
+
+==================================================
+20. CONTACT
+
+Create:
+
+/contact
+
+Fields:
+
+Name
+Email
+Service
+Message
+
+Add validation.
+
+Handle:
+
+loading
+success
+error
+validation
+
+Do not create fake email-sending functionality.
+
+If no backend email service exists, create a clean contact submission system using the available architecture rather than pretending emails were sent.
+
+==================================================
+21. SOCIAL LINKS
+
+Create Admin-editable social links.
+
+Support:
+
+WhatsApp
+YouTube
+Facebook
+LinkedIn
+Telegram
+TikTok
+
+Use only the actual links already provided in the project/configuration.
+
+Do not invent accounts.
+
+==================================================
+22. SEO
+
+Implement:
+
+• unique page titles
+• descriptions
+• canonical URLs
+• OpenGraph
+• social sharing metadata
+• sitemap
+• robots.txt
+• structured data
+
+Use appropriate schema:
+
+Person
+WebSite
+CreativeWork
+Article
+ImageObject
+
+Do not put fake claims in schema.
+
+==================================================
+23. RESPONSIVE
+
+Support:
+
+360px
+375px
+390px
+414px
+768px
+1024px
+1280px
+1440px
+1920px+
+
+Test:
+
+mobile
+tablet
+laptop
+desktop
+
+No:
+
+• horizontal overflow
+• broken menus
+• overlapping content
+• unreadable text
+• broken animation
+• oversized assets
+
+==================================================
+24. PERFORMANCE
+
+Because I use Replit AI FREE, keep the implementation efficient.
+
+Avoid unnecessary dependencies.
+
+Use existing dependencies where possible.
+
+Only install packages that are genuinely necessary.
+
+Optimize:
+
+• images
+• lazy loading
+• code splitting
+• dynamic imports
+• fonts
+• animation
+• Firebase listeners
+• bundle size
+
+Use WebP/AVIF where appropriate.
+
+==================================================
+25. ERROR FIXING
+
+Fix all old deployment/build problems.
+
+Check:
+
+package.json
+lockfile
+environment variables
+framework config
+Firebase config
+routes
+API
+build scripts
+dependencies
+TypeScript
+ESLint
+assets
+deployment config
+
+Fix:
+
+• build errors
+• runtime errors
+• hydration errors
+• broken imports
+• broken routes
+• Firebase errors
+• auth errors
+• permission errors
+• missing assets
+• console errors
+
+Do not finish while known critical errors remain.
+
+==================================================
+26. DEPLOYMENT
+
+The production website must work correctly at:
+
+https://ash-wickramasinghe.site
+
+Admin:
+
+https://ash-wickramasinghe.site/admin
+
+Directly opening:
+
+/about
+/services
+/projects
+/projects/project-name
+/writing
+/cv
+/contact
+/admin
+
+must not produce deployment 404 errors.
+
+Configure production routing correctly for the framework currently used.
+
+Do NOT change hosting architecture unnecessarily if the current architecture can be repaired.
+
+==================================================
+27. CODE ARCHITECTURE
+
+Keep the code maintainable.
+
+Separate:
+
+components
+pages/routes
+Firebase
+authentication
+CMS/data
+hooks
+utilities
+types
+styles
+
+Use reusable components.
+
+Avoid giant files.
+
+Avoid duplicate logic.
+
+Use TypeScript types if the project uses TypeScript.
+
+==================================================
+28. ADMIN UX
+
+Admin should look professional but simpler than the public site.
+
+Include:
+
+• responsive sidebar
+• top navigation
+• breadcrumbs
+• dashboard cards
+• tables
+• forms
+• upload areas
+• preview
+• confirmation dialogs
+• toast notifications
+• loading states
+• empty states
+• error states
+
+Do not waste performance with unnecessary cyber animations inside Admin.
+
+==================================================
+29. PROFILE PHOTO
+
+Admin:
+
+Profile → Profile Photo
+
+Actions:
+
+Upload
+Replace
+Preview
+Set as active
+Delete
+
+Public website automatically uses the selected image.
+
+No hard-coded duplicate profile URLs.
+
+==================================================
+30. THEME CONTROL
+
+Admin → Theme
+
+Allow editing:
+
+• dark/light default
+• accent color
+• logo/favicon if supported
+• animation preference
+• selected visual settings
+
+Do not allow Admin customization to break accessibility or readability.
+
+==================================================
+31. NO FAKE FEATURES
+
+This is extremely important.
+
+If Firebase is not connected:
+
+DO NOT pretend it is.
+
+If an upload fails:
+
+DO NOT show fake success.
+
+If authentication fails:
+
+DO NOT enter the dashboard.
+
+If Firestore fails:
+
+SHOW REAL ERROR STATE.
+
+If Storage fails:
+
+SHOW REAL ERROR STATE.
+
+Everything shown as functional must actually work.
+
+==================================================
+32. TEST BEFORE FINISHING
+
+PUBLIC:
+
+[ ] Home
+[ ] About
+[ ] Services
+[ ] Projects
+[ ] Project detail
+[ ] Writing
+[ ] CV viewer
+[ ] Contact
+[ ] Navigation
+[ ] Dark mode
+[ ] Light mode
+[ ] Mobile
+[ ] Desktop
+[ ] Animations
+[ ] Reduced motion
+[ ] SEO
+
+ADMIN:
+
+[ ] /admin
+[ ] Firebase login
+[ ] Unauthorized protection
+[ ] Logout
+[ ] Hero editing
+[ ] About editing
+[ ] Services CRUD
+[ ] Projects CRUD
+[ ] Writing CRUD
+[ ] Media upload
+[ ] Profile photo replacement
+[ ] CV upload
+[ ] CV replacement
+[ ] CV publish/unpublish
+[ ] Navigation editing
+[ ] Social editing
+[ ] SEO editing
+[ ] Theme editing
+
+DEPLOYMENT:
+
+[ ] production build succeeds
+[ ] no TypeScript errors
+[ ] no critical console errors
+[ ] no broken imports
+[ ] no broken routes
+[ ] no Firebase permission errors
+[ ] no authentication errors
+[ ] no deployment errors
+[ ] no mobile overflow
+
+==================================================
+33. IMPORTANT — WORK IN PHASES
+
+Because I am using Replit AI FREE PLAN, DO NOT waste the entire task in one giant rewrite.
+
+Work in these phases:
+
+PHASE 1:
+Audit existing project and identify architecture/errors.
+
+PHASE 2:
+Fix foundation/build/deployment/routing problems.
+
+PHASE 3:
+Rebuild public UI and multi-page structure.
+
+PHASE 4:
+Remove Photography completely.
+
+PHASE 5:
+Implement Firebase Authentication.
+
+PHASE 6:
+Implement Firestore CMS.
+
+PHASE 7:
+Implement Firebase Storage + Media Library.
+
+PHASE 8:
+Implement Admin Dashboard.
+
+PHASE 9:
+Implement CV upload/view-only system.
+
+PHASE 10:
+Implement SEO, accessibility, performance and animations.
+
+PHASE 11:
+Run full testing and fix remaining errors.
+
+Do NOT repeat previous work.
+
+Do NOT reinstall packages that already exist.
+
+Do NOT rewrite working code without a reason.
+
+==================================================
+34. FINAL DESIGN TARGET
+
+The final product should feel like:
+
+ASH WICKRAMASINGHE
+
+A premium personal creative identity platform.
+
+Visual combination:
+
+CYBER
++
+IT
++
+DIGITAL
++
+CREATIVE
++
+EDITORIAL
++
+CINEMATIC
++
+PROFESSIONAL
+
+But never cheap, noisy, childish, or template-like.
+
+The public website should impress visually.
+
+The Admin Dashboard should be practical.
+
+Firebase should be real.
+
+Authentication should be real.
+
+CMS should be real.
+
+Media management should be real.
+
+CV management should be real.
+
+The website must be multi-page.
+
+Photography must be completely removed.
+
+The profile image must be editable.
+
+The website must be deployable.
+
+==================================================
+FINAL INSTRUCTION
+
+DO NOT JUST EXPLAIN WHAT SHOULD BE DONE.
+
+INSPECT THE EXISTING REPLIT PROJECT.
+
+IMPLEMENT THE CHANGES.
+
+TEST THEM.
+
+FIX ERRORS.
+
+BUILD THE PROJECT.
+
+ONLY CONSIDER THE TASK COMPLETE WHEN THE ACTUAL WORKING APPLICATION IS READY.
