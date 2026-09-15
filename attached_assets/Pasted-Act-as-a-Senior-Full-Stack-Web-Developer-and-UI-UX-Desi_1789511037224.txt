@@ -1,0 +1,75 @@
+Act as a Senior Full-Stack Web Developer and UI/UX Designer specializing in high-performance, futuristic cyber-themed web applications. 
+
+Re-architect and completely redesign my personal portfolio website (currently hosted at https://ash-wickramasinghe.site) using React.js (or Next.js App Router), TypeScript, Tailwind CSS, Framer Motion, and Firebase (Authentication, Firestore, and Firebase Storage).
+
+---
+
+### 🛑 1. CORE REQUIREMENTS & REMOVALS
+- REMOVE all photography sections, camera/photo galleries, and any photography-related content completely.
+- TRANSITION from a single-page website to a full Multi-Page Architecture with seamless client-side routing (React Router DOM / Next.js Pages).
+- RESOLVE and optimize all previous build/deployment errors, routing mismatches, and static asset fallback issues.
+
+---
+
+### 🎨 2. UI DESIGN & THEME (Cyber / IT / Hacking / Professional Aesthetic)
+- Theme: Deep Cyberpunk / Futuristic IT Specialist aesthetic (Dark mode base: deep obsidian/slate backgrounds `#0B0F19`, neon cyan `#00F0FF`, matrix green, electric blue, and subtle glowing glassmorphism borders).
+- Animations & Transitions: 
+  - Smooth page transitions using Framer Motion.
+  - Interactive micro-animations (glowing cursor trails, tech grid backgrounds, subtle terminal typing effects, glitch hover effects on buttons/cards).
+  - Smooth scroll, scroll-triggered reveal animations, and floating 3D/cyber HUD components.
+- Design Quality: Ultra-modern, high-tech, highly readable, crisp typography (Fira Code / JetBrains Mono / Inter), clean layout spacing, and 100% mobile/desktop responsive.
+
+---
+
+### 📂 3. PAGES STRUCTURE (Multi-Page Architecture)
+1. Home Page (`/`):
+   - Hero section with dynamic typing effect (IT / Developer / Cyber Security profile).
+   - Profile Photo (Fetched dynamically from Firebase).
+   - Dynamic Tech Stack carousel/grid (Interactive tech icons).
+   - Quick feature cards highlighting core expertise.
+   - Live Status indicator ("Available for Projects / Open to Work").
+
+2. About Me Page (`/about`):
+   - Detailed bio, education, background, and career trajectory.
+   - Interactive skills timeline / experience matrix.
+
+3. Projects Page (`/projects`):
+   - Dynamic projects grid loaded directly from Firebase Firestore.
+   - Filtering by category (e.g., Full-Stack, Web Apps, Cyber/Tools, Scripts).
+   - Project cards featuring live demo links, GitHub links, tech tags, and details modal.
+
+4. Resume / CV Page (`/cv`):
+   - High-tech, embedded PDF/Document Viewer.
+   - READ-ONLY VIEWING ONLY: Strictly DISABLE and BLOCK any download options, print buttons, right-click context menus, or direct PDF downloads on this page to protect the document.
+   - Loaded dynamically from Firebase Storage URL set via Admin Dashboard.
+
+5. Contact Page (`/contact`):
+   - Interactive cyber-themed contact form with direct Firebase/Email API integration.
+   - Social links & dynamic contact metadata from Firebase.
+
+6. Secret Admin Login (`/admin`):
+   - Firebase Authentication interface (Email/Password or OAuth restricted strictly to the admin UID).
+   - Protected routes using React Context/Route Guards.
+
+7. Admin Dashboard (`/admin/dashboard` - Protected Route):
+   - Comprehensive Content Management System (CMS).
+
+---
+
+### 🔐 4. ADMIN DASHBOARD & FIREBASE INTEGRATION (`/admin`)
+- Authentication: Secure authentication powered ONLY by Firebase Auth. Block unauthenticated access to `/admin/dashboard`.
+- Dynamic Management Features:
+  1. Profile Management: Upload/replace the main Profile Photo directly to Firebase Storage and update database reference instantly without code redeployment.
+  2. Document Management (CV Upload): Upload a new CV file (PDF) to Firebase Storage. System should automatically update the Read-Only CV viewer URL on `/cv`.
+  3. Projects Manager: Full CRUD (Create, Read, Update, Delete) interface to add new projects, upload project screenshots, set tags, and manage links.
+  4. Site Content Settings: Dynamic text editing for Home/About bios, skills list, and contact info saved in Firestore.
+
+---
+
+### ⚙️ 5. TECHNICAL STACK & SECURITY SPECIFICATIONS
+- Frontend: React / Next.js, Tailwind CSS, Framer Motion, Lucide-React / React-Icons.
+- Backend/Database: Firebase Firestore (Cloud Database), Firebase Storage (Assets/CV/Images), Firebase Auth.
+- Code Quality: Fully TypeScript typed, modular component architecture, clean separation of concerns, optimized bundle size, zero deployment errors on Vercel/Netlify.
+- CV Security: Use `pointer-events-none` on overlay layers or custom canvas renderer (like `pdfjs-dist`) for the `/cv` viewer to block right-clicking, saving, or downloading of the CV file.
+
+Please generate the complete project architecture, file structure, router configurations, Firebase setup files, UI components, and the full Admin Dashboard implementation with all cyber UI styles applied.
