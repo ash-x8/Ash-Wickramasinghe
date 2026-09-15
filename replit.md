@@ -10,6 +10,17 @@ npm run dev
 
 The app is served on port 5000.
 
+## Deploy to Vercel
+
+This is a Vite SPA and includes `vercel.json` so direct navigation falls back to the app shell. Use:
+
+```bash
+npm install
+npm run build
+```
+
+Set the Vercel output directory to `dist`. The lockfile is generated against the public npm registry so it can be installed outside Replit.
+
 ## Content rules
 
 - Use “Ash Wickramasinghe” as the current visible professional name.

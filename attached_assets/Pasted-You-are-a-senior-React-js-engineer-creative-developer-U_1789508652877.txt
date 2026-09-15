@@ -1,0 +1,1434 @@
+You are a senior React.js engineer, creative developer, UI/UX designer, motion designer, cybersecurity-inspired interface designer, Firebase engineer, DevOps engineer and production deployment specialist.
+
+I am building my personal creative portfolio using Replit AI, but I have limited Replit AI usage/time. Therefore:
+
+IMPORTANT:
+Do not waste tokens explaining basic concepts.
+Do not repeatedly ask me for confirmation.
+Do not create unnecessary files.
+Do not rewrite working files unnecessarily.
+Work efficiently and incrementally.
+Prioritize production-ready code.
+
+The final project MUST deploy successfully to Vercel.
+
+==================================================
+
+1. CRITICAL VERCEL DEPLOYMENT REQUIREMENT
+   ==================================================
+
+The current project was generated/edited in Replit and the Vercel deployment fails during npm install.
+
+Current error:
+
+npm error code ENOTFOUND
+npm error network request to:
+http://package-firewall.replit.internal/npm/vite/-/vite-8.3.0.tgz
+failed
+
+This means the dependency lock/configuration contains a Replit-internal package URL.
+
+FIX THIS FIRST.
+
+Remove all Replit-internal dependency references.
+
+Search the ENTIRE repository for:
+
+package-firewall.replit.internal
+replit.internal
+http://package-firewall
+https://package-firewall
+vite-8.3.0.tgz
+
+Also inspect:
+
+package-lock.json
+npm-shrinkwrap.json
+pnpm-lock.yaml
+yarn.lock
+.npmrc
+.npmrc files in parent/child directories
+package.json
+vite configuration
+Replit configuration
+
+Remove any Replit-specific package registry configuration that prevents Vercel from installing dependencies.
+
+The project must use the public npm registry.
+
+Do NOT hard-code a private Replit registry.
+
+If necessary, regenerate package-lock.json using the public npm registry.
+
+Use a normal npm setup compatible with Vercel.
+
+The final repository must allow:
+
+npm install
+
+and:
+
+npm run build
+
+to execute successfully outside Replit.
+
+==================================================
+2. DO NOT BREAK THE EXISTING PROJECT
+
+Before changing anything:
+
+Inspect the existing repository.
+
+Identify:
+
+- current React version
+- TypeScript configuration
+- Vite version
+- package.json
+- package-lock
+- source structure
+- existing pages
+- existing components
+- Firebase setup
+- routing
+- CSS
+- assets
+- environment variables
+- deployment configuration
+
+Reuse working code where practical.
+
+Do not rebuild everything blindly.
+
+Fix the deployment problem first.
+
+==================================================
+3. DEPLOYMENT STACK
+
+Use:
+
+Frontend:
+React.js
+TypeScript
+Vite
+
+Routing:
+React Router
+
+Styling:
+Tailwind CSS if already present
+or clean modular CSS if the current project uses it
+
+Animation:
+Framer Motion
+
+Icons:
+Lucide React
+
+Backend:
+Firebase
+
+Database:
+Cloud Firestore
+
+Authentication:
+Firebase Authentication
+
+Storage:
+Firebase Storage
+
+Optional backend logic:
+Firebase Cloud Functions
+
+Deployment:
+Vercel
+
+Repository:
+GitHub
+
+The frontend must remain compatible with Vercel static/SPA deployment.
+
+==================================================
+4. IMPORTANT: KEEP THE PROJECT VERCEL-SAFE
+
+Do NOT introduce:
+
+- Replit-only packages
+- Replit-only APIs
+- Replit server URLs
+- local filesystem dependencies
+- private package registries
+- localhost API URLs
+- hard-coded secrets
+- server code that requires Replit
+- unsupported runtime assumptions
+
+The website must work independently of Replit after deployment.
+
+Replit is ONLY the development environment.
+
+Vercel is the production hosting environment.
+
+Firebase is the backend/infrastructure.
+
+==================================================
+5. PACKAGE MANAGEMENT
+
+Use npm.
+
+package.json must contain only required dependencies.
+
+Keep dependency count reasonable.
+
+Do not install libraries unless they are actually used.
+
+Make sure package-lock.json is valid for a clean Vercel environment.
+
+Before finishing:
+
+Delete node_modules if necessary.
+
+Regenerate package-lock.json from the public npm registry.
+
+Test:
+
+npm install
+
+Then:
+
+npm run build
+
+Fix all errors.
+
+==================================================
+6. VERCEL SPA CONFIGURATION
+
+Because this is a React + Vite SPA, configure Vercel routing correctly.
+
+Create/update:
+
+vercel.json
+
+with an appropriate SPA rewrite so routes such as:
+
+/about
+/projects
+/projects/example
+/writing
+/admin
+
+do not return 404 after direct navigation.
+
+Do not use a rewrite that breaks static assets.
+
+==================================================
+7. ENVIRONMENT VARIABLES
+
+Create:
+
+.env.example
+
+Never commit real secrets.
+
+For Vite Firebase configuration use:
+
+VITE_FIREBASE_API_KEY
+VITE_FIREBASE_AUTH_DOMAIN
+VITE_FIREBASE_PROJECT_ID
+VITE_FIREBASE_STORAGE_BUCKET
+VITE_FIREBASE_MESSAGING_SENDER_ID
+VITE_FIREBASE_APP_ID
+
+Use:
+
+import.meta.env
+
+where appropriate.
+
+Never expose:
+
+Firebase Admin SDK private credentials
+service account private keys
+private API secrets
+SMTP passwords
+private tokens
+
+The public Firebase web configuration may be used in the frontend as intended by Firebase, but security must come from Firebase Security Rules and proper authentication/authorization.
+
+==================================================
+8. VISUAL DIRECTION
+
+Create an extremely polished premium modern technology portfolio.
+
+Visual inspiration:
+
+- modern IT portfolio
+- cybersecurity interface
+- creative developer portfolio
+- futuristic digital agency
+- cinematic technology interface
+- high-end creative studio
+- editorial design
+- modern software engineering portfolio
+
+The aesthetic should be:
+
+DARK
+PREMIUM
+TECHNICAL
+CINEMATIC
+INTELLIGENT
+MINIMAL
+FUTURISTIC
+PROFESSIONAL
+
+Do NOT create a childish cyberpunk website.
+
+Do NOT use excessive neon.
+
+Do NOT use random gradients everywhere.
+
+Do NOT create a gaming website.
+
+Do NOT make everything glassmorphism.
+
+Do NOT fill the entire interface with glowing borders.
+
+The design must remain elegant and readable.
+
+==================================================
+9. CYBERSECURITY VISUAL LANGUAGE
+
+Use cybersecurity-inspired visual details carefully.
+
+Examples:
+
+- system status indicators
+- subtle terminal metadata
+- encrypted-data visual motifs
+- network-line graphics
+- grid systems
+- coordinates
+- timestamps
+- code fragments
+- binary details
+- system diagnostics
+- secure connection indicators
+- technical labels
+- scanning effects
+- subtle HUD-inspired elements
+- data visualization
+- command-line inspired micro UI
+
+These should support the design.
+
+They must NOT make the website look fake or like a hacking simulator.
+
+Never claim actual cybersecurity certifications or abilities unless CMS content explicitly provides them.
+
+==================================================
+10. HERO
+
+Create a spectacular cinematic hero.
+
+Structure:
+
+Small technical eyebrow
+↓
+Large personal headline
+↓
+Short professional statement
+↓
+Primary CTA
+↓
+Secondary CTA
+↓
+Interactive visual system
+
+Possible decorative system UI:
+
+SYSTEM STATUS
+ONLINE
+
+NETWORK
+SECURE
+
+BUILD
+STABLE
+
+LOCATION
+[CMS DATA]
+
+AVAILABILITY
+[CMS DATA]
+
+Do not hard-code personal information.
+
+Everything personal must come from CMS.
+
+Hero animation:
+
+- initial page reveal
+- staggered typography
+- image reveal
+- grid movement
+- subtle scan line
+- cursor response
+- floating technical metadata
+- animated system indicators
+
+Keep animation smooth.
+
+==================================================
+11. LOADING EXPERIENCE
+
+Create a premium initial loading sequence.
+
+Example concept:
+
+BOOTING PORTFOLIO...
+INITIALIZING SYSTEM...
+LOADING CREATIVE ENGINE...
+ACCESS GRANTED
+
+This should be short.
+
+Never block users with a long loading animation.
+
+Use approximately 500–1500ms depending on actual loading state.
+
+Do not fake loading if the application is already ready.
+
+Respect prefers-reduced-motion.
+
+==================================================
+12. CUSTOM CURSOR
+
+On desktop only, create a subtle custom cursor.
+
+States:
+
+default
+link
+button
+image
+drag
+text
+
+Do not replace the normal cursor on mobile.
+
+Do not make it distracting.
+
+Ensure accessibility.
+
+==================================================
+13. NAVIGATION
+
+Create a premium navigation.
+
+Desktop:
+
+Logo
+Work
+Services
+About
+Writing
+Contact
+Theme
+CTA
+
+Mobile:
+
+animated menu
+full-screen navigation
+close animation
+
+Add subtle system metadata if appropriate.
+
+Navigation must be CMS controlled.
+
+==================================================
+14. SCROLL EXPERIENCE
+
+Create a cinematic scrolling experience.
+
+Use:
+
+- section reveals
+- parallax
+- horizontal project movement where useful
+- image clipping
+- typography transformations
+- subtle progress indicator
+
+Do NOT overanimate every section.
+
+The page must still feel fast.
+
+==================================================
+15. ABOUT
+
+Create a premium About section.
+
+Possible layout:
+
+large portrait
++
+editorial biography
++
+skills
++
+small system metadata
+
+Add:
+
+"Profile"
+"Capabilities"
+"Approach"
+
+All content must be CMS-driven.
+
+Never invent personal information.
+
+==================================================
+16. SERVICES
+
+Create a visually impressive services section.
+
+Use large numbered services:
+
+01
+Graphic Design
+
+02
+Social Media Management
+
+03
+Content Editing
+
+etc.
+
+But actual service names must come from CMS.
+
+Hovering a service can:
+
+- reveal image
+- animate number
+- shift background
+- display metadata
+
+Keep interactions elegant.
+
+==================================================
+17. PROJECTS
+
+Create a premium project showcase.
+
+Avoid generic card grids.
+
+Use editorial layouts.
+
+Examples:
+
+large featured project
+asymmetric grid
+full-width project
+split-screen project
+horizontal showcase
+
+Each project:
+
+title
+category
+year
+role
+tools
+description
+cover image
+gallery
+slug
+
+Clicking opens:
+
+/projects/:slug
+
+==================================================
+18. PROJECT CASE STUDY
+
+Create premium case-study pages.
+
+Structure:
+
+PROJECT
+CATEGORY
+YEAR
+
+TITLE
+
+Hero image
+
+Overview
+
+Challenge
+
+Approach
+
+Solution
+
+Process
+
+Gallery
+
+Tools
+
+Credits
+
+Related Projects
+
+CTA
+
+Only display sections that contain actual data.
+
+Never show fake results.
+
+==================================================
+19. PHOTOGRAPHY
+
+Create a cinematic photography section.
+
+Features:
+
+- masonry gallery
+- responsive grid
+- fullscreen lightbox
+- keyboard navigation
+- image zoom
+- captions
+- categories
+- albums
+- lazy loading
+- responsive image sizes
+
+Images must not destroy page performance.
+
+==================================================
+20. WRITING
+
+Create editorial writing section.
+
+Support:
+
+articles
+stories
+poems
+essays
+
+Use typography optimized for long-form reading.
+
+Create:
+
+/writing
+/writing/:slug
+
+Include:
+
+title
+cover
+author
+date
+reading time
+content
+related posts
+
+==================================================
+21. EXPERIENCE
+
+Create an elegant timeline.
+
+Use CMS data.
+
+Do not fabricate employment or achievements.
+
+==================================================
+22. SKILLS
+
+Create technical/creative skills visualization.
+
+Use:
+
+- categories
+- icons
+- tools
+- technologies
+
+Avoid fake percentage bars unless actual data exists.
+
+Use visual grouping instead.
+
+==================================================
+23. TESTIMONIALS
+
+Create testimonials section.
+
+Only show real CMS content.
+
+If there are no testimonials:
+
+hide the section automatically.
+
+Do not invent testimonials.
+
+==================================================
+24. CONTACT
+
+Create a premium contact experience.
+
+Fields:
+
+Name
+Email
+Service
+Message
+
+Optional:
+
+Budget
+Phone
+Preferred contact
+
+Flow:
+
+React form
+→ validation
+→ secure Firebase/backend function
+→ Firestore
+→ success state
+
+Do not expose private email credentials.
+
+==================================================
+25. FIREBASE
+
+Use Firebase as the real backend.
+
+Services:
+
+Firebase Authentication
+Cloud Firestore
+Firebase Storage
+
+Use real data.
+
+No fake API.
+
+No local-only CMS pretending to be backend.
+
+==================================================
+26. FIRESTORE
+
+Use collections:
+
+settings
+hero
+about
+services
+projects
+photographyAlbums
+photographyImages
+writing
+skills
+experience
+testimonials
+navigation
+socialLinks
+contactMessages
+media
+seo
+users
+activityLogs
+
+Use:
+
+createdAt
+updatedAt
+
+where appropriate.
+
+Create TypeScript types for all entities.
+
+==================================================
+27. ADMIN DASHBOARD
+
+Create:
+
+/admin
+
+Premium CMS interface.
+
+Pages:
+
+Dashboard
+Hero
+About
+Services
+Projects
+Photography
+Writing
+Skills
+Experience
+Testimonials
+Media
+Navigation
+Social
+Messages
+SEO
+Theme
+Settings
+Security
+
+==================================================
+28. ADMIN AUTH
+
+Use Firebase Authentication.
+
+Implement protected routes.
+
+Use role-based authorization.
+
+Roles:
+
+admin
+editor
+viewer
+
+Never allow users to change their own role from the frontend.
+
+Do not hard-code admin credentials.
+
+==================================================
+29. ADMIN DASHBOARD DESIGN
+
+The Admin UI should be modern but simpler than the public website.
+
+Use:
+
+dark/light theme
+sidebar
+topbar
+cards
+tables
+forms
+drawers
+dialogs
+toasts
+search
+filters
+
+Include:
+
+loading states
+empty states
+error states
+success states
+
+==================================================
+30. REAL CRUD
+
+Every CMS section must have actual CRUD.
+
+Create
+Read
+Update
+Delete
+
+Plus:
+
+Duplicate
+Publish
+Unpublish
+Feature
+Hide
+Reorder
+
+Data must persist in Firestore.
+
+==================================================
+31. REAL-TIME
+
+Use Firestore real-time listeners where appropriate.
+
+Example:
+
+Admin changes hero title
+→ Firestore update
+→ public website receives snapshot
+→ UI updates
+
+No rebuild.
+
+No redeploy.
+
+Test this with:
+
+Hero
+Services
+Projects
+Navigation
+Theme
+Social Links
+Writing
+Photography
+
+==================================================
+32. MEDIA LIBRARY
+
+Create:
+
+/admin/media
+
+Features:
+
+upload
+preview
+delete
+replace
+search
+filter
+metadata
+alt text
+
+Firebase Storage.
+
+Do not allow unauthorized uploads.
+
+Optimize image loading.
+
+==================================================
+33. SECURITY
+
+Implement real Firebase Security Rules.
+
+Public:
+
+read published content only.
+
+Admin/editor:
+
+write CMS data.
+
+Messages:
+
+admin/editor only.
+
+Users:
+
+restricted.
+
+Roles:
+
+cannot be self-assigned.
+
+Storage:
+
+authorized upload only.
+
+Do not rely only on frontend route protection.
+
+==================================================
+34. FIREBASE SECURITY
+
+Implement:
+
+Firestore Security Rules
+Storage Rules
+
+Where appropriate:
+
+Firebase App Check
+
+Validate all user input.
+
+Sanitize content.
+
+Protect contact forms from abuse.
+
+==================================================
+35. DATABASE PERFORMANCE
+
+Do not fetch entire collections unnecessarily.
+
+Use:
+
+limits
+pagination
+queries
+indexes
+caching
+
+Avoid N+1 requests.
+
+==================================================
+36. IMAGE PERFORMANCE
+
+Implement:
+
+lazy loading
+responsive sizing
+thumbnail usage
+WebP/AVIF where possible
+proper aspect ratios
+loading placeholders
+
+Do not download 10MB originals for small thumbnails.
+
+==================================================
+37. RESPONSIVE
+
+Design for:
+
+360
+375
+390
+414
+768
+1024
+1280
+1440
+1920
+
+No horizontal overflow.
+
+No broken animations.
+
+No microscopic text.
+
+No inaccessible controls.
+
+==================================================
+38. ACCESSIBILITY
+
+Implement:
+
+semantic HTML
+keyboard navigation
+visible focus states
+alt text
+form labels
+accessible dialogs
+ARIA only where needed
+reduced motion
+
+The website should remain usable without animation.
+
+==================================================
+39. SEO
+
+Implement:
+
+dynamic document title
+meta description
+canonical URLs
+Open Graph
+Twitter/X metadata
+sitemap
+robots
+
+Structured data:
+
+Person
+CreativeWork
+WebSite
+Article
+ImageObject
+BreadcrumbList
+
+Only generate data from actual CMS content.
+
+==================================================
+40. PERFORMANCE
+
+Optimize:
+
+JavaScript
+images
+fonts
+animations
+Firebase reads
+component rendering
+
+Use route-level lazy loading.
+
+Do not load admin code for public users unnecessarily.
+
+==================================================
+41. ERROR HANDLING
+
+Create:
+
+404
+Error Boundary
+Firebase error handling
+network error states
+permission denied states
+upload failure states
+form error states
+
+Never leave a blank screen.
+
+==================================================
+42. DESIGN SYSTEM
+
+Create consistent tokens:
+
+background
+foreground
+muted
+accent
+border
+spacing
+radius
+shadow
+motion
+
+Use:
+
+SectionHeading
+Button
+Badge
+Container
+Modal
+Drawer
+Toast
+Skeleton
+EmptyState
+ErrorState
+Image
+Lightbox
+
+==================================================
+43. ANIMATION SYSTEM
+
+Create reusable animation utilities.
+
+Animation categories:
+
+pageEnter
+fadeUp
+reveal
+imageReveal
+stagger
+hover
+menu
+modal
+lightbox
+
+Use Framer Motion.
+
+Respect:
+
+prefers-reduced-motion.
+
+==================================================
+44. CYBER UI DETAILS
+
+Add premium technical details such as:
+
+small coordinate labels
+system status
+network pulse
+subtle scan grid
+data streams
+micro terminal text
+digital clock
+system uptime visual
+connection indicator
+section numbering
+technical metadata
+
+BUT:
+
+These are visual elements only.
+
+Do not claim the website is performing real cybersecurity scanning, penetration testing, encryption, system monitoring or network security unless actual functionality exists.
+
+==================================================
+45. VISUAL INTERACTION
+
+Add tasteful interactions:
+
+Project hover:
+image shifts slightly
+metadata appears
+cursor changes
+
+Photography:
+image zoom
+smooth transition
+
+Navigation:
+smooth active indicator
+
+Buttons:
+subtle magnetic/hover movement
+
+Sections:
+reveal on scroll
+
+Do not overdo it.
+
+==================================================
+46. NO GENERIC AI LOOK
+
+Avoid:
+
+generic purple gradient
+huge "Welcome"
+random glass cards
+AI-generated marketing copy
+stock SaaS illustrations
+unnecessary 3D objects
+excessive rounded rectangles
+rainbow gradients
+random neon colors
+
+The website should look intentionally art-directed.
+
+==================================================
+47. CONTENT ARCHITECTURE
+
+Personal content must remain replaceable.
+
+Use:
+
+CMS data
+placeholders
+empty states
+
+Never invent:
+
+name
+address
+phone
+email
+clients
+awards
+certifications
+education
+employment
+testimonials
+project results
+
+I will add personal information separately.
+
+==================================================
+48. REPLIT FREE LIMIT OPTIMIZATION
+
+This is important.
+
+Because Replit AI usage is limited:
+
+DO NOT repeatedly regenerate entire files.
+
+Before editing a file:
+
+inspect it.
+
+Then modify only the necessary sections.
+
+Prefer small focused changes.
+
+Do not install large unnecessary libraries.
+
+Do not create unnecessary abstractions.
+
+Do not regenerate package-lock repeatedly unless required.
+
+Do not create duplicate components.
+
+Keep the architecture simple enough for a single developer to maintain.
+
+==================================================
+49. GIT SAFETY
+
+Keep the repository clean.
+
+Do not commit:
+
+.env
+.env.local
+Firebase private service account JSON
+private keys
+secrets
+node_modules
+
+Ensure .gitignore includes:
+
+node_modules
+dist
+.env
+.env.local
+.env.*.local
+
+==================================================
+50. VERCEL DEPLOYMENT CHECK
+
+Before final response:
+
+Run:
+
+npm install
+
+Then:
+
+npm run build
+
+Then verify:
+
+dist/
+
+is generated.
+
+Search the repository again for:
+
+package-firewall.replit.internal
+replit.internal
+
+There must be ZERO references.
+
+Also check:
+
+npm config
+.npmrc
+package-lock.json
+
+The project must use the public npm registry.
+
+==================================================
+51. GITHUB CHECK
+
+Ensure the repository is ready for GitHub.
+
+Do not include:
+
+node_modules
+dist
+.env
+private credentials
+
+Commit only source/configuration files required for deployment.
+
+==================================================
+52. VERCEL CHECKLIST
+
+Prepare instructions:
+
+1. Push to GitHub.
+2. Import repository into Vercel.
+3. Framework: Vite.
+4. Build command:
+   npm run build
+5. Output directory:
+   dist
+6. Install command:
+   npm install
+7. Add VITE_* Firebase environment variables.
+8. Deploy.
+9. Test production routes.
+10. Test Firebase authentication.
+11. Test Firestore.
+12. Test Storage.
+13. Test Admin.
+14. Test real-time updates.
+
+==================================================
+53. IMPORTANT VERCEL ROUTING
+
+Ensure direct URL navigation works:
+
+/about
+/projects
+/projects/example
+/photography
+/writing
+/contact
+/admin
+
+Create an appropriate vercel.json SPA rewrite.
+
+Do not rewrite API/static assets incorrectly.
+
+==================================================
+54. FINAL PRODUCTION AUDIT
+
+Act as a senior DevOps + frontend + backend QA engineer.
+
+Check:
+
+[ ] npm install works
+[ ] npm run build works
+[ ] no Replit internal URLs
+[ ] no private registry references
+[ ] no hard-coded secrets
+[ ] no TypeScript errors
+[ ] no broken imports
+[ ] no dead buttons
+[ ] no fake backend
+[ ] Firebase initializes correctly
+[ ] Authentication works
+[ ] Firestore works
+[ ] Storage works
+[ ] Admin protection works
+[ ] CRUD works
+[ ] real-time updates work
+[ ] responsive design works
+[ ] animations work
+[ ] reduced motion works
+[ ] SEO works
+[ ] accessibility works
+[ ] 404 works
+[ ] Vercel routing works
+
+Fix issues instead of merely reporting them.
+
+==================================================
+55. FINAL COMMAND
+
+DO NOT stop at a beautiful frontend.
+
+Build the complete production-ready React application.
+
+First fix the Replit-to-Vercel dependency problem.
+
+Then preserve and improve the existing application.
+
+Then implement the premium modern technology/cybersecurity-inspired creative portfolio.
+
+Then implement Firebase backend and Admin CMS.
+
+Then perform the complete production audit.
+
+The final project must be independent of Replit and deployable to Vercel using GitHub.
+
+The production architecture is:
+
+React.js
++
+Vite
++
+TypeScript
++
+Framer Motion
++
+Firebase Authentication
++
+Firestore
++
+Firebase Storage
++
+optional Cloud Functions
++
+GitHub
++
+Vercel
+
+The final result should feel like a world-class modern creative technology portfolio while remaining fast, accessible, maintainable, secure and genuinely functional.
