@@ -1,12 +1,13 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User } from 'firebase/auth';
-import { auth, loginAdmin, logoutAdmin, onAuthStateChanged } from '../lib/firebase';
+import { auth, loginAdmin, loginWithGoogle, logoutAdmin, onAuthStateChanged } from '../lib/firebase';
 import { Navigate, useLocation } from 'react-router-dom';
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
   login: (email: string, pass: string) => Promise<User>;
+  loginGoogle: () => Promise<User>;
   logout: () => Promise<void>;
   isAdmin: boolean;
 }
@@ -36,6 +37,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const loginGoogle = async () => {
+    setLoading(true);
+    try {
+      const u = await loginWithGoogle();
+      setUser(u);
+      return u;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const logout = async () => {
     await logoutAdmin();
     setUser(null);
@@ -44,7 +56,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const isAdmin = !!user;
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, isAdmin }}>
+    <AuthContext.Provider value={{ user, loading, login, loginGoogle, logout, isAdmin }}>
       {children}
     </AuthContext.Provider>
   );

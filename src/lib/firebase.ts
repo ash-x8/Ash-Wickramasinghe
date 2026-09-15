@@ -5,6 +5,8 @@ import {
   createUserWithEmailAndPassword, 
   signOut, 
   onAuthStateChanged,
+  GoogleAuthProvider,
+  signInWithPopup,
   User 
 } from 'firebase/auth';
 import { 
@@ -12,6 +14,7 @@ import {
   collection, 
   doc, 
   getDoc, 
+  getDocFromServer,
   setDoc, 
   getDocs, 
   addDoc, 
@@ -27,35 +30,27 @@ import {
   uploadBytes, 
   getDownloadURL 
 } from 'firebase/storage';
+import firebaseConfig from '../../firebase-applet-config.json';
 import { Project, SiteSettings, ContactMessage } from '../types';
 import { defaultSiteSettings, defaultProjects } from '../data/defaultContent';
-
-// Fallback configuration if env variables are not yet populated
-const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyAekzhVaPluAKCLRZlrojsPyQEM2lXRp7Q",
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "endless-quote-51ttq.firebaseapp.com",
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "endless-quote-51ttq",
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "endless-quote-51ttq.firebasestorage.app",
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "416026597596",
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:416026597596:web:322ba35009ebfc0a177c19",
-};
-
-const firestoreDatabaseId = "ai-studio-ashwickramasingh-6eefcd6a-5ae1-414e-8e06-bb258ac8b049";
 
 // Initialize Firebase App instance
 export const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 export const auth = getAuth(app);
-
-// Initialize Firestore with specific database ID if available
-let dbInstance;
-try {
-  dbInstance = getFirestore(app, firestoreDatabaseId);
-} catch (e) {
-  console.warn("Falling back to default Firestore database", e);
-  dbInstance = getFirestore(app);
-}
-export const db = dbInstance;
+export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
 export const storage = getStorage(app);
+
+// Test Firestore connection on boot
+async function testConnection() {
+  try {
+    await getDocFromServer(doc(db, 'test', 'connection'));
+  } catch (error) {
+    if (error instanceof Error && error.message.includes('the client is offline')) {
+      console.error("Please check your Firebase configuration.");
+    }
+  }
+}
+testConnection();
 
 /* =========================================================================
    SITE SETTINGS CMS (Profile, Bio, CV Link, Skills)
@@ -214,17 +209,38 @@ export async function uploadMediaFile(file: File, folder: string = 'portfolio'):
    ADMIN AUTHENTICATION
    ========================================================================= */
 
+export async function loginWithGoogle(): Promise<User> {
+  const provider = new GoogleAuthProvider();
+  provider.setCustomParameters({ prompt: 'select_account' });
+  const result = await signInWithPopup(auth, provider);
+  return result.user;
+}
+
 export async function loginAdmin(email: string, pass: string): Promise<User> {
   try {
     const credential = await signInWithEmailAndPassword(auth, email, pass);
     return credential.user;
   } catch (err: any) {
+    if (err.code === 'auth/configuration-not-found' || err.message?.includes('configuration-not-found')) {
+      const customErr = new Error(
+        "Email/Password authentication is not enabled on this Firebase project. Please use the 'Sign in with Google' button above."
+      );
+      (customErr as any).code = 'auth/configuration-not-found';
+      throw customErr;
+    }
     // If user not found and attempting designated admin email, auto-create
     if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential' || err.code === 'auth/invalid-login-credentials') {
       try {
         const newCred = await createUserWithEmailAndPassword(auth, email, pass);
         return newCred.user;
       } catch (createErr: any) {
+        if (createErr.code === 'auth/configuration-not-found' || createErr.message?.includes('configuration-not-found')) {
+          const customErr = new Error(
+            "Email/Password authentication is not enabled on this Firebase project. Please use the 'Sign in with Google' button above."
+          );
+          (customErr as any).code = 'auth/configuration-not-found';
+          throw customErr;
+        }
         // If create also fails because user already exists, re-throw original error
         throw err;
       }
