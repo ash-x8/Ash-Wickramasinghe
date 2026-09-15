@@ -1,30 +1,39 @@
 {
-  "name": "ash-wickramasinghe-portfolio",
+  "name": "ash-portfolio",
+  "version": "2.0.0",
+  "description": "Ultra-modern professional portfolio with Next.js, React, TypeScript, and Framer Motion",
   "private": true,
-  "version": "1.0.0",
-  "type": "module",
   "scripts": {
-    "dev": "vite --host 0.0.0.0 --port 3000",
-    "lint": "tsc --noEmit",
-    "build": "tsc -b && vite build",
-    "preview": "vite preview --host 0.0.0.0 --port 3000"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "format": "prettier --write ."
   },
   "dependencies": {
-    "@tailwindcss/vite": "^4.3.3",
-    "@vitejs/plugin-react": "^6.1.1",
-    "firebase": "^12.19.0",
-    "framer-motion": "^13.3.0",
-    "lucide-react": "^1.46.0",
-    "react": "^19.3.0",
-    "react-dom": "^19.3.0",
-    "react-router-dom": "^7.18.4",
-    "tailwindcss": "^4.3.3",
-    "typescript": "^7.0.2",
-    "vite": "^8.3.0"
+    "next": "^15.1.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "typescript": "^5.6.0",
+    "tailwindcss": "^3.4.0",
+    "framer-motion": "^11.0.0",
+    "firebase": "^10.10.0",
+    "firebase-admin": "^12.0.0",
+    "pdfjs-dist": "^4.0.0",
+    "react-pdf": "^9.0.0",
+    "axios": "^1.6.0",
+    "react-icons": "^5.0.0",
+    "clsx": "^2.0.0",
+    "tailwind-merge": "^2.3.0"
   },
   "devDependencies": {
-    "@types/node": "^22.20.3",
-    "@types/react": "^19.3.0",
-    "@types/react-dom": "^19.3.0"
+    "@types/node": "^20.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "autoprefixer": "^10.4.0",
+    "postcss": "^8.4.0",
+    "eslint": "^8.0.0",
+    "eslint-config-next": "^15.1.0",
+    "prettier": "^3.0.0"
   }
 }
