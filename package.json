@@ -1,13 +1,13 @@
 {
   "name": "ash-portfolio",
   "version": "2.0.0",
-  "description": "Ash Wickramasinghe's professional portfolio built with Next.js, React, TypeScript, Firebase, and Vercel.",
+  "description": "Ash Wickramasinghe's React portfolio powered by Next.js, Firebase, and Vercel.",
   "private": true,
   "scripts": {
     "dev": "next dev -p 3000 -H 0.0.0.0",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint .",
     "format": "prettier --write ."
   },
   "dependencies": {
