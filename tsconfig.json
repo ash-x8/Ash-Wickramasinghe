@@ -66,9 +66,6 @@
     ".next/types/**/*.ts"
   ],
   "exclude": [
-    "node_modules",
-    "src",
-    "attached_assets",
-    "vite.config.ts"
+    "node_modules"
   ]
 }
