@@ -22,6 +22,7 @@ import { defaultSiteSettings } from '../data/defaultContent';
 export const AboutPage: React.FC = () => {
   const [settings, setSettings] = useState<SiteSettings>(defaultSiteSettings);
   const [activeSkillCategory, setActiveSkillCategory] = useState<string>('All');
+  const [avatarLoaded, setAvatarLoaded] = useState(false);
 
   useEffect(() => {
     async function loadData() {
@@ -122,18 +123,27 @@ export const AboutPage: React.FC = () => {
         {/* Right Column: Identity Specs & Quick Badges */}
         <div className="lg:col-span-4 space-y-6">
           <CyberCard highlightHeader="OPERATOR_IDENTITY" className="p-6 space-y-4">
-            <div className="w-full aspect-square rounded-lg overflow-hidden border border-[#00f0ff]/30 bg-[#0a0e17]">
+            <div className="relative w-full aspect-square rounded-xl overflow-hidden border border-slate-800 bg-[#0A0E17]">
+              {!avatarLoaded && (
+                <div className="absolute inset-0 bg-[#0F172A] flex flex-col items-center justify-center gap-2 animate-pulse">
+                  <div className="w-10 h-10 rounded-full border-2 border-[#06B6D4] border-t-transparent animate-spin" />
+                  <span className="text-[10px] font-mono text-slate-500">LOADING AVATAR...</span>
+                </div>
+              )}
               <img 
                 src={settings.avatarUrl || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80"} 
                 alt="Ash Wickramasinghe"
-                className="w-full h-full object-cover object-top filter contrast-105"
+                onLoad={() => setAvatarLoaded(true)}
+                className={`w-full h-full object-cover object-top filter contrast-105 transition-all duration-700 ${
+                  avatarLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
+                }`}
               />
             </div>
             <div className="space-y-1 font-mono text-xs">
               <div className="text-white font-bold text-sm">ASH WICKRAMASINGHE</div>
-              <div className="text-[#00f0ff]">{settings.title}</div>
+              <div className="text-[#06B6D4]">{settings.title}</div>
               <div className="text-slate-400 text-[11px] pt-1">
-                Verified Cryptographic Signature: <span className="text-[#00ff66]">VALID</span>
+                Verified Cryptographic Signature: <span className="text-[#10B981]">VALID</span>
               </div>
             </div>
 

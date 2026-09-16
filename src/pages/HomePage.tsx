@@ -28,6 +28,7 @@ export const HomePage: React.FC = () => {
   const [settings, setSettings] = useState<SiteSettings>(defaultSiteSettings);
   const [projects, setProjects] = useState<Project[]>(defaultProjects);
   const [loading, setLoading] = useState(true);
+  const [avatarLoaded, setAvatarLoaded] = useState(false);
 
   useEffect(() => {
     async function loadData() {
@@ -87,25 +88,25 @@ export const HomePage: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           {/* Hero Left Content */}
           <div className="lg:col-span-7 space-y-6">
-            {/* Clearance Pill */}
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#111827] border border-[#00f0ff]/30 text-xs font-mono text-[#00f0ff]">
-              <span className="w-2 h-2 rounded-full bg-[#00ff66] animate-pulse" />
-              <span>{settings.clearanceLevel || "SYS_CLEARANCE: LEVEL 4 // ROOT ACCESS"}</span>
+            {/* Professional Status Pill */}
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#111827] border border-slate-800 text-xs font-mono text-[#06B6D4]">
+              <span className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse" />
+              <span>Full-Stack Web Architect &amp; Cloud Engineer</span>
             </div>
 
             {/* Main Title & Typewriter */}
             <div className="space-y-3">
               <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight text-white font-sans">
-                ASH <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00f0ff] via-[#3b82f6] to-[#00ff66]">WICKRAMASINGHE</span>
+                Ash <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#06B6D4] via-[#3B82F6] to-[#10B981]">Wickramasinghe</span>
               </h1>
               <div className="text-xl sm:text-2xl font-mono text-slate-300 min-h-[36px]">
                 <TypewriterEffect 
                   prefix="&gt;"
                   words={[
                     "Senior Full-Stack Web Developer",
-                    "Defensive Cyber Systems Specialist",
-                    "High-Performance UI/UX Architect",
-                    "Cloud & DevOps Engineer"
+                    "Modern React & TypeScript Engineer",
+                    "Cloud & Systems Architect",
+                    "UI/UX Design Technologist"
                   ]}
                 />
               </div>
@@ -117,19 +118,19 @@ export const HomePage: React.FC = () => {
             </p>
 
             {/* Status & Availability Box */}
-            <div className="p-4 bg-[#111827]/70 border border-[#00ff66]/30 rounded-lg flex items-center justify-between font-mono text-xs">
+            <div className="p-4 bg-[#111827]/70 border border-slate-800 rounded-xl flex items-center justify-between font-mono text-xs">
               <div className="flex items-center gap-3">
                 <div className="relative flex items-center justify-center">
-                  <div className="w-3 h-3 bg-[#00ff66] rounded-full animate-ping" />
-                  <div className="absolute w-2 h-2 bg-[#00ff66] rounded-full" />
+                  <div className="w-3 h-3 bg-[#10B981] rounded-full animate-ping" />
+                  <div className="absolute w-2 h-2 bg-[#10B981] rounded-full" />
                 </div>
                 <div>
-                  <div className="text-[#00ff66] font-bold">STATUS: ACTIVE // MISSION READY</div>
+                  <div className="text-[#10B981] font-bold">STATUS: ACTIVE &amp; AVAILABLE</div>
                   <div className="text-slate-400 text-[11px]">{settings.statusText}</div>
                 </div>
               </div>
-              <span className="hidden sm:inline-block px-2.5 py-1 bg-[#00ff66]/10 text-[#00ff66] border border-[#00ff66]/40 rounded text-[10px]">
-                LATENCY: 0.08ms
+              <span className="hidden sm:inline-block px-2.5 py-1 bg-[#111827] text-slate-400 border border-slate-800 rounded-md text-[10px]">
+                {settings.location}
               </span>
             </div>
 
@@ -137,24 +138,24 @@ export const HomePage: React.FC = () => {
             <div className="flex flex-wrap gap-4 pt-2">
               <Link
                 to="/projects"
-                className="px-6 py-3 bg-[#00f0ff] text-[#0b0f19] font-mono text-xs font-bold uppercase tracking-wider rounded flex items-center gap-2 hover:bg-[#00f0ff]/90 hover:shadow-[0_0_20px_rgba(0,240,255,0.4)] transition-all"
+                className="px-6 py-3 bg-gradient-to-r from-[#06B6D4] to-[#3B82F6] text-[#0B0F17] font-mono text-xs font-bold uppercase tracking-wider rounded-lg flex items-center gap-2 hover:opacity-95 shadow-[0_0_20px_rgba(6,182,212,0.3)] transition-all"
               >
                 <Code2 size={16} />
-                Access Projects Database
+                Explore Projects
                 <ArrowRight size={14} />
               </Link>
               <Link
                 to="/cv"
-                className="px-6 py-3 bg-[#111827] border border-[#00f0ff]/50 text-white font-mono text-xs font-bold uppercase tracking-wider rounded flex items-center gap-2 hover:bg-[#00f0ff]/10 hover:border-[#00f0ff] transition-all"
+                className="px-6 py-3 bg-[#111827] border border-slate-700 text-white font-mono text-xs font-bold uppercase tracking-wider rounded-lg flex items-center gap-2 hover:bg-slate-800 hover:border-[#06B6D4] transition-all"
               >
-                <FileText size={16} className="text-[#00f0ff]" />
-                Inspect Read-Only CV
+                <FileText size={16} className="text-[#06B6D4]" />
+                View CV / Resume
               </Link>
               <Link
                 to="/contact"
-                className="px-5 py-3 bg-transparent border border-slate-700 text-slate-300 font-mono text-xs font-bold uppercase tracking-wider rounded hover:border-slate-500 hover:text-white transition-all flex items-center gap-2"
+                className="px-5 py-3 bg-transparent border border-slate-800 text-slate-300 font-mono text-xs font-bold uppercase tracking-wider rounded-lg hover:border-slate-600 hover:text-white transition-all flex items-center gap-2"
               >
-                Transmit Signal
+                Get in Touch
               </Link>
             </div>
           </div>
@@ -162,47 +163,60 @@ export const HomePage: React.FC = () => {
           {/* Hero Right Avatar Frame */}
           <div className="lg:col-span-5 flex justify-center">
             <div className="relative w-72 sm:w-80 h-96 group">
-              {/* Outer HUD brackets */}
-              <div className="absolute -top-3 -left-3 w-8 h-8 border-t-2 border-l-2 border-[#00f0ff] z-20" />
-              <div className="absolute -top-3 -right-3 w-8 h-8 border-t-2 border-r-2 border-[#00f0ff] z-20" />
-              <div className="absolute -bottom-3 -left-3 w-8 h-8 border-b-2 border-l-2 border-[#00f0ff] z-20" />
-              <div className="absolute -bottom-3 -right-3 w-8 h-8 border-b-2 border-r-2 border-[#00f0ff] z-20" />
+              {/* Outer corner accents */}
+              <div className="absolute -top-2 -left-2 w-6 h-6 border-t-2 border-l-2 border-[#06B6D4] z-20 rounded-tl" />
+              <div className="absolute -top-2 -right-2 w-6 h-6 border-t-2 border-r-2 border-[#06B6D4] z-20 rounded-tr" />
+              <div className="absolute -bottom-2 -left-2 w-6 h-6 border-b-2 border-l-2 border-[#06B6D4] z-20 rounded-bl" />
+              <div className="absolute -bottom-2 -right-2 w-6 h-6 border-b-2 border-r-2 border-[#06B6D4] z-20 rounded-br" />
 
               {/* Glowing back aura */}
-              <div className="absolute inset-0 bg-gradient-to-tr from-[#00f0ff]/20 via-[#3b82f6]/20 to-[#00ff66]/20 rounded-xl blur-xl group-hover:blur-2xl transition-all" />
+              <div className="absolute inset-0 bg-gradient-to-tr from-[#06B6D4]/20 via-[#3B82F6]/20 to-[#10B981]/15 rounded-2xl blur-xl group-hover:blur-2xl transition-all" />
 
               {/* Main Avatar Container */}
-              <div className="relative w-full h-full bg-[#111827] border border-[#00f0ff]/40 rounded-xl overflow-hidden shadow-2xl flex flex-col">
-                <div className="p-3 bg-[#0c121d] border-b border-slate-800 flex items-center justify-between text-[11px] font-mono text-slate-400">
-                  <span className="text-[#00f0ff] flex items-center gap-1.5">
-                    <Radio size={12} className="text-[#00ff66] animate-pulse" />
-                    ID_TAG: ASH_WICKRAMASINGHE
+              <div className="relative w-full h-full bg-[#111827] border border-slate-800 rounded-2xl overflow-hidden shadow-2xl flex flex-col">
+                <div className="p-3 bg-[#0C121D] border-b border-slate-800 flex items-center justify-between text-[11px] font-mono text-slate-400">
+                  <span className="text-white font-medium flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-[#10B981]" />
+                    Ash Wickramasinghe
                   </span>
-                  <span className="text-slate-500">2026.SYS</span>
+                  <span className="text-slate-500 font-mono text-[10px]">Verified Portfolio</span>
                 </div>
 
-                <div className="relative flex-1 overflow-hidden bg-[#0a0e17]">
+                <div className="relative flex-1 overflow-hidden bg-[#0A0E17]">
+                  {/* Shimmer Skeleton Loader */}
+                  {!avatarLoaded && (
+                    <div className="absolute inset-0 bg-[#0F172A] flex flex-col items-center justify-center gap-3 animate-pulse">
+                      <div className="w-16 h-16 rounded-full bg-slate-800 flex items-center justify-center border border-slate-700">
+                        <div className="w-6 h-6 border-2 border-[#06B6D4] border-t-transparent rounded-full animate-spin" />
+                      </div>
+                      <span className="text-[11px] font-mono text-slate-500 tracking-wider">LOADING PROFILE...</span>
+                    </div>
+                  )}
+
                   <img 
                     src={settings.avatarUrl || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80"}
-                    alt="Ash Wickramasinghe Profile" 
-                    className="w-full h-full object-cover object-top opacity-90 group-hover:scale-105 transition-transform duration-500 filter contrast-110"
+                    alt="Ash Wickramasinghe" 
+                    onLoad={() => setAvatarLoaded(true)}
+                    className={`w-full h-full object-cover object-top filter contrast-105 group-hover:scale-105 transition-all duration-700 ${
+                      avatarLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
+                    }`}
                   />
-                  {/* Digital scan line over photo */}
-                  <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#00f0ff]/10 to-transparent pointer-events-none" />
-                  <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-[#0c121d] via-[#0c121d]/80 to-transparent p-4">
-                    <div className="text-white font-mono font-bold text-sm">ASH WICKRAMASINGHE</div>
-                    <div className="text-[11px] font-mono text-[#00f0ff]">{settings.location}</div>
+
+                  {/* Gradient overlay */}
+                  <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-[#0C121D] via-[#0C121D]/80 to-transparent p-4">
+                    <div className="text-white font-sans font-bold text-sm">Ash Wickramasinghe</div>
+                    <div className="text-[11px] font-mono text-[#06B6D4]">{settings.title}</div>
                   </div>
                 </div>
 
-                <div className="p-2.5 bg-[#0c121d] border-t border-slate-800 grid grid-cols-2 text-center text-[10px] font-mono text-slate-400">
+                <div className="p-2.5 bg-[#0C121D] border-t border-slate-800 grid grid-cols-2 text-center text-[10px] font-mono text-slate-400">
                   <div className="border-r border-slate-800">
-                    <span className="text-slate-500 block">SECURITY_CLEARANCE</span>
-                    <span className="text-[#00ff66]">LEVEL 4 / ROOT</span>
+                    <span className="text-slate-500 block">EXPERIENCE</span>
+                    <span className="text-[#10B981] font-bold">6+ YEARS</span>
                   </div>
                   <div>
-                    <span className="text-slate-500 block">ENCRYPTION</span>
-                    <span className="text-[#00f0ff]">AES-256 GCM</span>
+                    <span className="text-slate-500 block">STACK</span>
+                    <span className="text-[#06B6D4] font-bold">FULL-STACK WEB</span>
                   </div>
                 </div>
               </div>

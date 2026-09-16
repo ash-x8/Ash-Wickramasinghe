@@ -24,6 +24,14 @@ export const CvPage: React.FC = () => {
   const [zoomLevel, setZoomLevel] = useState<number>(100);
   const [viewMode, setViewMode] = useState<'document' | 'interactive'>('document');
   const [watermarkTime] = useState(() => new Date().toISOString());
+  const [securityNotice, setSecurityNotice] = useState<string | null>(null);
+
+  const showSecurityNotice = (message: string) => {
+    setSecurityNotice(message);
+    setTimeout(() => {
+      setSecurityNotice(null);
+    }, 3500);
+  };
 
   useEffect(() => {
     async function loadData() {
@@ -41,7 +49,7 @@ export const CvPage: React.FC = () => {
       if ((e.ctrlKey || e.metaKey) && (e.key === 'p' || e.key === 'P' || e.key === 's' || e.key === 'S')) {
         e.preventDefault();
         e.stopPropagation();
-        alert("SECURITY NOTICE: Document download and print functions are disabled to protect proprietary credentials.");
+        showSecurityNotice("SECURITY NOTICE: Document download and print functions are disabled to protect proprietary credentials.");
         return false;
       }
     };
@@ -63,6 +71,13 @@ export const CvPage: React.FC = () => {
       onContextMenu={handleContextMenu}
       className="relative min-h-screen pt-28 pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto z-10 no-select-document select-none"
     >
+      {/* Floating Security Banner Toast */}
+      {securityNotice && (
+        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 px-5 py-3 bg-[#111827] border border-[#06B6D4] text-[#06B6D4] font-mono text-xs rounded-xl shadow-[0_0_30px_rgba(6,182,212,0.3)] flex items-center gap-3 animate-bounce">
+          <ShieldAlert size={18} className="text-[#06B6D4] shrink-0" />
+          <span>{securityNotice}</span>
+        </div>
+      )}
       {/* PAGE HEADER & SECURITY BANNER */}
       <div className="mb-8 border-b border-slate-800 pb-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -181,13 +196,13 @@ export const CvPage: React.FC = () => {
                 className="w-full h-full border-0 pointer-events-auto"
                 loading="lazy"
               />
-              {/* Secondary transparent click-interceptor overlay at bottom right where PDF download buttons typically appear */}
+              {/* Secondary transparent click-interceptor overlay at top right where PDF download/print buttons typically appear */}
               <div 
-                className="absolute top-0 right-0 w-32 h-14 z-30 pointer-events-auto cursor-not-allowed bg-transparent"
+                className="absolute top-0 right-0 w-36 h-16 z-30 pointer-events-auto cursor-not-allowed bg-transparent"
                 title="Download disabled by document owner"
                 onClick={(e) => {
                   e.stopPropagation();
-                  alert("SECURITY POLICY: Document downloading is blocked.");
+                  showSecurityNotice("SECURITY POLICY: Document downloading and printing are restricted by the owner.");
                 }}
               />
             </div>

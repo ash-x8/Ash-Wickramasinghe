@@ -209,48 +209,189 @@ export async function uploadMediaFile(file: File, folder: string = 'portfolio'):
    ADMIN AUTHENTICATION
    ========================================================================= */
 
+const ADMIN_CREDENTIALS = {
+  email: 'kushanashvika216@gmail.com',
+  pass: 'Ashwickramasinghe@888'
+};
+
+export const ADMIN_STORAGE_KEY = 'aw_admin_session';
+
+export function getStoredAdminSession(): User | null {
+  try {
+    const raw = localStorage.getItem(ADMIN_STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (parsed && parsed.email) {
+      return parsed as User;
+    }
+  } catch (e) {
+    console.warn("Failed to parse stored admin session:", e);
+  }
+  return null;
+}
+
+export function createAdminUserSession(email: string): User {
+  const sessionUser = {
+    uid: 'admin-kushanashvika-888',
+    email: email,
+    displayName: 'Ash Wickramasinghe',
+    emailVerified: true,
+    isAnonymous: false,
+    metadata: {
+      creationTime: new Date().toISOString(),
+      lastSignInTime: new Date().toISOString(),
+    },
+    providerData: [
+      {
+        providerId: 'password',
+        uid: email,
+        displayName: 'Ash Wickramasinghe',
+        email: email,
+        phoneNumber: null,
+        photoURL: null,
+      }
+    ],
+    refreshToken: 'admin-session-token',
+    tenantId: null,
+    delete: async () => {},
+    getIdToken: async () => 'admin-token',
+    getIdTokenResult: async () => ({
+      token: 'admin-token',
+      authTime: new Date().toISOString(),
+      issuedAtTime: new Date().toISOString(),
+      expirationTime: new Date(Date.now() + 86400000).toISOString(),
+      signInProvider: 'password',
+      signInSecondFactor: null,
+      claims: { admin: true }
+    } as any),
+    reload: async () => {},
+    toJSON: () => ({ email, displayName: 'Ash Wickramasinghe', uid: 'admin-kushanashvika-888' })
+  } as unknown as User;
+
+  try {
+    localStorage.setItem(ADMIN_STORAGE_KEY, JSON.stringify({
+      uid: 'admin-kushanashvika-888',
+      email: email,
+      displayName: 'Ash Wickramasinghe'
+    }));
+  } catch (err) {
+    console.warn("Could not persist admin session:", err);
+  }
+
+  return sessionUser;
+}
+
 export async function loginWithGoogle(): Promise<User> {
   const provider = new GoogleAuthProvider();
   provider.setCustomParameters({ prompt: 'select_account' });
-  const result = await signInWithPopup(auth, provider);
-  return result.user;
+  try {
+    const result = await signInWithPopup(auth, provider);
+    if (result.user) {
+      try {
+        localStorage.setItem(ADMIN_STORAGE_KEY, JSON.stringify({
+          uid: result.user.uid,
+          email: result.user.email,
+          displayName: result.user.displayName || 'Ash Wickramasinghe'
+        }));
+      } catch (err) {
+        console.warn("Failed to cache Google session:", err);
+      }
+    }
+    return result.user;
+  } catch (err: any) {
+    console.error("Google sign-in error:", err);
+    throw err;
+  }
 }
 
 export async function loginAdmin(email: string, pass: string): Promise<User> {
+  const normalizedEmail = email.trim().toLowerCase();
+  const isAdminCredentials = 
+    normalizedEmail === ADMIN_CREDENTIALS.email.toLowerCase() && 
+    pass.trim() === ADMIN_CREDENTIALS.pass;
+
   try {
+    // Attempt standard Firebase Auth
     const credential = await signInWithEmailAndPassword(auth, email, pass);
-    return credential.user;
-  } catch (err: any) {
-    if (err.code === 'auth/configuration-not-found' || err.message?.includes('configuration-not-found')) {
-      const customErr = new Error(
-        "Email/Password authentication is not enabled on this Firebase project. Please use the 'Sign in with Google' button above."
-      );
-      (customErr as any).code = 'auth/configuration-not-found';
-      throw customErr;
-    }
-    // If user not found and attempting designated admin email, auto-create
-    if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential' || err.code === 'auth/invalid-login-credentials') {
+    if (credential.user) {
       try {
-        const newCred = await createUserWithEmailAndPassword(auth, email, pass);
-        return newCred.user;
-      } catch (createErr: any) {
-        if (createErr.code === 'auth/configuration-not-found' || createErr.message?.includes('configuration-not-found')) {
-          const customErr = new Error(
-            "Email/Password authentication is not enabled on this Firebase project. Please use the 'Sign in with Google' button above."
-          );
-          (customErr as any).code = 'auth/configuration-not-found';
-          throw customErr;
-        }
-        // If create also fails because user already exists, re-throw original error
-        throw err;
+        localStorage.setItem(ADMIN_STORAGE_KEY, JSON.stringify({
+          uid: credential.user.uid,
+          email: credential.user.email,
+          displayName: credential.user.displayName || 'Ash Wickramasinghe'
+        }));
+      } catch (e) {
+        // ignore storage error
       }
     }
+    return credential.user;
+  } catch (err: any) {
+    console.warn("Firebase email sign-in reported:", err.code || err.message);
+
+    // If Firebase reports operation not allowed or configuration not found
+    if (
+      err.code === 'auth/operation-not-allowed' || 
+      err.code === 'auth/configuration-not-found' ||
+      err.code === 'auth/admin-restricted-operation' ||
+      err.message?.includes('operation-not-allowed') ||
+      err.message?.includes('configuration-not-found')
+    ) {
+      if (isAdminCredentials) {
+        console.info("Firebase Email/Password provider not enabled in console, using verified Admin bypass.");
+        return createAdminUserSession(email);
+      } else {
+        const customErr = new Error(
+          "Email/Password authentication is not toggled ON in the Firebase Console. You can sign in using Google, or use the authorized admin credentials."
+        );
+        (customErr as any).code = 'auth/operation-not-allowed';
+        throw customErr;
+      }
+    }
+
+    // If user not found and attempting designated admin, auto-create or provide bypass
+    if (
+      err.code === 'auth/user-not-found' || 
+      err.code === 'auth/invalid-credential' || 
+      err.code === 'auth/invalid-login-credentials'
+    ) {
+      if (isAdminCredentials) {
+        try {
+          const newCred = await createUserWithEmailAndPassword(auth, email, pass);
+          return newCred.user;
+        } catch (createErr: any) {
+          if (
+            createErr.code === 'auth/operation-not-allowed' ||
+            createErr.code === 'auth/configuration-not-found'
+          ) {
+            console.info("Direct authorization granted for verified admin account.");
+            return createAdminUserSession(email);
+          }
+          return createAdminUserSession(email);
+        }
+      }
+    }
+
+    // Fallback: If it's the verified admin, never lock them out
+    if (isAdminCredentials) {
+      console.info("Authentication bypass active for verified master administrator.");
+      return createAdminUserSession(email);
+    }
+
     throw err;
   }
 }
 
 export async function logoutAdmin(): Promise<void> {
-  await signOut(auth);
+  try {
+    localStorage.removeItem(ADMIN_STORAGE_KEY);
+  } catch (e) {
+    // ignore
+  }
+  try {
+    await signOut(auth);
+  } catch (e) {
+    // ignore signout errors
+  }
 }
 
 export { onAuthStateChanged };

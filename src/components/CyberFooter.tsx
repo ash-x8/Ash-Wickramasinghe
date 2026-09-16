@@ -1,129 +1,124 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Terminal, Shield, Lock, Globe, Mail, ArrowUpRight, GitBranch, Send } from 'lucide-react';
+import { Globe, GitBranch, Send, Mail, ArrowUpRight, Heart } from 'lucide-react';
 
 export const CyberFooter: React.FC = () => {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-[#080c14] border-t border-[#00f0ff]/20 text-slate-400 font-mono text-xs relative overflow-hidden">
-      {/* Top Cyber Accents */}
-      <div className="absolute top-0 left-0 w-32 h-[2px] bg-[#00f0ff] shadow-[0_0_10px_#00f0ff]" />
-      <div className="absolute top-0 right-0 w-32 h-[2px] bg-[#00ff66] shadow-[0_0_10px_#00ff66]" />
+    <footer className="bg-[#080C14] border-t border-slate-800/80 text-slate-400 font-mono text-xs relative overflow-hidden">
+      {/* Subtle top accent gradient */}
+      <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-[#06B6D4]/40 to-transparent" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
           {/* Col 1: System Ident */}
           <div className="space-y-3 md:col-span-2">
-            <div className="flex items-center gap-2 text-white text-sm font-bold tracking-wider">
-              <span className="w-2 h-2 bg-[#00f0ff] rounded-full animate-ping" />
-              ASH WICKRAMASINGHE // TERMINAL_v2.6
+            <div className="flex items-center gap-2 text-white text-sm font-bold tracking-wider font-sans">
+              <span className="w-2 h-2 bg-[#06B6D4] rounded-full animate-ping" />
+              Ash Wickramasinghe
             </div>
             <p className="text-slate-400 text-xs leading-relaxed max-w-md font-sans">
-              Senior Full-Stack Web Developer, UI/UX Designer, and Cyber Systems Specialist. Architecting resilient cloud applications, defensive interfaces, and high-performance digital platforms.
+              Senior Full-Stack Web Developer &amp; UI/UX Architect. Building responsive, high-performance web applications, scalable APIs, and clean digital experiences.
             </p>
-            <div className="flex items-center gap-3 pt-2 text-[11px] text-[#00f0ff]/80">
-              <span className="px-2 py-0.5 bg-[#111827] border border-[#00f0ff]/30 rounded">
-                ENV: PRODUCTION
+            <div className="flex items-center gap-3 pt-2 text-[11px] text-slate-400">
+              <span className="px-2.5 py-1 bg-[#111827] border border-slate-800 rounded-md text-[#06B6D4]">
+                React &amp; TypeScript
               </span>
-              <span className="px-2 py-0.5 bg-[#111827] border border-[#00ff66]/30 rounded text-[#00ff66]">
-                FIREBASE: CONNECTED
+              <span className="px-2.5 py-1 bg-[#111827] border border-slate-800 rounded-md text-[#3B82F6]">
+                Node.js &amp; Cloud
               </span>
-              <span className="px-2 py-0.5 bg-[#111827] border border-slate-700 rounded text-slate-400">
-                SSL: 256-BIT TLS
+              <span className="px-2.5 py-1 bg-[#111827] border border-slate-800 rounded-md text-[#10B981]">
+                UI/UX Design
               </span>
             </div>
           </div>
 
           {/* Col 2: Navigation Links */}
           <div className="space-y-2">
-            <div className="text-slate-200 font-bold uppercase tracking-wider text-[11px] text-[#00f0ff]">
-              // DIRECTORY INDEX
+            <div className="text-slate-200 font-bold uppercase tracking-wider text-[11px] text-[#06B6D4]">
+              Navigation
             </div>
             <ul className="space-y-1.5 text-[11px]">
               <li>
-                <Link to="/" className="hover:text-[#00f0ff] transition-colors flex items-center gap-1.5">
-                  <span className="text-slate-600">&gt;</span> Home Hub
+                <Link to="/" className="hover:text-white transition-colors flex items-center gap-1.5">
+                  <span className="text-slate-600">&gt;</span> Home
                 </Link>
               </li>
               <li>
-                <Link to="/about" className="hover:text-[#00f0ff] transition-colors flex items-center gap-1.5">
-                  <span className="text-slate-600">&gt;</span> Profile & Skills Matrix
+                <Link to="/about" className="hover:text-white transition-colors flex items-center gap-1.5">
+                  <span className="text-slate-600">&gt;</span> About &amp; Skills
                 </Link>
               </li>
               <li>
-                <Link to="/projects" className="hover:text-[#00f0ff] transition-colors flex items-center gap-1.5">
-                  <span className="text-slate-600">&gt;</span> Engineering Projects
+                <Link to="/projects" className="hover:text-white transition-colors flex items-center gap-1.5">
+                  <span className="text-slate-600">&gt;</span> Featured Projects
                 </Link>
               </li>
               <li>
-                <Link to="/cv" className="hover:text-[#00f0ff] transition-colors flex items-center gap-1.5 text-[#00f0ff]">
-                  <span className="text-slate-600">&gt;</span> Read-Only CV Viewer
+                <Link to="/cv" className="hover:text-white transition-colors flex items-center gap-1.5 text-[#06B6D4]">
+                  <span className="text-slate-600">&gt;</span> View CV / Resume
                 </Link>
               </li>
               <li>
-                <Link to="/contact" className="hover:text-[#00f0ff] transition-colors flex items-center gap-1.5">
-                  <span className="text-slate-600">&gt;</span> Transmit Message
+                <Link to="/contact" className="hover:text-white transition-colors flex items-center gap-1.5">
+                  <span className="text-slate-600">&gt;</span> Contact
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* Col 3: Coordinates & Admin */}
+          {/* Col 3: Coordinates */}
           <div className="space-y-2">
-            <div className="text-slate-200 font-bold uppercase tracking-wider text-[11px] text-[#00f0ff]">
-              // CONNECTIVITY
+            <div className="text-slate-200 font-bold uppercase tracking-wider text-[11px] text-[#06B6D4]">
+              Connect
             </div>
             <div className="flex flex-col space-y-2 text-[11px]">
               <a 
                 href="https://github.com/ash-x8" 
                 target="_blank" 
                 rel="noreferrer" 
-                className="flex items-center gap-2 text-slate-300 hover:text-[#00f0ff] transition-colors"
+                className="flex items-center gap-2 text-slate-300 hover:text-[#06B6D4] transition-colors"
               >
-                <GitBranch size={14} className="text-[#00f0ff]" />
+                <GitBranch size={14} className="text-[#06B6D4]" />
                 github.com/ash-x8
               </a>
               <a 
                 href="https://linkedin.com/in/ash-wickramasinghe" 
                 target="_blank" 
                 rel="noreferrer" 
-                className="flex items-center gap-2 text-slate-300 hover:text-[#00f0ff] transition-colors"
+                className="flex items-center gap-2 text-slate-300 hover:text-[#06B6D4] transition-colors"
               >
-                <Globe size={14} className="text-[#00f0ff]" />
+                <Globe size={14} className="text-[#06B6D4]" />
                 linkedin.com/in/ash-wickramasinghe
               </a>
               <a 
                 href="https://t.me/ash_wickramasinghe" 
                 target="_blank" 
                 rel="noreferrer" 
-                className="flex items-center gap-2 text-slate-300 hover:text-[#00f0ff] transition-colors"
+                className="flex items-center gap-2 text-slate-300 hover:text-[#06B6D4] transition-colors"
               >
-                <Send size={14} className="text-[#00f0ff]" />
-                Telegram Direct
+                <Send size={14} className="text-[#06B6D4]" />
+                Telegram
               </a>
-              <Link
-                to="/admin"
-                className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#111827] border border-[#00f0ff]/40 text-[#00f0ff] hover:bg-[#00f0ff]/15 rounded transition-all w-fit"
+              <a 
+                href="mailto:kushanashvika216@gmail.com" 
+                className="flex items-center gap-2 text-slate-300 hover:text-[#06B6D4] transition-colors"
               >
-                <Lock size={12} />
-                ADMIN_TERMINAL_LOGIN
-              </Link>
+                <Mail size={14} className="text-[#06B6D4]" />
+                kushanashvika216@gmail.com
+              </a>
             </div>
           </div>
         </div>
 
         {/* Bottom Bar */}
-        <div className="pt-6 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-4 text-[10px] text-slate-500">
+        <div className="pt-6 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-slate-500">
           <div>
-            &copy; {currentYear} ASH WICKRAMASINGHE. ALL RIGHTS RESERVED. SECURE DOCUMENT EMBED PROTOCOLS ACTIVE.
+            &copy; {currentYear} Ash Wickramasinghe. All rights reserved.
           </div>
-          <div className="flex items-center gap-4">
-            <span className="flex items-center gap-1 text-[#00ff66]">
-              <Shield size={12} />
-              TAMPER PROTECTION: ENABLED
-            </span>
-            <span>LATENCY: ~12ms</span>
+          <div className="flex items-center gap-4 text-slate-400">
+            <span>Colombo, Sri Lanka &bull; Remote</span>
           </div>
         </div>
       </div>

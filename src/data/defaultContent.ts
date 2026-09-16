@@ -75,21 +75,57 @@ export const defaultSiteSettings: SiteSettings = {
 
 export const defaultProjects: Project[] = [
   {
-    id: "cinexus-project",
-    title: "CINEXUS",
-    category: "Web Apps",
-    description: "High-performance digital cinema streaming portal and interactive movie metadata intelligence platform with reactive discovery flows.",
-    detailedDescription: "CINEXUS is a production-deployed streaming and discovery application built for cinephiles. It features responsive search queries, real-time backdrop animations, watchlist management, and rich dynamic video preview embeds with zero buffering.",
-    image: "https://images.unsplash.com/photo-1574375927938-d5a98e8ffe85?auto=format&fit=crop&w=1200&q=80",
-    tags: ["React", "TypeScript", "Tailwind CSS", "Vite", "MovieDB API", "REST"],
-    githubUrl: "https://github.com/ash-x8/cinexus",
-    liveUrl: "https://cinexus-nine.vercel.app/",
+    id: "personal-portfolio-site",
+    title: "Personal Developer Portfolio",
+    category: "Full-Stack",
+    description: "Modern, high-performance developer portfolio built with React, TypeScript, and Tailwind CSS featuring dynamic CMS integration and zero-trust security architecture.",
+    detailedDescription: "A bespoke, ultra-responsive digital portfolio designed to showcase software engineering craftsmanship, full-stack systems architecture, and UI/UX design. Features real-time Firestore content updates, protected CV dossier inspection, and clean responsive layouts.",
+    image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1200&q=80",
+    tags: ["React", "TypeScript", "Tailwind CSS", "Firebase", "Vite", "Responsive Design"],
+    githubUrl: "https://github.com/ash-x8/personal-portfolio",
+    liveUrl: "https://ash-wickramasinghe.site",
     featured: true,
     order: 1,
     architectureNotes: [
-      "Client-side caching with optimistic UI updates",
-      "Dynamic poster aspect ratio rendering with fallback skeletons",
-      "Comprehensive responsive modal inspection interface"
+      "Dynamic CMS synchronized via Firebase Firestore",
+      "Client-side caching and responsive image shimmer skeleton loading",
+      "Embedded read-only CV viewer with zero-download protection"
+    ]
+  },
+  {
+    id: "personal-diary-app",
+    title: "Personal Diary App",
+    category: "Web Apps",
+    description: "Private, secure personal journaling and diary application with instant search, mood tracking, rich-text reflection entries, and cloud persistence.",
+    detailedDescription: "A minimalist, distraction-free journaling sanctuary engineered for personal mindfulness and daily retrospectives. Includes client-side encryption options, mood tags, chronological tagging, full-text search, and seamless cross-device synchronization.",
+    image: "https://images.unsplash.com/photo-1517842645767-c639042777db?auto=format&fit=crop&w=1200&q=80",
+    tags: ["React", "TypeScript", "Tailwind CSS", "Vercel", "Local State", "Productivity"],
+    githubUrl: "https://github.com/ash-x8/personal-diary",
+    liveUrl: "https://ash-s-personal-diary.vercel.app/",
+    featured: true,
+    order: 2,
+    architectureNotes: [
+      "Distraction-free rich text editor with markdown formatting support",
+      "Instant client-side filter and chronological timeline indexing",
+      "Local-first state with seamless cloud backup synchronizers"
+    ]
+  },
+  {
+    id: "cinexus-hd-project",
+    title: "Cinexus HD",
+    category: "Web Apps",
+    description: "High-definition cinema streaming discovery platform with responsive search, movie metadata intelligence, seamless playback flows, and dynamic backdrops.",
+    detailedDescription: "Cinexus HD delivers a cinematic discovery experience for streaming enthusiasts. Features real-time movie and TV series queries, trending charts, trailer embeds, curated genre collections, and fluid responsive animations.",
+    image: "https://images.unsplash.com/photo-1574375927938-d5a98e8ffe85?auto=format&fit=crop&w=1200&q=80",
+    tags: ["React", "TypeScript", "Tailwind CSS", "Vite", "Movie API", "Vercel"],
+    githubUrl: "https://github.com/ash-x8/cinexus-hd",
+    liveUrl: "https://cinexus-hd.vercel.app/",
+    featured: true,
+    order: 3,
+    architectureNotes: [
+      "Optimistic UI rendering with debounced search query pipelines",
+      "Dynamic HD backdrop poster aspect ratio rendering with shimmer fallbacks",
+      "Interactive movie details modal with full cast metadata and trailers"
     ]
   },
   {
@@ -102,8 +138,8 @@ export const defaultProjects: Project[] = [
     tags: ["TypeScript", "React", "Node.js", "WebSockets", "D3.js", "Cyber Defense"],
     githubUrl: "https://github.com/ash-x8/cybersentry",
     liveUrl: "https://github.com/ash-x8/cybersentry",
-    featured: true,
-    order: 2,
+    featured: false,
+    order: 4,
     architectureNotes: [
       "WebSocket streaming with buffer compression",
       "Automated threat scoring using behavioral heuristics",
@@ -120,8 +156,8 @@ export const defaultProjects: Project[] = [
     tags: ["React", "Web Crypto API", "Node.js", "Firebase Firestore", "Zero-Knowledge"],
     githubUrl: "https://github.com/ash-x8/nexusvault",
     liveUrl: "https://github.com/ash-x8/nexusvault",
-    featured: true,
-    order: 3,
+    featured: false,
+    order: 5,
     architectureNotes: [
       "Client-side AES-256-GCM symmetric encryption",
       "PBKDF2 key derivation with unique cryptographic salts",
@@ -139,47 +175,11 @@ export const defaultProjects: Project[] = [
     githubUrl: "https://github.com/ash-x8/cloudops",
     liveUrl: "https://github.com/ash-x8/cloudops",
     featured: false,
-    order: 4,
+    order: 6,
     architectureNotes: [
       "Polling fallback with SSE log tailing",
       "Direct container inspection & exec shell simulator",
       "Dynamic CPU and RAM thermal heatmaps"
-    ]
-  },
-  {
-    id: "signal-story-network",
-    title: "Signal & Story Content Mesh",
-    category: "Full-Stack",
-    description: "High-speed digital publication and headless content engine engineered for rapid distribution and editorial curation with Markdown support.",
-    detailedDescription: "A robust digital publication platform focusing on long-form essays, technical documentation, and interactive typography. Delivers sub-50ms page load times across global CDNs.",
-    image: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=1200&q=80",
-    tags: ["Next.js", "TypeScript", "Tailwind CSS", "Firebase", "Markdown"],
-    githubUrl: "https://github.com/ash-x8/signal-story",
-    liveUrl: "https://github.com/ash-x8/signal-story",
-    featured: false,
-    order: 5,
-    architectureNotes: [
-      "ISR with automated cache revalidation",
-      "Syntax-highlighted code blocks for technical articles",
-      "Full-text search indexing"
-    ]
-  },
-  {
-    id: "recon-script-suite",
-    title: "ReconX Automated Vulnerability Scanner",
-    category: "Scripts",
-    description: "Automated network reconnaissance script suite for port discovery, SSL certificate expiration auditing, and HTTP header hardening checks.",
-    detailedDescription: "A lightweight, modular CLI and web utility designed for security researchers to audit surface vulnerabilities, misconfigured CORS origins, and unhandled open redirect parameters.",
-    image: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=1200&q=80",
-    tags: ["Node.js", "Python", "Bash", "Network Security", "CLI"],
-    githubUrl: "https://github.com/ash-x8/reconx",
-    liveUrl: "https://github.com/ash-x8/reconx",
-    featured: false,
-    order: 6,
-    architectureNotes: [
-      "Asynchronous socket probing with customizable timeouts",
-      "Automated JSON and Markdown report generation",
-      "CVE vulnerability database lookup"
     ]
   }
 ];
