@@ -1,7 +1,6 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { getFeaturedProjects } from '@/utils/firebase-service';
 import { Project } from '@/lib/types';
@@ -65,7 +64,7 @@ export default function FeaturedProjects() {
 
             {/* Tech Stack */}
             <div className="flex flex-wrap gap-2 mb-4">
-              {project.technologies.slice(0, 3).map((tech) => (
+              {(project.technologies || project.tags || []).slice(0, 3).map((tech) => (
                 <span
                   key={tech}
                   className="px-3 py-1 bg-brand-accent bg-opacity-10 text-brand-accent text-xs rounded-full border border-brand-accent border-opacity-20"

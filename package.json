@@ -4,7 +4,7 @@
   "description": "Ultra-modern professional portfolio with Next.js, React, TypeScript, and Framer Motion",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -p 3000 -H 0.0.0.0",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -22,6 +22,7 @@
     "pdfjs-dist": "^4.0.0",
     "react-pdf": "^9.0.0",
     "axios": "^1.6.0",
+    "lucide-react": "^1.16.0",
     "react-icons": "^5.0.0",
     "clsx": "^2.0.0",
     "tailwind-merge": "^2.3.0"

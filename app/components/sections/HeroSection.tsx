@@ -5,9 +5,10 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 
+const roles = ['Full-Stack Developer', 'React Specialist', 'TypeScript Enthusiast', 'Tech Innovator'];
+
 export default function HeroSection() {
   const [isLoading, setIsLoading] = useState(true);
-  const roles = ['Full-Stack Developer', 'React Specialist', 'TypeScript Enthusiast', 'Tech Innovator'];
   const [currentRole, setCurrentRole] = useState(0);
 
   useEffect(() => {

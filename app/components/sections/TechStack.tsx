@@ -11,7 +11,7 @@ import {
   SiPostgresql,
   SiDocker,
   SiGit,
-  SiNode,
+  SiNodedotjs,
 } from 'react-icons/si';
 
 const techStack = [
@@ -20,7 +20,7 @@ const techStack = [
   { name: 'TypeScript', icon: SiTypescript, color: '#3178c6' },
   { name: 'Tailwind CSS', icon: SiTailwindcss, color: '#06b6d4' },
   { name: 'Firebase', icon: SiFirebase, color: '#ffa726' },
-  { name: 'Node.js', icon: SiNode, color: '#68a063' },
+  { name: 'Node.js', icon: SiNodedotjs, color: '#68a063' },
   { name: 'PostgreSQL', icon: SiPostgresql, color: '#336791' },
   { name: 'Docker', icon: SiDocker, color: '#2496ed' },
   { name: 'Git', icon: SiGit, color: '#f1502f' },
