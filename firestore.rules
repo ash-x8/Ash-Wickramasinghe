@@ -1,29 +1,41 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Helper function to check if user is authenticated
-    function isAuthenticated() {
-      return request.auth != null;
+    function isAdmin() {
+      return request.auth != null && request.auth.token.admin == true;
     }
 
-    // Site settings: readable by all, writable only by authenticated admin
-    match /site_settings/{docId} {
+    match /settings/{document} {
       allow read: if true;
-      allow write: if isAuthenticated();
+      allow write: if isAdmin();
     }
 
-    // Projects: readable by all, writable only by authenticated admin
+    match /site_settings/{document} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
     match /projects/{projectId} {
-      allow read: if true;
-      allow write: if isAuthenticated();
+      allow read: if resource.data.visible != false;
+      allow create, update, delete: if isAdmin();
     }
 
-    // Contact messages: anyone can create (submit contact form), only authenticated admin can read, update, or delete
+    match /contact_messages/{messageId} {
+      allow create: if request.resource.data.name is string
+        && request.resource.data.name.size() >= 2
+        && request.resource.data.email is string
+        && request.resource.data.email.matches('^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$')
+        && request.resource.data.message is string
+        && request.resource.data.message.size() >= 10
+        && request.resource.data.message.size() <= 5000;
+      allow read, update, delete: if isAdmin();
+    }
+
     match /messages/{messageId} {
-      allow create: if request.resource.data.name is string 
-                    && request.resource.data.email is string 
-                    && request.resource.data.message is string;
-      allow read, update, delete: if isAuthenticated();
+      allow create: if request.resource.data.name is string
+        && request.resource.data.email is string
+        && request.resource.data.message is string;
+      allow read, update, delete: if isAdmin();
     }
   }
 }
