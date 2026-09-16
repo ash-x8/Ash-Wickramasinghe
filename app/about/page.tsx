@@ -1,25 +1,20 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { 
   Terminal, 
   ShieldCheck, 
   Cpu, 
-  Award, 
-  BookOpen, 
   Briefcase, 
-  Code2, 
-  CheckCircle2, 
-  ArrowUpRight, 
-  Layers, 
-  Server, 
   FileText 
 } from 'lucide-react';
-import { CyberCard } from '../components/CyberCard';
-import { getSiteSettings } from '../lib/firebase';
-import { SiteSettings } from '../types';
-import { defaultSiteSettings } from '../data/defaultContent';
+import { CyberCard } from '@/app/components/CyberCard';
+import { getSiteSettings } from '@/utils/firebase-service';
+import { SiteSettings } from '@/lib/types';
+import { defaultSiteSettings } from '@/lib/defaultContent';
 
-export const AboutPage: React.FC = () => {
+export default function AboutPage() {
   const [settings, setSettings] = useState<SiteSettings>(defaultSiteSettings);
   const [activeSkillCategory, setActiveSkillCategory] = useState<string>('All');
   const [avatarLoaded, setAvatarLoaded] = useState(false);
@@ -130,6 +125,7 @@ export const AboutPage: React.FC = () => {
                   <span className="text-[10px] font-mono text-slate-500">LOADING AVATAR...</span>
                 </div>
               )}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img 
                 src={settings.avatarUrl || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80"} 
                 alt="Ash Wickramasinghe"
@@ -149,14 +145,14 @@ export const AboutPage: React.FC = () => {
 
             <div className="pt-3 border-t border-slate-800 space-y-2">
               <Link
-                to="/cv"
+                href="/cv"
                 className="w-full py-2.5 px-4 bg-[#00f0ff] text-[#0b0f19] font-mono text-xs font-bold uppercase tracking-wider rounded flex items-center justify-center gap-2 hover:bg-[#00f0ff]/90 transition-all"
               >
                 <FileText size={15} />
                 Access Read-Only CV
               </Link>
               <Link
-                to="/contact"
+                href="/contact"
                 className="w-full py-2.5 px-4 bg-[#111827] border border-slate-700 text-white font-mono text-xs font-bold uppercase tracking-wider rounded flex items-center justify-center gap-2 hover:border-[#00f0ff] transition-all"
               >
                 Direct Contact Channel
@@ -307,4 +303,4 @@ export const AboutPage: React.FC = () => {
       </section>
     </div>
   );
-};
+}

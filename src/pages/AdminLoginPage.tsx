@@ -71,8 +71,10 @@ export const AdminLoginPage: React.FC = () => {
     } catch (err: any) {
       console.error("Login authentication error:", err);
       let msg = "Authentication failed. Verify credentials and permissions.";
-      if (err.code === 'auth/configuration-not-found' || err.message?.includes('configuration-not-found')) {
-        msg = "Firebase Email/Password provider is not configured for this project. Please authenticate via 'Sign In with Google' below.";
+      if (err.code === 'auth/operation-not-allowed' || err.message?.includes('operation-not-allowed')) {
+        msg = "Firebase Email/Password provider is not toggled ON in your Firebase project console. You can click 'Set Designated Admin Coordinates' and sign in, or click 'Sign In with Google'.";
+      } else if (err.code === 'auth/configuration-not-found' || err.message?.includes('configuration-not-found')) {
+        msg = "Firebase Email/Password provider is not configured for this project. Please authenticate via 'Sign In with Google' or use verified admin credentials.";
       } else if (err.code === 'auth/wrong-password') {
         msg = "INVALID PASSWORD: Cryptographic check failed.";
       } else if (err.code === 'auth/too-many-requests') {

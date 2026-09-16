@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User } from 'firebase/auth';
-import { auth, loginAdmin, loginWithGoogle, logoutAdmin, onAuthStateChanged } from '../lib/firebase';
+import { auth, loginAdmin, loginWithGoogle, logoutAdmin, onAuthStateChanged, getStoredAdminSession } from '../lib/firebase';
 import { Navigate, useLocation } from 'react-router-dom';
 
 interface AuthContextType {
@@ -15,14 +15,28 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null>(() => getStoredAdminSession());
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Check initial stored admin session
+    const stored = getStoredAdminSession();
+    if (stored) {
+      setUser(stored);
+      setLoading(false);
+    }
+
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
+      if (currentUser) {
+        setUser(currentUser);
+      } else {
+        // If Firebase says no user, but we have a valid local admin session, preserve it
+        const cached = getStoredAdminSession();
+        setUser(cached);
+      }
       setLoading(false);
     });
+
     return () => unsubscribe();
   }, []);
 

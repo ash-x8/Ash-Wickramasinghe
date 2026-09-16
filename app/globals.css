@@ -90,19 +90,6 @@ a:not(.no-link) {
   @apply shadow-glow-pink;
 }
 
-/* Animation Classes */
-.animate-shimmer {
-  @apply animate-shimmer;
-}
-
-.animate-glow-pulse {
-  @apply animate-glow-pulse;
-}
-
-.animate-float {
-  @apply animate-float;
-}
-
 /* Focus Styles */
 button:focus, a:focus {
   @apply outline-none ring-2 ring-brand-accent ring-offset-2 ring-offset-brand-dark rounded-lg;

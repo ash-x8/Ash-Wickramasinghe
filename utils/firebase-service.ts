@@ -4,6 +4,7 @@ import {
   getDocs,
   getDoc,
   doc,
+  setDoc,
   addDoc,
   updateDoc,
   deleteDoc,
@@ -11,8 +12,6 @@ import {
   where,
   orderBy,
   limit,
-  Query,
-  DocumentData,
 } from 'firebase/firestore';
 import {
   ref,
@@ -20,7 +19,8 @@ import {
   getDownloadURL,
   deleteObject,
 } from 'firebase/storage';
-import { Project, ContactMessage } from '@/lib/types';
+import { Project, ContactMessage, SiteSettings } from '@/lib/types';
+import { defaultProjects, defaultSiteSettings } from '@/lib/defaultContent';
 
 // Projects
 export async function getProjects(): Promise<Project[]> {
@@ -30,14 +30,17 @@ export async function getProjects(): Promise<Project[]> {
       orderBy('createdAt', 'desc')
     );
     const snapshot = await getDocs(q);
-    return snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-      createdAt: doc.data().createdAt?.toDate(),
-    })) as Project[];
+    if (!snapshot.empty) {
+      return snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        createdAt: doc.data().createdAt?.toDate?.() || new Date(),
+      })) as Project[];
+    }
+    return defaultProjects;
   } catch (error) {
-    console.error('Error fetching projects:', error);
-    return [];
+    console.warn('Using default projects fallback:', error);
+    return defaultProjects;
   }
 }
 
@@ -50,14 +53,45 @@ export async function getFeaturedProjects(): Promise<Project[]> {
       limit(3)
     );
     const snapshot = await getDocs(q);
-    return snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-      createdAt: doc.data().createdAt?.toDate(),
-    })) as Project[];
+    if (!snapshot.empty) {
+      return snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        createdAt: doc.data().createdAt?.toDate?.() || new Date(),
+      })) as Project[];
+    }
+    return defaultProjects.filter(p => p.featured).slice(0, 3);
   } catch (error) {
-    console.error('Error fetching featured projects:', error);
-    return [];
+    console.warn('Using default featured projects fallback:', error);
+    return defaultProjects.filter(p => p.featured).slice(0, 3);
+  }
+}
+
+// Site Settings
+export async function getSiteSettings(): Promise<SiteSettings> {
+  try {
+    const docRef = doc(db, 'settings', 'site_config');
+    const snapshot = await getDoc(docRef);
+    if (snapshot.exists()) {
+      return {
+        ...defaultSiteSettings,
+        ...snapshot.data(),
+      } as SiteSettings;
+    }
+    return defaultSiteSettings;
+  } catch (error) {
+    console.warn('Using default site settings:', error);
+    return defaultSiteSettings;
+  }
+}
+
+export async function updateSiteSettings(settings: Partial<SiteSettings>): Promise<void> {
+  try {
+    const docRef = doc(db, 'settings', 'site_config');
+    await setDoc(docRef, { ...settings, updatedAt: new Date().toISOString() }, { merge: true });
+  } catch (error) {
+    console.error('Error updating site settings:', error);
+    throw error;
   }
 }
 

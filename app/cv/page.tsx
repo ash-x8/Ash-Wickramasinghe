@@ -1,25 +1,19 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
 import { 
-  FileText, 
   ShieldAlert, 
   ShieldCheck, 
   Lock, 
-  Eye, 
-  Printer, 
-  Download, 
   AlertTriangle, 
-  CheckCircle, 
-  Terminal, 
   ZoomIn, 
-  ZoomOut, 
-  Maximize2 
+  ZoomOut
 } from 'lucide-react';
-import { CyberCard } from '../components/CyberCard';
-import { getSiteSettings } from '../lib/firebase';
-import { SiteSettings } from '../types';
-import { defaultSiteSettings } from '../data/defaultContent';
+import { getSiteSettings } from '@/utils/firebase-service';
+import { SiteSettings } from '@/lib/types';
+import { defaultSiteSettings } from '@/lib/defaultContent';
 
-export const CvPage: React.FC = () => {
+export default function CvPage() {
   const [settings, setSettings] = useState<SiteSettings>(defaultSiteSettings);
   const [zoomLevel, setZoomLevel] = useState<number>(100);
   const [viewMode, setViewMode] = useState<'document' | 'interactive'>('document');
@@ -50,7 +44,7 @@ export const CvPage: React.FC = () => {
         e.preventDefault();
         e.stopPropagation();
         showSecurityNotice("SECURITY NOTICE: Document download and print functions are disabled to protect proprietary credentials.");
-        return false;
+        return;
       }
     };
 
@@ -302,4 +296,4 @@ export const CvPage: React.FC = () => {
       </div>
     </div>
   );
-};
+}

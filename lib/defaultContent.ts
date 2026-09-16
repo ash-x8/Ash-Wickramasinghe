@@ -1,4 +1,4 @@
-import { Project, SiteSettings } from '../types';
+import { Project, SiteSettings } from './types';
 
 export const defaultSiteSettings: SiteSettings = {
   name: "Ash Wickramasinghe",
@@ -81,7 +81,8 @@ export const defaultProjects: Project[] = [
     description: "Modern, high-performance developer portfolio built with React, TypeScript, and Tailwind CSS featuring dynamic CMS integration and zero-trust security architecture.",
     detailedDescription: "A bespoke, ultra-responsive digital portfolio designed to showcase software engineering craftsmanship, full-stack systems architecture, and UI/UX design. Features real-time Firestore content updates, protected CV dossier inspection, and clean responsive layouts.",
     image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1200&q=80",
-    tags: ["React", "TypeScript", "Tailwind CSS", "Firebase", "Vite", "Responsive Design"],
+    tags: ["React", "TypeScript", "Tailwind CSS", "Firebase", "Next.js", "Responsive Design"],
+    technologies: ["React", "TypeScript", "Tailwind CSS", "Firebase"],
     githubUrl: "https://github.com/ash-x8/personal-portfolio",
     liveUrl: "https://ash-wickramasinghe.site",
     featured: true,
@@ -100,6 +101,7 @@ export const defaultProjects: Project[] = [
     detailedDescription: "A minimalist, distraction-free journaling sanctuary engineered for personal mindfulness and daily retrospectives. Includes client-side encryption options, mood tags, chronological tagging, full-text search, and seamless cross-device synchronization.",
     image: "https://images.unsplash.com/photo-1517842645767-c639042777db?auto=format&fit=crop&w=1200&q=80",
     tags: ["React", "TypeScript", "Tailwind CSS", "Vercel", "Local State", "Productivity"],
+    technologies: ["React", "TypeScript", "Tailwind CSS"],
     githubUrl: "https://github.com/ash-x8/personal-diary",
     liveUrl: "https://ash-s-personal-diary.vercel.app/",
     featured: true,
@@ -117,7 +119,8 @@ export const defaultProjects: Project[] = [
     description: "High-definition cinema streaming discovery platform with responsive search, movie metadata intelligence, seamless playback flows, and dynamic backdrops.",
     detailedDescription: "Cinexus HD delivers a cinematic discovery experience for streaming enthusiasts. Features real-time movie and TV series queries, trending charts, trailer embeds, curated genre collections, and fluid responsive animations.",
     image: "https://images.unsplash.com/photo-1574375927938-d5a98e8ffe85?auto=format&fit=crop&w=1200&q=80",
-    tags: ["React", "TypeScript", "Tailwind CSS", "Vite", "Movie API", "Vercel"],
+    tags: ["React", "TypeScript", "Tailwind CSS", "Movie API", "Vercel"],
+    technologies: ["React", "TypeScript", "Tailwind CSS"],
     githubUrl: "https://github.com/ash-x8/cinexus-hd",
     liveUrl: "https://cinexus-hd.vercel.app/",
     featured: true,
@@ -136,6 +139,7 @@ export const defaultProjects: Project[] = [
     detailedDescription: "Designed for SOC teams, CyberSentry monitors incoming traffic streams, identifies SQL injection / brute-force patterns, and surfaces geo-located threat actors with interactive radar visualization.",
     image: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=1200&q=80",
     tags: ["TypeScript", "React", "Node.js", "WebSockets", "D3.js", "Cyber Defense"],
+    technologies: ["TypeScript", "React", "Node.js"],
     githubUrl: "https://github.com/ash-x8/cybersentry",
     liveUrl: "https://github.com/ash-x8/cybersentry",
     featured: false,
@@ -154,6 +158,7 @@ export const defaultProjects: Project[] = [
     detailedDescription: "NexusVault guarantees that server administrators have zero insight into encrypted user payloads. Master keys are derived on the client using PBKDF2 with 310,000 rounds and authenticated with WebAuthn biometric security.",
     image: "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=1200&q=80",
     tags: ["React", "Web Crypto API", "Node.js", "Firebase Firestore", "Zero-Knowledge"],
+    technologies: ["React", "TypeScript", "Firebase"],
     githubUrl: "https://github.com/ash-x8/nexusvault",
     liveUrl: "https://github.com/ash-x8/nexusvault",
     featured: false,
@@ -172,6 +177,7 @@ export const defaultProjects: Project[] = [
     detailedDescription: "A comprehensive developer portal providing live container diagnostics, log tailing, container restart routines, and cluster resource quotas through a clean futuristic cyber HUD.",
     image: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1200&q=80",
     tags: ["React", "Docker API", "Kubernetes", "TypeScript", "Tailwind CSS"],
+    technologies: ["Docker", "Kubernetes", "TypeScript"],
     githubUrl: "https://github.com/ash-x8/cloudops",
     liveUrl: "https://github.com/ash-x8/cloudops",
     featured: false,

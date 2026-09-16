@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Inter, Plus_Jakarta_Sans } from 'next/font/google';
 import './globals.css';
 import Navbar from './components/Navbar';
@@ -9,12 +9,17 @@ import { Analytics } from '@vercel/analytics/next';
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
 const plusJakarta = Plus_Jakarta_Sans({ subsets: ['latin'], variable: '--font-display' });
 
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+};
+
 export const metadata: Metadata = {
-  title: 'Ash Wickramasinghe | Full-Stack Developer',
-  description: 'Ultra-modern portfolio showcasing full-stack development expertise, innovative projects, and professional excellence.',
-  keywords: 'Full-Stack Developer, React, Next.js, TypeScript, JavaScript, Web Development',
+  title: 'Ash Wickramasinghe — Cyber Portfolio',
+  description: 'High-performance futuristic cyber-themed personal portfolio, read-only CV viewer, and CMS for Ash Wickramasinghe.',
+  keywords: 'Full-Stack Developer, Cyber Security, React, Next.js, TypeScript, JavaScript, Web Development',
   authors: [{ name: 'Ash Wickramasinghe' }],
-  viewport: 'width=device-width, initial-scale=1, maximum-scale=1',
   icons: {
     icon: '/favicon.ico',
   },
@@ -22,20 +27,20 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'en_US',
     url: 'https://ash-wickramasinghe.site',
-    siteName: 'Ash Wickramasinghe Portfolio',
-    title: 'Ash Wickramasinghe | Full-Stack Developer',
-    description: 'Ultra-modern portfolio showcasing full-stack development expertise.',
+    siteName: 'Ash Wickramasinghe — Cyber Portfolio',
+    title: 'Ash Wickramasinghe — Cyber Portfolio',
+    description: 'High-performance futuristic cyber-themed personal portfolio, read-only CV viewer, and CMS for Ash Wickramasinghe.',
     images: [{
       url: 'https://ash-wickramasinghe.site/og-image.png',
       width: 1200,
       height: 630,
-      alt: 'Ash Wickramasinghe Portfolio',
+      alt: 'Ash Wickramasinghe Cyber Portfolio',
     }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Ash Wickramasinghe | Full-Stack Developer',
-    description: 'Ultra-modern portfolio showcasing full-stack development expertise.',
+    title: 'Ash Wickramasinghe — Cyber Portfolio',
+    description: 'High-performance futuristic cyber-themed personal portfolio, read-only CV viewer, and CMS for Ash Wickramasinghe.',
     creator: '@ash_dev',
   },
 };
