@@ -5,9 +5,6 @@ import Link from 'next/link';
 import { 
   GitBranch, 
   Linkedin, 
-  Send, 
-  ShieldCheck, 
-  Terminal, 
   Mail, 
   MapPin, 
   ExternalLink 
@@ -17,7 +14,7 @@ export default function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="relative bg-[#070A10] border-t border-slate-800/80 pt-16 pb-12 overflow-hidden z-10">
+    <footer className="relative bg-[#070A10] border-t border-slate-800/80 pt-16 pb-12 overflow-hidden z-10 font-sans">
       {/* Top subtle glow line */}
       <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-[#06B6D4]/50 to-transparent" />
 
@@ -50,7 +47,7 @@ export default function Footer() {
           {/* Navigation Links */}
           <div className="space-y-3">
             <h4 className="text-xs font-mono font-bold tracking-widest text-slate-300 uppercase">
-              // DIRECTORY
+              DIRECTORY
             </h4>
             <ul className="space-y-2 text-sm">
               <li>
@@ -69,8 +66,13 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/cv" className="text-slate-400 hover:text-[#06B6D4] transition-colors">
-                  CV / Credentials
+                <Link href="/services" className="text-slate-400 hover:text-[#06B6D4] transition-colors">
+                  Creative Services
+                </Link>
+              </li>
+              <li>
+                <Link href="/writing" className="text-slate-400 hover:text-[#06B6D4] transition-colors">
+                  Writing &amp; Insights
                 </Link>
               </li>
               <li>
@@ -81,10 +83,10 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Social / System Column */}
+          {/* Social / Channels Column */}
           <div className="space-y-3">
             <h4 className="text-xs font-mono font-bold tracking-widest text-slate-300 uppercase">
-              // CHANNELS
+              CHANNELS
             </h4>
             <div className="space-y-2 text-sm">
               <a 
@@ -114,13 +116,6 @@ export default function Footer() {
                 <Mail size={15} />
                 <span>Email Inquiries</span>
               </a>
-              <Link 
-                href="/admin" 
-                className="flex items-center gap-2 text-slate-400 hover:text-[#06B6D4] transition-colors pt-1"
-              >
-                <ShieldCheck size={15} className="text-slate-500" />
-                <span>Admin CMS</span>
-              </Link>
             </div>
           </div>
         </div>
@@ -129,7 +124,7 @@ export default function Footer() {
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono text-slate-500">
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-[#10B981]" />
-            <span>ash-wickramasinghe.site // PRODUCTION</span>
+            <span>ash-wickramasinghe.site</span>
           </div>
           <div>
             &copy; {currentYear} Ash Wickramasinghe. All rights reserved.

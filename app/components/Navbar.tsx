@@ -3,14 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { 
-  Menu, 
-  X, 
-  ArrowRight,
-  Sparkles,
-  Terminal,
-  ShieldCheck
-} from 'lucide-react';
+import { Menu, X, ArrowRight } from 'lucide-react';
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -34,7 +27,8 @@ export default function Navbar() {
     { label: 'HOME', path: '/' },
     { label: 'ABOUT', path: '/about' },
     { label: 'PROJECTS', path: '/projects' },
-    { label: 'CV / RESUME', path: '/cv' },
+    { label: 'SERVICES', path: '/services' },
+    { label: 'WRITING', path: '/writing' },
     { label: 'CONTACT', path: '/contact' },
   ];
 
@@ -47,8 +41,8 @@ export default function Navbar() {
     <header 
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         isScrolled 
-          ? 'bg-[#0B0F17]/95 backdrop-blur-md border-b border-slate-800/80 py-3.5 shadow-2xl' 
-          : 'bg-gradient-to-b from-[#0B0F17]/95 via-[#0B0F17]/70 to-transparent py-5'
+          ? 'bg-[#070A10]/95 backdrop-blur-md border-b border-slate-800/80 py-3.5 shadow-2xl'
+          : 'bg-gradient-to-b from-[#070A10]/95 via-[#070A10]/70 to-transparent py-5'
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
@@ -91,7 +85,7 @@ export default function Navbar() {
           })}
         </nav>
 
-        {/* Right HUD CTA & Status */}
+        {/* Right CTA */}
         <div className="hidden lg:flex items-center gap-4">
           <div className="flex items-center gap-2 px-3 py-1 bg-[#111827]/80 border border-slate-800 rounded-full text-xs font-mono text-slate-300">
             <span className="relative flex h-2 w-2">
@@ -99,23 +93,15 @@ export default function Navbar() {
               <span className="relative inline-flex rounded-full h-2 w-2 bg-[#10B981]"></span>
             </span>
             <span className="text-[11px] text-slate-400">STATUS:</span>
-            <span className="text-[#10B981] text-[11px] font-bold">ACTIVE</span>
+            <span className="text-[#10B981] text-[11px] font-bold">AVAILABLE</span>
           </div>
 
           <Link
             href="/contact"
-            className="px-4 py-2 bg-gradient-to-r from-[#06B6D4] to-[#3B82F6] hover:from-[#0891B2] hover:to-[#2563EB] text-[#0B0F17] font-mono text-xs font-bold uppercase tracking-wider rounded-lg transition-all shadow-[0_0_15px_rgba(6,182,212,0.3)] flex items-center gap-1.5"
+            className="px-4 py-2 bg-gradient-to-r from-[#06B6D4] to-[#3B82F6] hover:from-[#0891B2] hover:to-[#2563EB] text-[#070A10] font-mono text-xs font-bold uppercase tracking-wider rounded-lg transition-all shadow-[0_0_15px_rgba(6,182,212,0.3)] flex items-center gap-1.5"
           >
             <span>INQUIRE</span>
             <ArrowRight size={13} />
-          </Link>
-
-          <Link
-            href="/admin"
-            title="Admin CMS Portal"
-            className="p-2 text-slate-400 hover:text-[#06B6D4] bg-[#111827] border border-slate-800 rounded-lg hover:border-slate-700 transition-all text-xs"
-          >
-            <ShieldCheck size={16} />
           </Link>
         </div>
 
@@ -133,14 +119,13 @@ export default function Navbar() {
 
       {/* Mobile Drawer */}
       {mobileMenuOpen && (
-        <div className="md:hidden bg-[#0B0F17]/98 border-b border-slate-800 px-4 pt-4 pb-6 mt-3 space-y-2 backdrop-blur-xl animate-in fade-in slide-in-from-top-4 duration-200">
+        <div className="md:hidden bg-[#070A10]/98 border-b border-slate-800 px-4 pt-4 pb-6 mt-3 space-y-2 backdrop-blur-xl animate-in fade-in slide-in-from-top-4 duration-200">
           <div className="flex items-center justify-between px-3 py-2 bg-[#111827] border border-slate-800/80 rounded-lg text-xs font-mono mb-3">
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse" />
-              <span className="text-slate-400">NETWORK:</span>
-              <span className="text-white font-bold">ONLINE</span>
+              <span className="text-slate-400">STATUS:</span>
+              <span className="text-white font-bold">AVAILABLE FOR WORK</span>
             </div>
-            <span className="text-[10px] text-[#06B6D4]">SYS_READY</span>
           </div>
 
           {navLinks.map((item) => {
@@ -164,9 +149,9 @@ export default function Navbar() {
           <div className="pt-2">
             <Link
               href="/contact"
-              className="w-full py-3 bg-gradient-to-r from-[#06B6D4] to-[#3B82F6] text-[#0B0F17] font-mono text-xs font-bold uppercase tracking-wider rounded-lg flex items-center justify-center gap-2"
+              className="w-full py-3 bg-gradient-to-r from-[#06B6D4] to-[#3B82F6] text-[#070A10] font-mono text-xs font-bold uppercase tracking-wider rounded-lg flex items-center justify-center gap-2"
             >
-              <span>DIRECT CONTACT</span>
+              <span>GET IN TOUCH</span>
               <ArrowRight size={14} />
             </Link>
           </div>
