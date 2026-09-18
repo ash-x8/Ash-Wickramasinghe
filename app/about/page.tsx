@@ -49,7 +49,7 @@ export default function AboutPage() {
           Specialist Profile & <span className="text-[#00f0ff]">Career Trajectory</span>
         </h1>
         <p className="text-slate-400 text-sm sm:text-base mt-2 max-w-2xl font-mono">
-          [IDENTITY: FULL-STACK ENGINEER] // [SPEC: CYBER DEFENSE & HIGH-PERFORMANCE WEB ARCHITECTURE]
+          [IDENTITY: CREATIVE SPECIALIST] // [SPEC: GRAPHIC DESIGN, SOCIAL MEDIA &amp; CONTENT EDITING]
         </p>
       </div>
 
@@ -60,7 +60,7 @@ export default function AboutPage() {
           <CyberCard highlightHeader="EXECUTIVE_SUMMARY" className="p-6 space-y-4">
             <h2 className="text-xl font-bold text-white flex items-center gap-2">
               <ShieldCheck className="text-[#00ff66]" size={20} />
-              Mission-Driven Engineering Rigor
+              Creative Vision &amp; Strategic Execution
             </h2>
             <p className="text-slate-300 text-sm sm:text-base leading-relaxed">
               {settings.aboutBio}
@@ -71,7 +71,7 @@ export default function AboutPage() {
             <div className="pt-4 border-t border-slate-800 grid grid-cols-1 sm:grid-cols-3 gap-4 font-mono text-xs">
               <div className="p-3 bg-[#0b0f19] border border-slate-800 rounded">
                 <span className="text-slate-500 block">PRIMARY FOCUS</span>
-                <span className="text-[#00f0ff] font-bold">Full-Stack & Cyber</span>
+                <span className="text-[#00f0ff] font-bold">Graphic Design &amp; Content</span>
               </div>
               <div className="p-3 bg-[#0b0f19] border border-slate-800 rounded">
                 <span className="text-slate-500 block">BASE COORDINATES</span>
@@ -79,36 +79,36 @@ export default function AboutPage() {
               </div>
               <div className="p-3 bg-[#0b0f19] border border-slate-800 rounded">
                 <span className="text-slate-500 block">DISPATCH STATUS</span>
-                <span className="text-[#00ff66] font-bold">Ready for Contracts</span>
+                <span className="text-[#00ff66] font-bold">Open for Collaboration</span>
               </div>
             </div>
           </CyberCard>
 
-          {/* Philosophy / Guiding Principles */}
-          <CyberCard highlightHeader="ARCHITECTURAL_PRINCIPLES" className="p-6">
+          {/* Creative Principles */}
+          <CyberCard highlightHeader="CREATIVE_PRINCIPLES" className="p-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="p-4 bg-[#0b0f19]/80 border border-slate-800/80 rounded-lg space-y-1">
-                <div className="text-[#00f0ff] font-mono text-xs font-bold">01. ZERO TRUST BY DEFAULT</div>
+                <div className="text-[#00f0ff] font-mono text-xs font-bold">01. DISTINCTIVE VISUAL IMPACT</div>
                 <p className="text-slate-400 text-xs">
-                  Every endpoint, incoming packet, and client parameter is untrusted until cryptographically validated.
+                  Every brand asset, graphic layout, and logo must immediately distinguish itself with clean hierarchy and aesthetic intent.
                 </p>
               </div>
               <div className="p-4 bg-[#0b0f19]/80 border border-slate-800/80 rounded-lg space-y-1">
-                <div className="text-[#00ff66] font-mono text-xs font-bold">02. SUB-100MS LATENCY BUDGET</div>
+                <div className="text-[#00ff66] font-mono text-xs font-bold">02. DATA-DRIVEN SOCIAL GROWTH</div>
                 <p className="text-slate-400 text-xs">
-                  Applications must render smoothly, optimize render cycles, minimize bundle footprints, and eliminate hydration lag.
+                  Social media campaigns are designed around audience psychology, algorithmic reach patterns, and measurable conversion goals.
                 </p>
               </div>
               <div className="p-4 bg-[#0b0f19]/80 border border-slate-800/80 rounded-lg space-y-1">
-                <div className="text-[#3b82f6] font-mono text-xs font-bold">03. RESILIENT FAILOVER LOOPS</div>
+                <div className="text-[#3b82f6] font-mono text-xs font-bold">03. HIGH-RETENTION CONTENT EDITING</div>
                 <p className="text-slate-400 text-xs">
-                  Designing microservices with graceful degradation so system failures are contained and self-healing.
+                  Short-form reels and videos are tuned with kinetic typography, tight pacing, and hook dynamics that maximize watch time.
                 </p>
               </div>
               <div className="p-4 bg-[#0b0f19]/80 border border-slate-800/80 rounded-lg space-y-1">
-                <div className="text-[#a855f7] font-mono text-xs font-bold">04. IMMERSIVE ERGONOMICS</div>
+                <div className="text-[#a855f7] font-mono text-xs font-bold">04. FLUID DIGITAL EXPERIENCES</div>
                 <p className="text-slate-400 text-xs">
-                  A high-tech cyberpunk visual identity should never compromise cognitive clarity, accessibility, and utility.
+                  Digital portfolios and modern web platforms should be ultra-responsive, accessible, and perform flawlessly across all devices.
                 </p>
               </div>
             </div>
@@ -125,11 +125,14 @@ export default function AboutPage() {
                   <span className="text-[10px] font-mono text-slate-500">LOADING AVATAR...</span>
                 </div>
               )}
-              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img 
-                src={settings.avatarUrl || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80"} 
+                src={settings.avatarUrl || "/ash_cyber_portrait.jpg"} 
                 alt="Ash Wickramasinghe"
                 onLoad={() => setAvatarLoaded(true)}
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = "/ash_cyber_portrait.jpg";
+                  setAvatarLoaded(true);
+                }}
                 className={`w-full h-full object-cover object-top filter contrast-105 transition-all duration-700 ${
                   avatarLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
                 }`}

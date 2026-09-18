@@ -35,7 +35,8 @@ export default function ProjectsPage() {
     loadProjects();
   }, []);
 
-  const categories = ['All', 'Full-Stack', 'Web Apps', 'Cyber/Tools', 'Scripts', 'Cloud & Systems'];
+  // Dynamically compute available categories from existing projects
+  const categories = ['All', ...Array.from(new Set(projects.map(p => p.category)))];
 
   const filteredProjects = projects.filter((project) => {
     const matchesCategory = selectedCategory === 'All' || project.category === selectedCategory;
@@ -48,18 +49,18 @@ export default function ProjectsPage() {
   });
 
   return (
-    <div className="relative min-h-screen pt-28 pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto z-10">
+    <div className="relative min-h-screen pt-28 pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto z-10 font-sans">
       {/* PAGE HEADER */}
       <div className="mb-10 border-b border-slate-800 pb-8">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#111827] border border-[#00f0ff]/30 text-xs font-mono text-[#00f0ff] mb-4">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#111827] border border-[#06B6D4]/40 text-xs font-mono text-[#06B6D4] mb-4">
           <Code2 size={14} />
-          <span>// REPOSITORY DATABASE // PRODUCTION BUILDS</span>
+          <span>// PORTFOLIO REPOSITORY // SELECTED WORKS</span>
         </div>
         <h1 className="text-3xl sm:text-5xl font-extrabold text-white tracking-tight">
-          Engineering & <span className="text-[#00f0ff]">Software Systems</span>
+          Featured Projects &amp; <span className="text-[#06B6D4]">Creative Works</span>
         </h1>
         <p className="text-slate-400 text-sm sm:text-base mt-2 max-w-2xl font-mono">
-          [STATUS: {projects.length} SYSTEMS INDEXED] // Curated live deployments, cryptographic tools, and web applications.
+          [INDEX: {projects.length} PROJECTS CATALOGED] // Curated brand systems, graphic design portfolios, social campaigns, and interactive web experiences.
         </p>
       </div>
 
@@ -119,10 +120,12 @@ export default function ProjectsPage() {
               >
                 {/* Card Image Banner */}
                 <div className="relative h-48 overflow-hidden bg-[#0c121d]">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img 
                     src={project.image} 
                     alt={project.title}
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = "/ash_cyber_portrait.jpg";
+                    }}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#111827] via-[#111827]/30 to-transparent" />
@@ -221,10 +224,12 @@ export default function ProjectsPage() {
 
             {/* Modal Image */}
             <div className="w-full h-56 sm:h-72 rounded-lg overflow-hidden border border-slate-800 bg-[#0c121d]">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img 
                 src={activeModalProject.image} 
                 alt={activeModalProject.title}
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = "/ash_cyber_portrait.jpg";
+                }}
                 className="w-full h-full object-cover"
               />
             </div>

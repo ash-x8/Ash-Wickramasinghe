@@ -50,32 +50,32 @@ export const HomePage: React.FC = () => {
 
   const corePillars = [
     {
-      icon: <Code2 className="text-[#00f0ff]" size={24} />,
-      title: "Full-Stack Web Engineering",
-      badge: "CORE_ENGINE",
-      desc: "Architecting high-throughput, enterprise React, Next.js, and TypeScript applications backed by microservices, REST APIs, and event-driven databases.",
-      tech: ["React", "TypeScript", "Node.js", "Tailwind"]
+      icon: <Layers className="text-[#06B6D4]" size={24} />,
+      title: "Graphic Design & Branding",
+      badge: "VISUAL_IDENTITY",
+      desc: "Crafting distinctive brand identities, vector logos, marketing collateral, and high-impact visual design systems that command attention.",
+      tech: ["Brand Systems", "Vector Art", "Photoshop", "Illustrator"]
     },
     {
-      icon: <ShieldCheck className="text-[#00ff66]" size={24} />,
-      title: "Defensive Cyber & Application Audits",
-      badge: "SECURITY_SECTOR",
-      desc: "Implementing zero-trust architecture, OWASP Top 10 mitigation, cryptographic payload protection, and hardened OAuth2 / JWT authentication.",
-      tech: ["Zero-Trust", "OWASP Hardening", "AES-256", "Pen Testing"]
+      icon: <ShieldCheck className="text-[#10B981]" size={24} />,
+      title: "Social Media Strategy & Growth",
+      badge: "AUDIENCE_OPS",
+      desc: "Executing organic social media campaigns, carousel layouts, engagement growth strategies, and multi-channel content scheduling.",
+      tech: ["Instagram & X", "LinkedIn Growth", "Content Calendars", "Analytics"]
     },
     {
-      icon: <Cloud className="text-[#3b82f6]" size={24} />,
-      title: "Cloud Infrastructure & DevOps",
-      badge: "CLOUD_OPS",
-      desc: "Containerizing distributed environments with Docker and Kubernetes, configuring automated CI/CD pipelines, and maintaining high-availability uptime.",
-      tech: ["Docker", "Kubernetes", "Firebase", "CI/CD"]
+      icon: <Cpu className="text-[#3B82F6]" size={24} />,
+      title: "Content & Reel Video Editing",
+      badge: "MOTION_MEDIA",
+      desc: "Producing high-retention short-form video reels, promotional motion graphics, kinetic typography, and polished digital storytelling.",
+      tech: ["Shorts & Reels", "Kinetic Type", "Premiere Pro", "Color Grading"]
     },
     {
-      icon: <Layers className="text-[#a855f7]" size={24} />,
-      title: "Futuristic UI/UX Architecture",
-      badge: "DESIGN_SYSTEMS",
-      desc: "Delivering reactive, accessible, high-performance interfaces with micro-interactions, hardware-accelerated animations, and responsive cyber aesthetic.",
-      tech: ["Framer Motion", "Design Systems", "Figma", "CSS3 / SVG"]
+      icon: <Code2 className="text-[#A855F7]" size={24} />,
+      title: "Creative Digital Web Platforms",
+      badge: "DIGITAL_TECH",
+      desc: "Designing and developing modern, responsive web experiences, bespoke portfolios, and interactive interfaces with Next.js and Tailwind.",
+      tech: ["Next.js", "TypeScript", "Tailwind CSS", "Firebase"]
     }
   ];
 
@@ -91,7 +91,7 @@ export const HomePage: React.FC = () => {
             {/* Professional Status Pill */}
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#111827] border border-slate-800 text-xs font-mono text-[#06B6D4]">
               <span className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse" />
-              <span>Full-Stack Web Architect &amp; Cloud Engineer</span>
+              <span>Creative Digital Specialist &amp; Designer</span>
             </div>
 
             {/* Main Title & Typewriter */}
@@ -103,10 +103,10 @@ export const HomePage: React.FC = () => {
                 <TypewriterEffect 
                   prefix="&gt;"
                   words={[
-                    "Senior Full-Stack Web Developer",
-                    "Modern React & TypeScript Engineer",
-                    "Cloud & Systems Architect",
-                    "UI/UX Design Technologist"
+                    "Graphic Design & Branding Specialist",
+                    "Social Media Strategist & Manager",
+                    "Content & Video Reel Editor",
+                    "Creative Digital Web Technologist"
                   ]}
                 />
               </div>
@@ -194,9 +194,13 @@ export const HomePage: React.FC = () => {
                   )}
 
                   <img 
-                    src={settings.avatarUrl || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80"}
+                    src={settings.avatarUrl || "/ash_cyber_portrait.jpg"}
                     alt="Ash Wickramasinghe" 
                     onLoad={() => setAvatarLoaded(true)}
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = "/ash_cyber_portrait.jpg";
+                      setAvatarLoaded(true);
+                    }}
                     className={`w-full h-full object-cover object-top filter contrast-105 group-hover:scale-105 transition-all duration-700 ${
                       avatarLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
                     }`}

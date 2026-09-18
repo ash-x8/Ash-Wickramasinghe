@@ -131,9 +131,13 @@ export const AboutPage: React.FC = () => {
                 </div>
               )}
               <img 
-                src={settings.avatarUrl || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80"} 
+                src={settings.avatarUrl || "/ash_cyber_portrait.jpg"} 
                 alt="Ash Wickramasinghe"
                 onLoad={() => setAvatarLoaded(true)}
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = "/ash_cyber_portrait.jpg";
+                  setAvatarLoaded(true);
+                }}
                 className={`w-full h-full object-cover object-top filter contrast-105 transition-all duration-700 ${
                   avatarLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
                 }`}

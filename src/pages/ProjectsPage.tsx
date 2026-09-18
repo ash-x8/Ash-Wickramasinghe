@@ -125,6 +125,9 @@ export const ProjectsPage: React.FC = () => {
                 <img 
                   src={project.image} 
                   alt={project.title}
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = "/ash_cyber_portrait.jpg";
+                  }}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#111827] via-[#111827]/30 to-transparent" />

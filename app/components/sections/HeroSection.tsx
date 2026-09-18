@@ -97,7 +97,7 @@ export default function HeroSection() {
               {/* Image */}
               <div className="relative w-full h-full rounded-3xl overflow-hidden border border-white border-opacity-20 backdrop-blur-sm">
                 <Image
-                  src="https://firebasestorage.googleapis.com/v0/b/ash-portfolio-2024.appspot.com/o/profile%2Fprofile.jpg?alt=media"
+                  src="/ash_cyber_portrait.png"
                   alt="Ash Wickramasinghe"
                   fill
                   className="object-cover"

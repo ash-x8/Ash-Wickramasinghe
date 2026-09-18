@@ -81,10 +81,25 @@ export async function deleteProject(id: string): Promise<void> {
   await deleteDoc(doc(db, 'projects', id));
 }
 
+export async function uploadMediaFile(file: File, folder: string = 'portfolio'): Promise<string> {
+  try {
+    const cleanFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+    const storageRef = ref(storage, `${folder}/${Date.now()}_${cleanFileName}`);
+    const uploadResult = await uploadBytes(storageRef, file);
+    return await getDownloadURL(uploadResult.ref);
+  } catch (storageErr) {
+    console.warn("Firebase Storage upload encountered issue, using reliable DataURL fallback:", storageErr);
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = (error) => reject(error);
+      reader.readAsDataURL(file);
+    });
+  }
+}
+
 export async function uploadFile(file: File, path: string): Promise<string> {
-  const storageRef = ref(storage, path);
-  const snapshot = await uploadBytes(storageRef, file);
-  return getDownloadURL(snapshot.ref);
+  return uploadMediaFile(file, path);
 }
 
 export async function deleteFile(path: string): Promise<void> {
