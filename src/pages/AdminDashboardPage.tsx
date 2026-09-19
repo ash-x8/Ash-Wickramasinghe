@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   LayoutDashboard, 
   Briefcase, 
@@ -95,7 +95,7 @@ export const AdminDashboardPage: React.FC = () => {
   const [deleteConfirm, setDeleteConfirm] = useState<{ type: string; id: string; name: string } | null>(null);
 
   // Load all CMS data
-  const refreshData = async () => {
+  const refreshData = useCallback(async () => {
     setLoading(true);
     try {
       const [s, p, a, srv, m] = await Promise.all([
@@ -116,11 +116,11 @@ export const AdminDashboardPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     refreshData();
-  }, []);
+  }, [refreshData]);
 
   const unreadMessagesCount = messages.filter(m => m.status === 'unread').length;
 
@@ -713,7 +713,7 @@ export const AdminDashboardPage: React.FC = () => {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                   <h2 className="text-xl font-bold text-white">Articles &amp; Essays</h2>
-                  <p className="text-xs text-slate-400">Publish articles authored by Ash Wickramasinghe, Writer Tizzy, or Tizzy.</p>
+                  <p className="text-xs text-slate-400">Publish articles and essays authored by Ash Wickramasinghe.</p>
                 </div>
                 <button
                   onClick={() => { setEditingArticle(null); setIsNewArticleModalOpen(true); }}
@@ -1476,9 +1476,6 @@ export const AdminDashboardPage: React.FC = () => {
                     className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white"
                   >
                     <option value="Ash Wickramasinghe">Ash Wickramasinghe</option>
-                    <option value="Writer Tizzy">Writer Tizzy</option>
-                    <option value="Tizzy">Tizzy</option>
-                    <option value="Writer Ash">Writer Ash</option>
                   </select>
                 </div>
                 <div>

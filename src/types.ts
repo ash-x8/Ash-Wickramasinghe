@@ -37,7 +37,7 @@ export interface Article {
   title: string;
   excerpt: string;
   content: string;
-  author: 'Ash Wickramasinghe' | 'Writer Ash' | 'Writer Tizzy' | 'Tizzy' | string;
+  author: string;
   category: string;
   coverImage?: string;
   publishedAt: string;

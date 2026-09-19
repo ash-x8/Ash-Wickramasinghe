@@ -1,34 +1,54 @@
 @import "tailwindcss";
 
+@theme {
+  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-serif: 'Cinzel', Georgia, serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  --color-accent: #C59B63;
+  --color-accent-hover: #D4AF37;
+  --color-accent-light: #E5C392;
+  --color-accent-dark: #9F743C;
+
+  --color-brand-dark: #0A0D14;
+  --color-brand-card: #111622;
+  --color-brand-surface: #151B2A;
+  --color-brand-border: rgba(255, 255, 255, 0.08);
+  --color-brand-cyan: #06B6D4;
+}
+
 @layer base {
   :root {
-    --accent-color: #c59b63;
-    --bg-dark: #0a0a0a;
-    --surface-dark: #121212;
-    --surface-dark-subtle: #171717;
+    --accent-color: #C59B63;
+    --bg-dark: #0A0D14;
+    --surface-dark: #111622;
+    --surface-dark-subtle: #151B2A;
     --border-dark: rgba(255, 255, 255, 0.08);
     --border-dark-hover: rgba(255, 255, 255, 0.16);
-    --text-primary-dark: #f4f4f5;
-    --text-secondary-dark: #a1a1aa;
-    --text-muted-dark: #71717a;
+    --text-primary-dark: #EDEDED;
+    --text-secondary-dark: #9E9E9E;
+    --text-muted-dark: #666666;
 
-    --bg-light: #fafafa;
-    --surface-light: #ffffff;
-    --surface-light-subtle: #f4f4f5;
+    --bg-light: #F7F7F8;
+    --surface-light: #FFFFFF;
+    --surface-light-subtle: #EDEDEF;
     --border-light: rgba(0, 0, 0, 0.08);
     --border-light-hover: rgba(0, 0, 0, 0.16);
-    --text-primary-light: #09090b;
-    --text-secondary-light: #52525b;
-    --text-muted-light: #71717a;
+    --text-primary-light: #0D0F14;
+    --text-secondary-light: #4A5060;
+    --text-muted-light: #717684;
   }
 
   html {
     scroll-behavior: smooth;
+    font-family: var(--font-sans);
   }
 
   body {
     background-color: var(--bg-dark);
     color: var(--text-primary-dark);
+    font-family: var(--font-sans);
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;

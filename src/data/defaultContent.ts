@@ -440,14 +440,14 @@ Your first slide has approximately 0.8 seconds to earn the viewer's attention. I
 
 ### 2. Edge-to-Edge Visual Continuity
 
-One of the most effective psychological cues for encouraging a swipe is an intentional visual spill. When a shape, line, or photograph is cut off at the right edge of slide 2 and continues cleanly on slide 3, the brain instinctively wants to complete the puzzle.
+One of the most effective psychological cues for encouraging a swipe is an intentional visual spill. When a shape, line, or graphic element is cut off at the right edge of slide 2 and continues cleanly on slide 3, the brain instinctively wants to complete the puzzle.
 
 ### 3. Pacing and Information Density
 
 Never place more than one core idea on a single slide. White space is not empty space—it is reading room. When text has room to breathe, the reader perceives the content as effortless to digest.
 
 Treat every carousel as an editorial publication. Quality over quantity always wins the long-term algorithm.`,
-    author: "Writer Tizzy",
+    author: "Ash Wickramasinghe",
     category: "Social Strategy",
     coverImage: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80",
     publishedAt: "2024-12-02",
