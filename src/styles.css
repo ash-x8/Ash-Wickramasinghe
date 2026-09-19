@@ -2,198 +2,107 @@
 
 @layer base {
   :root {
-    --cyber-bg: #0b0f19;
-    --cyber-surface: #111827;
-    --cyber-surface-2: #151d30;
-    --cyber-card: #0f1626;
-    --cyber-cyan: #00f0ff;
-    --cyber-cyan-glow: rgba(0, 240, 255, 0.4);
-    --cyber-matrix: #00ff66;
-    --cyber-blue: #3b82f6;
-    --cyber-border: rgba(0, 240, 255, 0.15);
-    --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
-    --font-sans: 'Inter', sans-serif;
+    --accent-color: #c59b63;
+    --bg-dark: #0a0a0a;
+    --surface-dark: #121212;
+    --surface-dark-subtle: #171717;
+    --border-dark: rgba(255, 255, 255, 0.08);
+    --border-dark-hover: rgba(255, 255, 255, 0.16);
+    --text-primary-dark: #f4f4f5;
+    --text-secondary-dark: #a1a1aa;
+    --text-muted-dark: #71717a;
+
+    --bg-light: #fafafa;
+    --surface-light: #ffffff;
+    --surface-light-subtle: #f4f4f5;
+    --border-light: rgba(0, 0, 0, 0.08);
+    --border-light-hover: rgba(0, 0, 0, 0.16);
+    --text-primary-light: #09090b;
+    --text-secondary-light: #52525b;
+    --text-muted-light: #71717a;
+  }
+
+  html {
+    scroll-behavior: smooth;
   }
 
   body {
-    background-color: var(--cyber-bg);
-    color: #e2e8f0;
-    font-family: var(--font-sans);
+    background-color: var(--bg-dark);
+    color: var(--text-primary-dark);
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
     overflow-x: hidden;
   }
 
-  /* Custom Cyber Scrollbar */
+  html.light body {
+    background-color: var(--bg-light);
+    color: var(--text-primary-light);
+  }
+
+  ::selection {
+    background-color: var(--accent-color);
+    color: #000000;
+  }
+
+  /* Minimal custom scrollbar */
   ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+    width: 5px;
+    height: 5px;
   }
+
   ::-webkit-scrollbar-track {
-    background: #0b0f19;
+    background: transparent;
   }
+
   ::-webkit-scrollbar-thumb {
-    background: #1e293b;
-    border-radius: 3px;
-    border: 1px solid rgba(0, 240, 255, 0.2);
+    background: rgba(150, 150, 150, 0.2);
+    border-radius: 9999px;
   }
+
   ::-webkit-scrollbar-thumb:hover {
-    background: #00f0ff;
-    box-shadow: 0 0 10px #00f0ff;
+    background: rgba(150, 150, 150, 0.4);
+  }
+
+  /* Respect reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
   }
 }
 
-/* Cyber Tech Grid Background */
-.cyber-grid-bg {
-  background-size: 40px 40px;
-  background-image: 
-    linear-gradient(to right, rgba(0, 240, 255, 0.04) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(0, 240, 255, 0.04) 1px, transparent 1px);
+/* Accent utility classes */
+.text-accent {
+  color: var(--accent-color);
 }
 
-.cyber-grid-dense {
-  background-size: 20px 20px;
-  background-image: 
-    linear-gradient(to right, rgba(0, 240, 255, 0.06) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(0, 240, 255, 0.06) 1px, transparent 1px);
+.bg-accent {
+  background-color: var(--accent-color);
 }
 
-/* Glowing Border and Shadows */
-.cyber-glow-cyan {
-  box-shadow: 0 0 15px rgba(0, 240, 255, 0.25), inset 0 0 15px rgba(0, 240, 255, 0.05);
+.border-accent {
+  border-color: var(--accent-color);
 }
 
-.cyber-glow-green {
-  box-shadow: 0 0 15px rgba(0, 255, 102, 0.25), inset 0 0 15px rgba(0, 255, 102, 0.05);
+.hover-text-accent:hover {
+  color: var(--accent-color);
 }
 
-.cyber-border-gradient {
-  border: 1px solid rgba(0, 240, 255, 0.2);
-  background: linear-gradient(135deg, rgba(17, 24, 39, 0.8) 0%, rgba(15, 22, 38, 0.95) 100%);
-  backdrop-filter: blur(12px);
+/* Editorial line clamp & typography */
+.editorial-hero-title {
+  font-size: clamp(2.5rem, 6vw + 1rem, 5.5rem);
+  line-height: 1.05;
+  letter-spacing: -0.035em;
 }
 
-/* Scanline Animation */
-@keyframes scanline {
-  0% {
-    transform: translateY(-100%);
-  }
-  100% {
-    transform: translateY(1000%);
-  }
-}
-
-.scanline-effect {
-  position: relative;
-  overflow: hidden;
-}
-
-.scanline-effect::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: linear-gradient(90deg, transparent, rgba(0, 240, 255, 0.6), transparent);
-  animation: scanline 8s linear infinite;
-  pointer-events: none;
-  z-index: 20;
-}
-
-/* Radar Pulse Animation */
-@keyframes radar-pulse {
-  0% {
-    transform: scale(0.95);
-    opacity: 0.8;
-  }
-  50% {
-    transform: scale(1.15);
-    opacity: 0.2;
-  }
-  100% {
-    transform: scale(0.95);
-    opacity: 0.8;
-  }
-}
-
-.animate-radar {
-  animation: radar-pulse 3s ease-in-out infinite;
-}
-
-/* Cyber Cut Corners (Clip-path) */
-.cyber-cut-corner {
-  clip-path: polygon(
-    0 12px,
-    12px 0,
-    100% 0,
-    100% calc(100% - 12px),
-    calc(100% - 12px) 100%,
-    0 100%
-  );
-}
-
-.cyber-cut-corner-lg {
-  clip-path: polygon(
-    0 20px,
-    20px 0,
-    100% 0,
-    100% calc(100% - 20px),
-    calc(100% - 20px) 100%,
-    0 100%
-  );
-}
-
-/* Glitch text effect */
-.glitch-text {
-  position: relative;
-  display: inline-block;
-}
-
-.glitch-text:hover::before {
-  content: attr(data-text);
-  position: absolute;
-  left: -2px;
-  text-shadow: 2px 0 #00f0ff;
-  top: 0;
-  color: #00f0ff;
-  overflow: hidden;
-  clip-path: inset(0 0 50% 0);
-  animation: glitch-anim 0.3s infinite linear alternate-reverse;
-}
-
-.glitch-text:hover::after {
-  content: attr(data-text);
-  position: absolute;
-  left: 2px;
-  text-shadow: -2px 0 #ff0055;
-  top: 0;
-  color: #ff0055;
-  overflow: hidden;
-  clip-path: inset(50% 0 0 0);
-  animation: glitch-anim2 0.3s infinite linear alternate-reverse;
-}
-
-@keyframes glitch-anim {
-  0% { clip-path: inset(20% 0 60% 0); }
-  50% { clip-path: inset(80% 0 5% 0); }
-  100% { clip-path: inset(40% 0 30% 0); }
-}
-
-@keyframes glitch-anim2 {
-  0% { clip-path: inset(10% 0 70% 0); }
-  50% { clip-path: inset(60% 0 20% 0); }
-  100% { clip-path: inset(30% 0 50% 0); }
-}
-
-/* Read-Only Protection for CV */
-.no-select-document {
-  user-select: none;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  pointer-events: auto;
-}
-
-.no-select-document * {
-  user-select: none;
-  -webkit-user-select: none;
+.editorial-section-title {
+  font-size: clamp(2rem, 3.5vw + 0.5rem, 3.25rem);
+  line-height: 1.15;
+  letter-spacing: -0.025em;
 }

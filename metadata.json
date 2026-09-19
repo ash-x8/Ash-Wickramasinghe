@@ -1,6 +1,6 @@
 {
-  "name": "Ash Wickramasinghe — Cyber Portfolio",
-  "description": "High-performance futuristic cyber-themed personal portfolio, read-only CV viewer, and CMS for Ash Wickramasinghe.",
+  "name": "Ash Wickramasinghe — Portfolio",
+  "description": "The official personal portfolio of Ash Wickramasinghe. Graphic Designer, Social Media Manager, and Creative Content Editor.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

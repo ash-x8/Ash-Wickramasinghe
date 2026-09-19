@@ -53,6 +53,60 @@
         "status": { "type": "string" }
       },
       "required": ["name", "email", "message"]
+    },
+    "articles": {
+      "title": "Articles & Writing",
+      "description": "Published editorial articles, essays, and design case breakdowns",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "slug": { "type": "string" },
+        "excerpt": { "type": "string" },
+        "content": { "type": "string" },
+        "author": { "type": "string" },
+        "category": { "type": "string" },
+        "coverImage": { "type": "string" },
+        "publishedAt": { "type": "string" },
+        "readTime": { "type": "string" },
+        "published": { "type": "boolean" },
+        "tags": { "type": "array" }
+      },
+      "required": ["title", "slug", "content"]
+    },
+    "media": {
+      "title": "Media Items",
+      "description": "Uploaded media files and assets",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "url": { "type": "string" },
+        "size": { "type": "string" },
+        "type": { "type": "string" },
+        "uploadedAt": { "type": "string" }
+      },
+      "required": ["name", "url"]
+    }
+  },
+  "firestore": {
+    "/site_settings/{document}": {
+      "schema": "site_settings",
+      "description": "Global portfolio configuration, profile details, CV link, and biography"
+    },
+    "/projects/{projectId}": {
+      "schema": "projects",
+      "description": "Portfolio projects showcase catalog"
+    },
+    "/articles/{articleId}": {
+      "schema": "articles",
+      "description": "Published articles and essays"
+    },
+    "/media/{mediaId}": {
+      "schema": "media",
+      "description": "Uploaded media assets catalogue"
+    },
+    "/messages/{messageId}": {
+      "schema": "messages",
+      "description": "Inbound contact form messages"
     }
   }
 }

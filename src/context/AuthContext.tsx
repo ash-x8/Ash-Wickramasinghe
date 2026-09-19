@@ -1,39 +1,33 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User } from 'firebase/auth';
-import { auth, loginAdmin, loginWithGoogle, logoutAdmin, onAuthStateChanged, getStoredAdminSession } from '../lib/firebase';
+import { 
+  auth, 
+  loginAdmin, 
+  logoutAdmin, 
+  sendAdminPasswordReset, 
+  onAuthStateChanged,
+  AUTHORIZED_ADMIN_EMAIL
+} from '../lib/firebase';
 import { Navigate, useLocation } from 'react-router-dom';
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
   login: (email: string, pass: string) => Promise<User>;
-  loginGoogle: () => Promise<User>;
   logout: () => Promise<void>;
+  resetPassword: (email: string) => Promise<void>;
   isAdmin: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(() => getStoredAdminSession());
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check initial stored admin session
-    const stored = getStoredAdminSession();
-    if (stored) {
-      setUser(stored);
-      setLoading(false);
-    }
-
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      if (currentUser) {
-        setUser(currentUser);
-      } else {
-        // If Firebase says no user, but we have a valid local admin session, preserve it
-        const cached = getStoredAdminSession();
-        setUser(cached);
-      }
+      setUser(currentUser);
       setLoading(false);
     });
 
@@ -51,15 +45,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const loginGoogle = async () => {
-    setLoading(true);
-    try {
-      const u = await loginWithGoogle();
-      setUser(u);
-      return u;
-    } finally {
-      setLoading(false);
-    }
+  const resetPassword = async (email: string) => {
+    await sendAdminPasswordReset(email);
   };
 
   const logout = async () => {
@@ -67,10 +54,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(null);
   };
 
-  const isAdmin = !!user;
+  const isAdmin = !!user && (user.email?.toLowerCase() === AUTHORIZED_ADMIN_EMAIL.toLowerCase());
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, loginGoogle, logout, isAdmin }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, resetPassword, isAdmin }}>
       {children}
     </AuthContext.Provider>
   );
@@ -90,9 +77,9 @@ export const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ childr
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0b0f19] flex flex-col items-center justify-center text-[#00f0ff] font-mono">
-        <div className="relative w-16 h-16 border-2 border-[#00f0ff]/30 border-t-[#00f0ff] rounded-full animate-spin mb-4" />
-        <p className="text-xs uppercase tracking-[0.2em] animate-pulse">Authenticating Cyber Security Clearance...</p>
+      <div className="min-h-screen bg-neutral-950 flex flex-col items-center justify-center text-neutral-400">
+        <div className="w-8 h-8 border-2 border-neutral-800 border-t-neutral-200 rounded-full animate-spin mb-4" />
+        <p className="text-xs tracking-wider uppercase text-neutral-500 font-mono">Verifying credentials...</p>
       </div>
     );
   }

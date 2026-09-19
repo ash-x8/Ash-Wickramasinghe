@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
-  Code2, 
   Menu, 
   X, 
   ArrowRight,
-  Sparkles
+  Clock
 } from 'lucide-react';
 
 export const CyberNavbar: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [currentTime, setCurrentTime] = useState('');
   const location = useLocation();
 
   useEffect(() => {
@@ -21,15 +21,43 @@ export const CyberNavbar: React.FC = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Update Colombo local time clock
+  useEffect(() => {
+    const updateColomboTime = () => {
+      try {
+        const timeString = new Intl.DateTimeFormat('en-US', {
+          timeZone: 'Asia/Colombo',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: true
+        }).format(new Date());
+        setCurrentTime(timeString);
+      } catch (e) {
+        setCurrentTime(new Date().toLocaleTimeString());
+      }
+    };
+    updateColomboTime();
+    const interval = setInterval(updateColomboTime, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
   // Close mobile menu on route change
   useEffect(() => {
     setMobileMenuOpen(false);
   }, [location.pathname]);
 
+  // The admin dashboard is completely separated from the public website
+  if (location.pathname.startsWith('/admin')) {
+    return null;
+  }
+
   const navLinks = [
     { label: 'HOME', path: '/' },
     { label: 'ABOUT', path: '/about' },
+    { label: 'SERVICES', path: '/services' },
     { label: 'PROJECTS', path: '/projects' },
+    { label: 'WRITING', path: '/writing' },
     { label: 'CV / RESUME', path: '/cv' },
     { label: 'CONTACT', path: '/contact' },
   ];
@@ -38,8 +66,8 @@ export const CyberNavbar: React.FC = () => {
     <header 
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         isScrolled 
-          ? 'bg-[#0B0F17]/95 backdrop-blur-md border-b border-slate-800/80 py-3.5 shadow-2xl' 
-          : 'bg-gradient-to-b from-[#0B0F17]/95 via-[#0B0F17]/70 to-transparent py-5'
+          ? 'bg-[#0A0D14]/95 backdrop-blur-md border-b border-slate-800/80 py-3 shadow-2xl' 
+          : 'bg-gradient-to-b from-[#0A0D14]/95 via-[#0A0D14]/70 to-transparent py-4'
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
@@ -48,28 +76,37 @@ export const CyberNavbar: React.FC = () => {
           to="/" 
           className="group flex items-center gap-3 font-mono text-sm tracking-wider"
         >
-          <div className="relative w-9 h-9 flex items-center justify-center bg-[#111827] border border-[#06B6D4]/40 rounded-lg group-hover:border-[#3B82F6] transition-all shadow-[0_0_15px_rgba(6,182,212,0.15)]">
-            <span className="text-white font-bold text-xs tracking-tight group-hover:text-[#06B6D4] transition-colors">AW</span>
-            <div className="absolute -top-1 -right-1 w-2 h-2 bg-[#10B981] rounded-full" />
+          <div className="relative w-9 h-9 flex items-center justify-center bg-[#111622] border border-[#C59B63]/40 rounded-lg group-hover:border-[#C59B63] transition-all shadow-[0_0_15px_rgba(197,155,99,0.15)]">
+            <span className="text-[#EDEDED] font-bold text-xs tracking-tight group-hover:text-[#C59B63] transition-colors">AW</span>
+            <div className="absolute -top-1 -right-1 w-2 h-2 bg-[#10B981] rounded-full ring-2 ring-[#0A0D14] animate-pulse" />
           </div>
           <div className="flex flex-col">
-            <span className="font-bold text-white group-hover:text-[#06B6D4] transition-colors flex items-center gap-1.5 font-sans tracking-tight text-sm sm:text-base">
+            <span className="font-bold text-[#EDEDED] group-hover:text-[#C59B63] transition-colors flex items-center gap-1.5 font-sans tracking-tight text-sm sm:text-base">
               Ash Wickramasinghe
             </span>
-            <span className="text-[10px] text-slate-400 font-mono tracking-wider">
-              Full-Stack Developer &amp; UI/UX
+            <span className="text-[10px] text-slate-400 font-mono tracking-wider flex items-center gap-1.5">
+              <span>Graphic Designer &amp; Creative Digital</span>
             </span>
           </div>
         </Link>
 
-        {/* Status indicator */}
-        <div className="hidden lg:flex items-center gap-2 px-3 py-1 bg-[#111827]/80 border border-slate-800 rounded-full font-mono text-[11px] text-slate-300">
-          <span className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse" />
-          <span className="text-slate-400">Available for Opportunities</span>
+        {/* Live Colombo Time & Status indicator */}
+        <div className="hidden xl:flex items-center gap-3">
+          <div className="flex items-center gap-2 px-3 py-1 bg-[#111622]/80 border border-slate-800 rounded-full font-mono text-[11px] text-slate-300">
+            <span className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse" />
+            <span className="text-slate-400">Available for Retainers</span>
+          </div>
+          {currentTime && (
+            <div className="flex items-center gap-1.5 px-3 py-1 bg-[#111622]/60 border border-slate-800/80 rounded-full font-mono text-[11px] text-slate-400">
+              <Clock size={12} className="text-[#C59B63]" />
+              <span className="text-slate-300">{currentTime}</span>
+              <span className="text-[9px] text-slate-500">LK (GMT+5:30)</span>
+            </div>
+          )}
         </div>
 
         {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center gap-7">
+        <nav className="hidden md:flex items-center gap-6">
           {navLinks.map((link) => {
             const isActive = location.pathname === link.path;
             return (
@@ -78,13 +115,13 @@ export const CyberNavbar: React.FC = () => {
                 to={link.path}
                 className={`relative py-1 font-mono text-xs tracking-wider transition-colors ${
                   isActive 
-                    ? 'text-[#06B6D4] font-bold' 
+                    ? 'text-[#C59B63] font-bold' 
                     : 'text-slate-400 hover:text-white'
                 }`}
               >
                 {link.label}
                 {isActive && (
-                  <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#06B6D4] to-[#3B82F6] shadow-[0_0_8px_#06B6D4]" />
+                  <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#C59B63] to-[#E5C392] shadow-[0_0_8px_#C59B63]" />
                 )}
               </Link>
             );
@@ -92,7 +129,7 @@ export const CyberNavbar: React.FC = () => {
 
           <Link
             to="/contact"
-            className="ml-2 px-4 py-1.5 bg-gradient-to-r from-[#06B6D4] to-[#3B82F6] text-[#0B0F17] hover:opacity-90 font-mono text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(6,182,212,0.25)]"
+            className="ml-2 px-4 py-1.5 bg-gradient-to-r from-[#C59B63] to-[#D8AC74] text-[#0A0D14] hover:opacity-95 font-mono text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(197,155,99,0.25)]"
           >
             <span>Let's Talk</span>
             <ArrowRight size={13} />
@@ -103,7 +140,7 @@ export const CyberNavbar: React.FC = () => {
         <div className="flex md:hidden items-center gap-2">
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-2 text-slate-300 hover:text-white bg-[#111827] border border-slate-800 rounded-lg"
+            className="p-2 text-slate-300 hover:text-white bg-[#111622] border border-slate-800 rounded-lg"
             aria-label="Toggle Navigation Menu"
           >
             {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
@@ -113,7 +150,17 @@ export const CyberNavbar: React.FC = () => {
 
       {/* Mobile Drawer */}
       {mobileMenuOpen && (
-        <div className="md:hidden bg-[#0B0F17]/98 border-b border-slate-800 px-6 py-6 space-y-4 font-mono shadow-2xl backdrop-blur-xl">
+        <div className="md:hidden bg-[#0A0D14]/98 border-b border-slate-800 px-6 py-6 space-y-4 font-mono shadow-2xl backdrop-blur-xl">
+          {currentTime && (
+            <div className="flex items-center justify-between pb-3 border-b border-slate-800/80 text-xs text-slate-400">
+              <span className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse" />
+                <span>Colombo, LK</span>
+              </span>
+              <span className="text-[#C59B63]">{currentTime}</span>
+            </div>
+          )}
+
           <div className="flex flex-col space-y-3">
             {navLinks.map((link) => {
               const isActive = location.pathname === link.path;
@@ -121,12 +168,12 @@ export const CyberNavbar: React.FC = () => {
                 <Link
                   key={link.path}
                   to={link.path}
-                  className={`flex items-center justify-between py-2.5 text-sm border-b border-slate-800/60 ${
-                    isActive ? 'text-[#06B6D4] font-bold' : 'text-slate-300 hover:text-white'
+                  className={`flex items-center justify-between py-2 text-sm border-b border-slate-800/60 ${
+                    isActive ? 'text-[#C59B63] font-bold' : 'text-slate-300 hover:text-white'
                   }`}
                 >
                   <span>{link.label}</span>
-                  {isActive && <span className="w-1.5 h-1.5 rounded-full bg-[#06B6D4]" />}
+                  {isActive && <span className="w-1.5 h-1.5 rounded-full bg-[#C59B63]" />}
                 </Link>
               );
             })}
@@ -135,9 +182,9 @@ export const CyberNavbar: React.FC = () => {
           <div className="pt-2">
             <Link
               to="/contact"
-              className="w-full flex items-center justify-center gap-2 py-3 text-xs text-center bg-gradient-to-r from-[#06B6D4] to-[#3B82F6] text-[#0B0F17] font-bold rounded-lg transition-all"
+              className="w-full flex items-center justify-center gap-2 py-3 text-xs text-center bg-gradient-to-r from-[#C59B63] to-[#D8AC74] text-[#0A0D14] font-bold rounded-lg transition-all shadow-[0_0_15px_rgba(197,155,99,0.25)]"
             >
-              <span>Get in Touch</span>
+              <span>Get in Touch / Request Quote</span>
               <ArrowRight size={14} />
             </Link>
           </div>

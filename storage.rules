@@ -1,9 +1,15 @@
 service firebase.storage {
   match /b/{bucket}/o {
-    function isAdmin() { return request.auth != null && request.auth.token.admin == true; }
+    function isAdmin() {
+      return request.auth != null && (
+        request.auth.token.admin == true ||
+        request.auth.token.email == "kushanashvika216@gmail.com"
+      );
+    }
     match /{allPaths=**} {
       allow read: if true;
       allow write: if isAdmin() && request.resource.size < 10 * 1024 * 1024;
     }
   }
 }
+

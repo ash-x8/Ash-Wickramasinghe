@@ -1,222 +1,163 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { 
-  Terminal, 
-  ShieldCheck, 
-  Cpu, 
-  Award, 
-  BookOpen, 
-  Briefcase, 
-  Code2, 
-  CheckCircle2, 
-  ArrowUpRight, 
-  Layers, 
-  Server, 
-  FileText 
-} from 'lucide-react';
-import { CyberCard } from '../components/CyberCard';
-import { getSiteSettings } from '../lib/firebase';
+import { ArrowUpRight, ArrowRight, CheckCircle2, Download } from 'lucide-react';
+import { getSiteSettings, subscribeToSiteSettings } from '../lib/firebase';
 import { SiteSettings } from '../types';
 import { defaultSiteSettings } from '../data/defaultContent';
 
 export const AboutPage: React.FC = () => {
   const [settings, setSettings] = useState<SiteSettings>(defaultSiteSettings);
-  const [activeSkillCategory, setActiveSkillCategory] = useState<string>('All');
-  const [avatarLoaded, setAvatarLoaded] = useState(false);
+  const [activeCategory, setActiveCategory] = useState<string>('All');
 
   useEffect(() => {
-    async function loadData() {
-      try {
-        const loaded = await getSiteSettings();
-        if (loaded) setSettings(loaded);
-      } catch (err) {
-        console.warn("Using fallback settings for about page:", err);
-      }
-    }
-    loadData();
+    getSiteSettings().then((loaded) => {
+      if (loaded) setSettings(loaded);
+    }).catch(err => console.warn("Using fallback settings for about page:", err));
+
+    const unsubscribe = subscribeToSiteSettings((newSettings) => {
+      setSettings(newSettings);
+    });
+
+    return () => unsubscribe();
   }, []);
 
-  const categories = ['All', 'Frontend & UI', 'Backend & APIs', 'Cyber & Security', 'Cloud & DevOps', 'Databases & Tools'];
+  const categories = ['All', 'Design & Branding', 'Social & Growth', 'Content & Video', 'Web & Digital'];
 
-  const filteredSkills = activeSkillCategory === 'All' 
-    ? settings.skills 
-    : settings.skills.filter(s => s.category === activeSkillCategory);
+  const filteredSkills = activeCategory === 'All'
+    ? settings.skills
+    : settings.skills.filter(s => s.category === activeCategory);
 
   return (
-    <div className="relative min-h-screen pt-28 pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto z-10">
-      {/* PAGE HEADER */}
-      <div className="mb-12 border-b border-slate-800 pb-8">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#111827] border border-[#00f0ff]/30 text-xs font-mono text-[#00f0ff] mb-4">
-          <Terminal size={14} />
-          <span>// DOSSIER // ASH_WICKRAMASINGHE</span>
-        </div>
-        <h1 className="text-3xl sm:text-5xl font-extrabold text-white tracking-tight">
-          Specialist Profile & <span className="text-[#00f0ff]">Career Trajectory</span>
+    <div className="min-h-screen pt-36 pb-24 px-6 sm:px-8 lg:px-12 max-w-7xl mx-auto font-sans">
+      {/* Editorial Page Header */}
+      <div className="max-w-3xl space-y-4 mb-20">
+        <span className="text-xs uppercase tracking-widest text-accent font-semibold">
+          Biography &amp; Background
+        </span>
+        <h1 className="editorial-section-title font-semibold tracking-tight text-neutral-100 dark:text-neutral-100 light:text-neutral-900">
+          About Ash Wickramasinghe
         </h1>
-        <p className="text-slate-400 text-sm sm:text-base mt-2 max-w-2xl font-mono">
-          [IDENTITY: FULL-STACK ENGINEER] // [SPEC: CYBER DEFENSE & HIGH-PERFORMANCE WEB ARCHITECTURE]
+        <p className="text-base sm:text-lg text-neutral-400 dark:text-neutral-400 light:text-neutral-600 leading-relaxed font-light">
+          A graphic designer, social media strategist, and creative content editor working at the intersection of aesthetic restraint and high-retention digital media.
         </p>
       </div>
 
-      {/* BIO & DOSSIER GRID */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-16">
-        {/* Left Column: Comprehensive Bio */}
-        <div className="lg:col-span-8 space-y-6">
-          <CyberCard highlightHeader="EXECUTIVE_SUMMARY" className="p-6 space-y-4">
-            <h2 className="text-xl font-bold text-white flex items-center gap-2">
-              <ShieldCheck className="text-[#00ff66]" size={20} />
-              Mission-Driven Engineering Rigor
-            </h2>
-            <p className="text-slate-300 text-sm sm:text-base leading-relaxed">
-              {settings.aboutBio}
-            </p>
-            <p className="text-slate-400 text-sm sm:text-base leading-relaxed">
-              {settings.careerTrajectory}
-            </p>
-            <div className="pt-4 border-t border-slate-800 grid grid-cols-1 sm:grid-cols-3 gap-4 font-mono text-xs">
-              <div className="p-3 bg-[#0b0f19] border border-slate-800 rounded">
-                <span className="text-slate-500 block">PRIMARY FOCUS</span>
-                <span className="text-[#00f0ff] font-bold">Full-Stack & Cyber</span>
-              </div>
-              <div className="p-3 bg-[#0b0f19] border border-slate-800 rounded">
-                <span className="text-slate-500 block">BASE COORDINATES</span>
-                <span className="text-white font-bold">{settings.location}</span>
-              </div>
-              <div className="p-3 bg-[#0b0f19] border border-slate-800 rounded">
-                <span className="text-slate-500 block">DISPATCH STATUS</span>
-                <span className="text-[#00ff66] font-bold">Ready for Contracts</span>
-              </div>
-            </div>
-          </CyberCard>
+      {/* Main Narrative & Portrait Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start mb-24">
+        {/* Left: Portrait and Quick Facts */}
+        <div className="lg:col-span-5 space-y-8">
+          <div className="relative aspect-[4/5] rounded-2xl overflow-hidden bg-neutral-900 border border-neutral-800 dark:border-neutral-800 light:border-neutral-200">
+            <img
+              src={settings.avatarUrl || '/ash_cyber_portrait.jpg'}
+              alt="Ash Wickramasinghe"
+              className="w-full h-full object-cover grayscale contrast-110"
+            />
+          </div>
 
-          {/* Philosophy / Guiding Principles */}
-          <CyberCard highlightHeader="ARCHITECTURAL_PRINCIPLES" className="p-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="p-4 bg-[#0b0f19]/80 border border-slate-800/80 rounded-lg space-y-1">
-                <div className="text-[#00f0ff] font-mono text-xs font-bold">01. ZERO TRUST BY DEFAULT</div>
-                <p className="text-slate-400 text-xs">
-                  Every endpoint, incoming packet, and client parameter is untrusted until cryptographically validated.
-                </p>
-              </div>
-              <div className="p-4 bg-[#0b0f19]/80 border border-slate-800/80 rounded-lg space-y-1">
-                <div className="text-[#00ff66] font-mono text-xs font-bold">02. SUB-100MS LATENCY BUDGET</div>
-                <p className="text-slate-400 text-xs">
-                  Applications must render smoothly, optimize render cycles, minimize bundle footprints, and eliminate hydration lag.
-                </p>
-              </div>
-              <div className="p-4 bg-[#0b0f19]/80 border border-slate-800/80 rounded-lg space-y-1">
-                <div className="text-[#3b82f6] font-mono text-xs font-bold">03. RESILIENT FAILOVER LOOPS</div>
-                <p className="text-slate-400 text-xs">
-                  Designing microservices with graceful degradation so system failures are contained and self-healing.
-                </p>
-              </div>
-              <div className="p-4 bg-[#0b0f19]/80 border border-slate-800/80 rounded-lg space-y-1">
-                <div className="text-[#a855f7] font-mono text-xs font-bold">04. IMMERSIVE ERGONOMICS</div>
-                <p className="text-slate-400 text-xs">
-                  A high-tech cyberpunk visual identity should never compromise cognitive clarity, accessibility, and utility.
-                </p>
-              </div>
+          <div className="p-6 rounded-xl border border-neutral-800/80 dark:border-neutral-800/80 light:border-neutral-200 bg-neutral-900/30 dark:bg-neutral-900/30 light:bg-white space-y-4 text-xs">
+            <div className="flex justify-between py-2 border-b border-neutral-800 dark:border-neutral-800 light:border-neutral-100">
+              <span className="text-neutral-500 uppercase tracking-wider">Location</span>
+              <span className="font-medium text-neutral-200 dark:text-neutral-200 light:text-neutral-800">{settings.location}</span>
             </div>
-          </CyberCard>
+            <div className="flex justify-between py-2 border-b border-neutral-800 dark:border-neutral-800 light:border-neutral-100">
+              <span className="text-neutral-500 uppercase tracking-wider">Discipline</span>
+              <span className="font-medium text-neutral-200 dark:text-neutral-200 light:text-neutral-800">Design &amp; Social Strategy</span>
+            </div>
+            <div className="flex justify-between py-2 border-b border-neutral-800 dark:border-neutral-800 light:border-neutral-100">
+              <span className="text-neutral-500 uppercase tracking-wider">Inquiries</span>
+              <span className="font-medium text-neutral-200 dark:text-neutral-200 light:text-neutral-800">{settings.email}</span>
+            </div>
+            <div className="flex justify-between py-2">
+              <span className="text-neutral-500 uppercase tracking-wider">Availability</span>
+              <span className="font-medium text-emerald-400">{settings.statusText || "Open for Select Projects"}</span>
+            </div>
+          </div>
         </div>
 
-        {/* Right Column: Identity Specs & Quick Badges */}
-        <div className="lg:col-span-4 space-y-6">
-          <CyberCard highlightHeader="OPERATOR_IDENTITY" className="p-6 space-y-4">
-            <div className="relative w-full aspect-square rounded-xl overflow-hidden border border-slate-800 bg-[#0A0E17]">
-              {!avatarLoaded && (
-                <div className="absolute inset-0 bg-[#0F172A] flex flex-col items-center justify-center gap-2 animate-pulse">
-                  <div className="w-10 h-10 rounded-full border-2 border-[#06B6D4] border-t-transparent animate-spin" />
-                  <span className="text-[10px] font-mono text-slate-500">LOADING AVATAR...</span>
+        {/* Right: Narrative Story */}
+        <div className="lg:col-span-7 space-y-8">
+          <div className="space-y-6 text-neutral-300 dark:text-neutral-300 light:text-neutral-700 leading-relaxed text-base sm:text-lg">
+            <p>
+              {settings.aboutBio}
+            </p>
+            <p>
+              {settings.careerTrajectory}
+            </p>
+          </div>
+
+          {/* Creative Principles */}
+          <div className="pt-6 border-t border-neutral-800 dark:border-neutral-800 light:border-neutral-200 space-y-6">
+            <h3 className="text-sm uppercase tracking-widest text-accent font-semibold">
+              Guiding Principles
+            </h3>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div className="p-5 rounded-xl border border-neutral-800 dark:border-neutral-800 light:border-neutral-200 bg-neutral-900/20 dark:bg-neutral-900/20 light:bg-white space-y-2">
+                <div className="text-xs uppercase tracking-wider text-neutral-400 font-semibold">
+                  01. Deliberate Restraint
                 </div>
-              )}
-              <img 
-                src={settings.avatarUrl || "/ash_cyber_portrait.jpg"} 
-                alt="Ash Wickramasinghe"
-                onLoad={() => setAvatarLoaded(true)}
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src = "/ash_cyber_portrait.jpg";
-                  setAvatarLoaded(true);
-                }}
-                className={`w-full h-full object-cover object-top filter contrast-105 transition-all duration-700 ${
-                  avatarLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
-                }`}
-              />
-            </div>
-            <div className="space-y-1 font-mono text-xs">
-              <div className="text-white font-bold text-sm">ASH WICKRAMASINGHE</div>
-              <div className="text-[#06B6D4]">{settings.title}</div>
-              <div className="text-slate-400 text-[11px] pt-1">
-                Verified Cryptographic Signature: <span className="text-[#10B981]">VALID</span>
+                <div className="text-sm font-medium text-neutral-100 dark:text-neutral-100 light:text-neutral-900">
+                  Subtractive Clarity
+                </div>
+                <p className="text-xs text-neutral-400 dark:text-neutral-400 light:text-neutral-600 leading-relaxed">
+                  Removing non-essential elements until only the core message and visual elegance remain.
+                </p>
+              </div>
+
+              <div className="p-5 rounded-xl border border-neutral-800 dark:border-neutral-800 light:border-neutral-200 bg-neutral-900/20 dark:bg-neutral-900/20 light:bg-white space-y-2">
+                <div className="text-xs uppercase tracking-wider text-neutral-400 font-semibold">
+                  02. Typographic Gravity
+                </div>
+                <div className="text-sm font-medium text-neutral-100 dark:text-neutral-100 light:text-neutral-900">
+                  Mathematical Harmony
+                </div>
+                <p className="text-xs text-neutral-400 dark:text-neutral-400 light:text-neutral-600 leading-relaxed">
+                  Relying on precise baseline grids and thoughtful hierarchy rather than loud ornamentation.
+                </p>
               </div>
             </div>
+          </div>
 
-            <div className="pt-3 border-t border-slate-800 space-y-2">
-              <Link
-                to="/cv"
-                className="w-full py-2.5 px-4 bg-[#00f0ff] text-[#0b0f19] font-mono text-xs font-bold uppercase tracking-wider rounded flex items-center justify-center gap-2 hover:bg-[#00f0ff]/90 transition-all"
-              >
-                <FileText size={15} />
-                Access Read-Only CV
-              </Link>
-              <Link
-                to="/contact"
-                className="w-full py-2.5 px-4 bg-[#111827] border border-slate-700 text-white font-mono text-xs font-bold uppercase tracking-wider rounded flex items-center justify-center gap-2 hover:border-[#00f0ff] transition-all"
-              >
-                Direct Contact Channel
-              </Link>
-            </div>
-          </CyberCard>
-
-          {/* Quick Technical Specs */}
-          <CyberCard highlightHeader="SECURITY_CLEARANCE" className="p-5 space-y-3 font-mono text-xs">
-            <div className="flex justify-between items-center text-slate-300">
-              <span>CLEARANCE:</span>
-              <span className="text-[#00ff66] font-bold">LEVEL 4 // TOP SECRET</span>
-            </div>
-            <div className="flex justify-between items-center text-slate-300">
-              <span>PROTOCOL:</span>
-              <span className="text-[#00f0ff]">TLS 1.3 / AES-GCM</span>
-            </div>
-            <div className="flex justify-between items-center text-slate-300">
-              <span>HOST NODE:</span>
-              <span className="text-white">CLOUD RUN // ASIA-EAST</span>
-            </div>
-            <div className="flex justify-between items-center text-slate-300">
-              <span>FIREBASE CMS:</span>
-              <span className="text-[#00ff66]">LIVE FIRESTORE</span>
-            </div>
-          </CyberCard>
+          <div className="pt-4 flex flex-wrap items-center gap-4">
+            <Link
+              to="/cv"
+              className="inline-flex items-center gap-2 px-6 py-3 text-xs uppercase tracking-widest font-medium rounded-full bg-neutral-100 text-neutral-950 hover:opacity-90 transition-opacity"
+            >
+              <span>View Curriculum Vitae</span>
+              <ArrowUpRight size={14} />
+            </Link>
+            <Link
+              to="/contact"
+              className="inline-flex items-center gap-2 px-6 py-3 text-xs uppercase tracking-widest font-medium rounded-full border border-neutral-700 text-neutral-300 hover:text-white transition-colors"
+            >
+              <span>Initiate Collaboration</span>
+              <ArrowRight size={14} />
+            </Link>
+          </div>
         </div>
       </div>
 
-      {/* SKILLS MATRIX SECTION */}
-      <section className="mb-16">
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-6 pb-4 border-b border-slate-800">
-          <div>
-            <div className="text-[#00f0ff] font-mono text-xs uppercase tracking-widest mb-1 flex items-center gap-2">
-              <Cpu size={14} />
-              // HARDWARE & SOFTWARE PROFICIENCY
-            </div>
-            <h2 className="text-2xl sm:text-3xl font-bold text-white">
-              Technical Skills Matrix
-            </h2>
-          </div>
-          <div className="text-xs font-mono text-slate-400 mt-2 sm:mt-0">
-            {filteredSkills.length} MODULES DISPLAYED
-          </div>
+      {/* Skills & Capabilities Matrix */}
+      <section className="py-16 border-t border-neutral-800/60 dark:border-neutral-800/60 light:border-neutral-200">
+        <div className="space-y-4 mb-10">
+          <span className="text-xs uppercase tracking-widest text-accent font-semibold">
+            Technical &amp; Creative Proficiency
+          </span>
+          <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight text-neutral-100 dark:text-neutral-100 light:text-neutral-900">
+            Skills &amp; Capabilities
+          </h2>
         </div>
 
-        {/* Category Tabs */}
-        <div className="flex flex-wrap gap-2 mb-8 font-mono text-xs">
+        {/* Category Filters */}
+        <div className="flex flex-wrap gap-2 mb-8">
           {categories.map((cat) => (
             <button
               key={cat}
-              onClick={() => setActiveSkillCategory(cat)}
-              className={`px-3 py-1.5 rounded border transition-all ${
-                activeSkillCategory === cat
-                  ? 'bg-[#00f0ff]/15 border-[#00f0ff] text-[#00f0ff] shadow-[0_0_10px_rgba(0,240,255,0.2)]'
-                  : 'bg-[#111827] border-slate-800 text-slate-400 hover:text-white hover:border-slate-700'
+              onClick={() => setActiveCategory(cat)}
+              className={`px-4 py-1.5 rounded-full text-xs font-medium uppercase tracking-wider transition-all cursor-pointer ${
+                activeCategory === cat
+                  ? 'bg-neutral-100 text-neutral-950 font-semibold'
+                  : 'bg-neutral-900 dark:bg-neutral-900 light:bg-neutral-100 text-neutral-400 hover:text-white dark:hover:text-white light:hover:text-neutral-950 border border-neutral-800 dark:border-neutral-800 light:border-neutral-200'
               }`}
             >
               {cat}
@@ -224,91 +165,84 @@ export const AboutPage: React.FC = () => {
           ))}
         </div>
 
-        {/* Skills Grid with Progress Bars */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Skill Bars Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredSkills.map((skill, idx) => (
-            <div 
+            <div
               key={idx}
-              className="p-4 bg-[#111827]/70 border border-slate-800/80 rounded-lg hover:border-[#00f0ff]/40 transition-all font-mono"
+              className="p-5 rounded-xl border border-neutral-800/80 dark:border-neutral-800/80 light:border-neutral-200 bg-neutral-900/30 dark:bg-neutral-900/30 light:bg-white space-y-3"
             >
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-white text-xs font-bold flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#00f0ff]" />
+              <div className="flex items-center justify-between text-xs">
+                <span className="font-medium text-neutral-200 dark:text-neutral-200 light:text-neutral-800">
                   {skill.name}
                 </span>
-                <span className="text-[#00f0ff] text-xs font-bold">{skill.level}%</span>
+                <span className="text-accent font-mono text-[11px]">
+                  {skill.level}%
+                </span>
               </div>
-              <div className="w-full bg-[#0b0f19] h-2 rounded-full overflow-hidden p-[1px] border border-slate-800">
-                <div 
-                  className="h-full bg-gradient-to-r from-[#00f0ff] to-[#00ff66] rounded-full transition-all duration-700"
+              <div className="w-full h-1.5 rounded-full bg-neutral-800 dark:bg-neutral-800 light:bg-neutral-200 overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-accent transition-all duration-500"
                   style={{ width: `${skill.level}%` }}
                 />
               </div>
-              <div className="flex justify-between items-center mt-2 text-[10px] text-slate-500">
-                <span>SECTOR: {skill.category}</span>
-                <span>EFFICIENCY: OPTIMAL</span>
+              <div className="text-[10px] uppercase tracking-wider text-neutral-500">
+                {skill.category}
               </div>
             </div>
           ))}
         </div>
       </section>
 
-      {/* TIMELINE / EXPERIENCE & EDUCATION */}
-      <section className="mb-12">
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 pb-4 border-b border-slate-800">
-          <div>
-            <div className="text-[#00ff66] font-mono text-xs uppercase tracking-widest mb-1 flex items-center gap-2">
-              <Briefcase size={14} />
-              // CHRONOLOGICAL ARCHIVE
-            </div>
-            <h2 className="text-2xl sm:text-3xl font-bold text-white">
-              Experience & Academic Trajectory
+      {/* Career & Academic Timeline */}
+      {settings.timeline && settings.timeline.length > 0 && (
+        <section className="py-16 border-t border-neutral-800/60 dark:border-neutral-800/60 light:border-neutral-200">
+          <div className="space-y-4 mb-12">
+            <span className="text-xs uppercase tracking-widest text-accent font-semibold">
+              Trajectory
+            </span>
+            <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight text-neutral-100 dark:text-neutral-100 light:text-neutral-900">
+              Experience &amp; Education
             </h2>
           </div>
-        </div>
 
-        <div className="space-y-6 relative before:absolute before:inset-0 before:left-3 sm:before:left-4 before:w-[2px] before:bg-gradient-to-b before:from-[#00f0ff] before:via-[#3b82f6] before:to-transparent">
-          {settings.timeline.map((item) => (
-            <div key={item.id} className="relative pl-8 sm:pl-12">
-              {/* Timeline Bullet */}
-              <div className="absolute left-1 sm:left-2 top-1.5 w-4 h-4 rounded-full bg-[#0b0f19] border-2 border-[#00f0ff] flex items-center justify-center">
-                <div className="w-1.5 h-1.5 rounded-full bg-[#00f0ff]" />
-              </div>
-
-              <CyberCard className="p-6">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
-                  <div>
-                    <span className="text-xs font-mono text-[#00f0ff] font-semibold tracking-wider">
-                      {item.period}
-                    </span>
-                    <h3 className="text-lg font-bold text-white font-sans mt-0.5">
+          <div className="space-y-8">
+            {settings.timeline.map((item) => (
+              <div
+                key={item.id}
+                className="grid grid-cols-1 md:grid-cols-12 gap-4 pb-8 border-b border-neutral-800/60 dark:border-neutral-800/60 light:border-neutral-200"
+              >
+                <div className="md:col-span-3 text-xs uppercase tracking-wider font-mono text-accent">
+                  {item.period}
+                </div>
+                <div className="md:col-span-9 space-y-2">
+                  <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1">
+                    <h3 className="text-lg font-medium text-neutral-100 dark:text-neutral-100 light:text-neutral-900">
                       {item.role}
                     </h3>
-                    <div className="text-sm font-medium text-[#00ff66]">
+                    <span className="text-xs text-neutral-400">
                       {item.organization}
-                    </div>
-                  </div>
-                  <span className="px-2.5 py-1 rounded bg-[#0b0f19] border border-slate-800 font-mono text-[11px] text-slate-400 self-start sm:self-auto">
-                    {item.type === 'work' ? 'PROFESSIONAL ROLE' : 'ACADEMIC CREDENTIAL'}
-                  </span>
-                </div>
-
-                <p className="text-slate-400 text-xs sm:text-sm leading-relaxed mb-4">
-                  {item.description}
-                </p>
-
-                <div className="flex flex-wrap gap-1.5 pt-2 border-t border-slate-800/80">
-                  {item.skills.map((s, i) => (
-                    <span key={i} className="px-2 py-0.5 bg-[#0b0f19] border border-slate-800 text-slate-300 font-mono text-[10px] rounded">
-                      {s}
                     </span>
-                  ))}
+                  </div>
+                  <p className="text-xs sm:text-sm text-neutral-300 dark:text-neutral-300 light:text-neutral-700 leading-relaxed">
+                    {item.description}
+                  </p>
+                  <div className="flex flex-wrap gap-2 pt-2">
+                    {item.skills.map((s, i) => (
+                      <span
+                        key={i}
+                        className="text-[10px] px-2.5 py-0.5 rounded-full bg-neutral-900 dark:bg-neutral-900 light:bg-neutral-100 text-neutral-400 border border-neutral-800 dark:border-neutral-800 light:border-neutral-200"
+                      >
+                        {s}
+                      </span>
+                    ))}
+                  </div>
                 </div>
-              </CyberCard>
-            </div>
-          ))}
-        </div>
-      </section>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   );
 };

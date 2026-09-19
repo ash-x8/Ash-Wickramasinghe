@@ -1,68 +1,84 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { Globe, GitBranch, Send, Mail, ArrowUpRight, Heart } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
+import { Globe, GitBranch, Send, Mail, ArrowUpRight } from 'lucide-react';
 
 export const CyberFooter: React.FC = () => {
   const currentYear = new Date().getFullYear();
+  const location = useLocation();
+
+  // The admin dashboard is completely separated from the public website
+  if (location.pathname.startsWith('/admin')) {
+    return null;
+  }
 
   return (
-    <footer className="bg-[#080C14] border-t border-slate-800/80 text-slate-400 font-mono text-xs relative overflow-hidden">
+    <footer className="bg-[#080B12] border-t border-slate-800/80 text-slate-400 font-mono text-xs relative overflow-hidden">
       {/* Subtle top accent gradient */}
-      <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-[#06B6D4]/40 to-transparent" />
+      <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-[#C59B63]/40 to-transparent" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
           {/* Col 1: System Ident */}
           <div className="space-y-3 md:col-span-2">
             <div className="flex items-center gap-2 text-white text-sm font-bold tracking-wider font-sans">
-              <span className="w-2 h-2 bg-[#06B6D4] rounded-full animate-ping" />
+              <span className="w-2 h-2 bg-[#C59B63] rounded-full animate-pulse" />
               Ash Wickramasinghe
             </div>
             <p className="text-slate-400 text-xs leading-relaxed max-w-md font-sans">
-              Senior Full-Stack Web Developer &amp; UI/UX Architect. Building responsive, high-performance web applications, scalable APIs, and clean digital experiences.
+              Graphic Designer, Social Media Strategist &amp; Creative Content Editor. Designing timeless brand identity systems, high-retention visual content, publication layouts, and digital creative assets.
             </p>
-            <div className="flex items-center gap-3 pt-2 text-[11px] text-slate-400">
-              <span className="px-2.5 py-1 bg-[#111827] border border-slate-800 rounded-md text-[#06B6D4]">
-                React &amp; TypeScript
+            <div className="flex flex-wrap items-center gap-2 pt-2 text-[11px] text-slate-300">
+              <span className="px-2.5 py-1 bg-[#111622] border border-slate-800 rounded-md text-[#C59B63]">
+                Brand Identity
               </span>
-              <span className="px-2.5 py-1 bg-[#111827] border border-slate-800 rounded-md text-[#3B82F6]">
-                Node.js &amp; Cloud
+              <span className="px-2.5 py-1 bg-[#111622] border border-slate-800 rounded-md text-[#EDEDED]">
+                Social Media Systems
               </span>
-              <span className="px-2.5 py-1 bg-[#111827] border border-slate-800 rounded-md text-[#10B981]">
-                UI/UX Design
+              <span className="px-2.5 py-1 bg-[#111622] border border-slate-800 rounded-md text-slate-400">
+                Editorial &amp; Layout
               </span>
             </div>
           </div>
 
           {/* Col 2: Navigation Links */}
           <div className="space-y-2">
-            <div className="text-slate-200 font-bold uppercase tracking-wider text-[11px] text-[#06B6D4]">
+            <div className="text-slate-200 font-bold uppercase tracking-wider text-[11px] text-[#C59B63]">
               Navigation
             </div>
             <ul className="space-y-1.5 text-[11px]">
               <li>
-                <Link to="/" className="hover:text-white transition-colors flex items-center gap-1.5">
+                <Link to="/" className="hover:text-[#C59B63] transition-colors flex items-center gap-1.5">
                   <span className="text-slate-600">&gt;</span> Home
                 </Link>
               </li>
               <li>
-                <Link to="/about" className="hover:text-white transition-colors flex items-center gap-1.5">
+                <Link to="/about" className="hover:text-[#C59B63] transition-colors flex items-center gap-1.5">
                   <span className="text-slate-600">&gt;</span> About &amp; Skills
                 </Link>
               </li>
               <li>
-                <Link to="/projects" className="hover:text-white transition-colors flex items-center gap-1.5">
+                <Link to="/services" className="hover:text-[#C59B63] transition-colors flex items-center gap-1.5">
+                  <span className="text-slate-600">&gt;</span> Services &amp; Solutions
+                </Link>
+              </li>
+              <li>
+                <Link to="/projects" className="hover:text-[#C59B63] transition-colors flex items-center gap-1.5">
                   <span className="text-slate-600">&gt;</span> Featured Projects
                 </Link>
               </li>
               <li>
-                <Link to="/cv" className="hover:text-white transition-colors flex items-center gap-1.5 text-[#06B6D4]">
+                <Link to="/writing" className="hover:text-[#C59B63] transition-colors flex items-center gap-1.5">
+                  <span className="text-slate-600">&gt;</span> Writing &amp; Articles
+                </Link>
+              </li>
+              <li>
+                <Link to="/cv" className="hover:text-[#C59B63] transition-colors flex items-center gap-1.5 text-[#C59B63]">
                   <span className="text-slate-600">&gt;</span> View CV / Resume
                 </Link>
               </li>
               <li>
-                <Link to="/contact" className="hover:text-white transition-colors flex items-center gap-1.5">
-                  <span className="text-slate-600">&gt;</span> Contact
+                <Link to="/contact" className="hover:text-[#C59B63] transition-colors flex items-center gap-1.5">
+                  <span className="text-slate-600">&gt;</span> Contact &amp; Inquiry
                 </Link>
               </li>
             </ul>
@@ -70,42 +86,42 @@ export const CyberFooter: React.FC = () => {
 
           {/* Col 3: Coordinates */}
           <div className="space-y-2">
-            <div className="text-slate-200 font-bold uppercase tracking-wider text-[11px] text-[#06B6D4]">
+            <div className="text-slate-200 font-bold uppercase tracking-wider text-[11px] text-[#C59B63]">
               Connect
             </div>
             <div className="flex flex-col space-y-2 text-[11px]">
               <a 
-                href="https://github.com/ash-x8" 
-                target="_blank" 
-                rel="noreferrer" 
-                className="flex items-center gap-2 text-slate-300 hover:text-[#06B6D4] transition-colors"
-              >
-                <GitBranch size={14} className="text-[#06B6D4]" />
-                github.com/ash-x8
-              </a>
-              <a 
                 href="https://linkedin.com/in/ash-wickramasinghe" 
                 target="_blank" 
                 rel="noreferrer" 
-                className="flex items-center gap-2 text-slate-300 hover:text-[#06B6D4] transition-colors"
+                className="flex items-center gap-2 text-slate-300 hover:text-[#C59B63] transition-colors"
               >
-                <Globe size={14} className="text-[#06B6D4]" />
+                <Globe size={14} className="text-[#C59B63]" />
                 linkedin.com/in/ash-wickramasinghe
+              </a>
+              <a 
+                href="https://github.com/ash-wickramasinghe" 
+                target="_blank" 
+                rel="noreferrer" 
+                className="flex items-center gap-2 text-slate-300 hover:text-[#C59B63] transition-colors"
+              >
+                <GitBranch size={14} className="text-[#C59B63]" />
+                github.com/ash-wickramasinghe
               </a>
               <a 
                 href="https://t.me/ash_wickramasinghe" 
                 target="_blank" 
                 rel="noreferrer" 
-                className="flex items-center gap-2 text-slate-300 hover:text-[#06B6D4] transition-colors"
+                className="flex items-center gap-2 text-slate-300 hover:text-[#C59B63] transition-colors"
               >
-                <Send size={14} className="text-[#06B6D4]" />
-                Telegram
+                <Send size={14} className="text-[#C59B63]" />
+                Telegram (@ash_wickramasinghe)
               </a>
               <a 
                 href="mailto:kushanashvika216@gmail.com" 
-                className="flex items-center gap-2 text-slate-300 hover:text-[#06B6D4] transition-colors"
+                className="flex items-center gap-2 text-slate-300 hover:text-[#C59B63] transition-colors"
               >
-                <Mail size={14} className="text-[#06B6D4]" />
+                <Mail size={14} className="text-[#C59B63]" />
                 kushanashvika216@gmail.com
               </a>
             </div>
@@ -118,7 +134,7 @@ export const CyberFooter: React.FC = () => {
             &copy; {currentYear} Ash Wickramasinghe. All rights reserved.
           </div>
           <div className="flex items-center gap-4 text-slate-400">
-            <span>Colombo, Sri Lanka &bull; Remote</span>
+            <span>Colombo, Sri Lanka &bull; Available Worldwide</span>
           </div>
         </div>
       </div>
