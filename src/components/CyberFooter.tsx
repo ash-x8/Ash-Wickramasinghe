@@ -25,17 +25,20 @@ export const CyberFooter: React.FC = () => {
               Ash Wickramasinghe
             </div>
             <p className="text-slate-400 text-xs leading-relaxed max-w-md font-sans">
-              Graphic Designer, Social Media Strategist &amp; Creative Content Editor. Designing timeless brand identity systems, high-retention visual content, publication layouts, and digital creative assets.
+              Graphic Designer • Social Media Manager • Author. Creating purposeful visual designs, high-retention digital content, and meaningful creative writing.
+            </p>
+            <p className="text-[11px] text-[#C59B63] italic font-serif">
+              &ldquo;Design with purpose. Create with intention. Write with meaning.&rdquo;
             </p>
             <div className="flex flex-wrap items-center gap-2 pt-2 text-[11px] text-slate-300">
               <span className="px-2.5 py-1 bg-[#111622] border border-slate-800 rounded-md text-[#C59B63]">
-                Brand Identity
+                Graphic Design
               </span>
               <span className="px-2.5 py-1 bg-[#111622] border border-slate-800 rounded-md text-[#EDEDED]">
-                Social Media Systems
+                Social Media Management
               </span>
               <span className="px-2.5 py-1 bg-[#111622] border border-slate-800 rounded-md text-slate-400">
-                Editorial &amp; Layout
+                Author &amp; Creative Writing
               </span>
             </div>
           </div>
@@ -53,12 +56,12 @@ export const CyberFooter: React.FC = () => {
               </li>
               <li>
                 <Link to="/about" className="hover:text-[#C59B63] transition-colors flex items-center gap-1.5">
-                  <span className="text-slate-600">&gt;</span> About &amp; Skills
+                  <span className="text-slate-600">&gt;</span> About &amp; Profile
                 </Link>
               </li>
               <li>
                 <Link to="/services" className="hover:text-[#C59B63] transition-colors flex items-center gap-1.5">
-                  <span className="text-slate-600">&gt;</span> Services &amp; Solutions
+                  <span className="text-slate-600">&gt;</span> Services
                 </Link>
               </li>
               <li>
@@ -78,7 +81,7 @@ export const CyberFooter: React.FC = () => {
               </li>
               <li>
                 <Link to="/contact" className="hover:text-[#C59B63] transition-colors flex items-center gap-1.5">
-                  <span className="text-slate-600">&gt;</span> Contact &amp; Inquiry
+                  <span className="text-slate-600">&gt;</span> Contact
                 </Link>
               </li>
             </ul>
@@ -87,42 +90,51 @@ export const CyberFooter: React.FC = () => {
           {/* Col 3: Coordinates */}
           <div className="space-y-2">
             <div className="text-slate-200 font-bold uppercase tracking-wider text-[11px] text-[#C59B63]">
-              Connect
+              Connect &amp; Social
             </div>
             <div className="flex flex-col space-y-2 text-[11px]">
               <a 
-                href="https://linkedin.com/in/ash-wickramasinghe" 
+                href="https://www.linkedin.com/in/kushan-a-wickramasinghe-28b1aa2a0" 
                 target="_blank" 
                 rel="noreferrer" 
                 className="flex items-center gap-2 text-slate-300 hover:text-[#C59B63] transition-colors"
               >
                 <Globe size={14} className="text-[#C59B63]" />
-                linkedin.com/in/ash-wickramasinghe
+                LinkedIn (Kushan A Wickramasinghe)
               </a>
               <a 
-                href="https://github.com/ash-wickramasinghe" 
-                target="_blank" 
-                rel="noreferrer" 
-                className="flex items-center gap-2 text-slate-300 hover:text-[#C59B63] transition-colors"
-              >
-                <GitBranch size={14} className="text-[#C59B63]" />
-                github.com/ash-wickramasinghe
-              </a>
-              <a 
-                href="https://t.me/ash_wickramasinghe" 
+                href="https://t.me/kawickramasinghe" 
                 target="_blank" 
                 rel="noreferrer" 
                 className="flex items-center gap-2 text-slate-300 hover:text-[#C59B63] transition-colors"
               >
                 <Send size={14} className="text-[#C59B63]" />
-                Telegram (@ash_wickramasinghe)
+                Telegram (@kawickramasinghe)
               </a>
               <a 
-                href="mailto:kushanashvika216@gmail.com" 
+                href="https://wa.me/94752269410" 
+                target="_blank" 
+                rel="noreferrer" 
+                className="flex items-center gap-2 text-slate-300 hover:text-[#C59B63] transition-colors"
+              >
+                <Globe size={14} className="text-[#C59B63]" />
+                WhatsApp (+94 75 226 9410)
+              </a>
+              <a 
+                href="mailto:Kushanashvika216@gmail.com" 
                 className="flex items-center gap-2 text-slate-300 hover:text-[#C59B63] transition-colors"
               >
                 <Mail size={14} className="text-[#C59B63]" />
-                kushanashvika216@gmail.com
+                Kushanashvika216@gmail.com
+              </a>
+              <a 
+                href="https://www.youtube.com/@Ash-x8" 
+                target="_blank" 
+                rel="noreferrer" 
+                className="flex items-center gap-2 text-slate-300 hover:text-[#C59B63] transition-colors"
+              >
+                <ArrowUpRight size={14} className="text-[#C59B63]" />
+                YouTube Channel
               </a>
             </div>
           </div>
@@ -131,10 +143,10 @@ export const CyberFooter: React.FC = () => {
         {/* Bottom Bar */}
         <div className="pt-6 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-slate-500">
           <div>
-            &copy; {currentYear} Ash Wickramasinghe. All rights reserved.
+            &copy; {currentYear} Ash Wickramasinghe (Kushan A Wickramasinghe). All rights reserved.
           </div>
           <div className="flex items-center gap-4 text-slate-400">
-            <span>Colombo, Sri Lanka &bull; Available Worldwide</span>
+            <span>Sri Lanka &bull; Remote &bull; Available Worldwide</span>
           </div>
         </div>
       </div>

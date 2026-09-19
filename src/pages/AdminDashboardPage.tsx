@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { 
   LayoutDashboard, 
+  BarChart3,
   Briefcase, 
   FileText, 
   Wrench, 
@@ -43,13 +44,16 @@ import {
   updateMessageStatus,
   deleteContactMessage,
   uploadMediaFile,
-  deleteMediaFile
+  deleteMediaFile,
+  getAnalyticsTrends
 } from '../lib/firebase';
-import { Project, SiteSettings, ContactMessage, Article, ServiceItem, MediaItem } from '../types';
+import { Project, SiteSettings, ContactMessage, Article, ServiceItem, MediaItem, PageViewTrend } from '../types';
 import { defaultSiteSettings, defaultProjects, defaultArticles } from '../data/defaultContent';
+import { ActivityTrendsVisualizer } from '../components/admin/ActivityTrendsVisualizer';
 
 type AdminTab = 
   | 'overview' 
+  | 'analytics'
   | 'projects' 
   | 'services' 
   | 'writing' 
@@ -70,6 +74,7 @@ export const AdminDashboardPage: React.FC = () => {
   const [articles, setArticles] = useState<Article[]>(defaultArticles);
   const [services, setServices] = useState<ServiceItem[]>(defaultSiteSettings.services || []);
   const [messages, setMessages] = useState<ContactMessage[]>([]);
+  const [trends, setTrends] = useState<PageViewTrend[]>([]);
   const [mediaList, setMediaList] = useState<MediaItem[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -98,18 +103,20 @@ export const AdminDashboardPage: React.FC = () => {
   const refreshData = useCallback(async () => {
     setLoading(true);
     try {
-      const [s, p, a, srv, m] = await Promise.all([
+      const [s, p, a, srv, m, tr] = await Promise.all([
         getSiteSettings(),
         getProjects(),
         getArticles(),
         getServices(),
-        getContactMessages()
+        getContactMessages(),
+        getAnalyticsTrends(30)
       ]);
       setSettings(s);
       setProjects(p);
       setArticles(a);
       setServices(srv);
       setMessages(m);
+      setTrends(tr);
     } catch (err) {
       console.error("Error refreshing CMS data:", err);
       showToast("Error loading some database items", "error");
@@ -362,11 +369,12 @@ export const AdminDashboardPage: React.FC = () => {
         <nav className="flex-1 px-3 py-6 space-y-1 text-xs">
           {[
             { id: 'overview', label: 'Overview', icon: LayoutDashboard },
+            { id: 'analytics', label: 'Analytics & Trends', icon: BarChart3 },
             { id: 'projects', label: 'Projects', icon: Briefcase, count: projects.length },
             { id: 'services', label: 'Services', icon: Wrench, count: services.length },
             { id: 'writing', label: 'Writing / Articles', icon: FileText, count: articles.length },
             { id: 'messages', label: 'Messages', icon: Mail, count: unreadMessagesCount, badgeColor: 'bg-amber-500 text-black' },
-            { id: 'profile', label: 'Profile & Bio', icon: User },
+            { id: 'profile', label: 'Profile & Identity', icon: User },
             { id: 'theme', label: 'Theme & Accent', icon: Palette },
             { id: 'seo', label: 'SEO Settings', icon: Globe },
             { id: 'media', label: 'Media Library', icon: ImageIcon },
@@ -413,6 +421,77 @@ export const AdminDashboardPage: React.FC = () => {
           </button>
         </div>
       </aside>
+
+      {/* MOBILE SIDEBAR DRAWER */}
+      {mobileSidebarOpen && (
+        <div className="fixed inset-0 z-50 lg:hidden flex">
+          <div 
+            className="fixed inset-0 bg-black/70 backdrop-blur-sm"
+            onClick={() => setMobileSidebarOpen(false)}
+          />
+          <div className="relative w-72 max-w-[80vw] bg-slate-900 border-r border-slate-800 flex flex-col z-10">
+            <div className="p-5 border-b border-slate-800 flex items-center justify-between">
+              <div className="font-semibold text-sm text-white">Studio Admin</div>
+              <button 
+                onClick={() => setMobileSidebarOpen(false)}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800"
+              >
+                <X size={18} />
+              </button>
+            </div>
+            <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto text-xs">
+              {[
+                { id: 'overview', label: 'Overview', icon: LayoutDashboard },
+                { id: 'analytics', label: 'Analytics & Trends', icon: BarChart3 },
+                { id: 'projects', label: 'Projects', icon: Briefcase, count: projects.length },
+                { id: 'services', label: 'Services', icon: Wrench, count: services.length },
+                { id: 'writing', label: 'Writing / Articles', icon: FileText, count: articles.length },
+                { id: 'messages', label: 'Messages', icon: Mail, count: unreadMessagesCount, badgeColor: 'bg-amber-500 text-black' },
+                { id: 'profile', label: 'Profile & Identity', icon: User },
+                { id: 'theme', label: 'Theme & Accent', icon: Palette },
+                { id: 'seo', label: 'SEO Settings', icon: Globe },
+                { id: 'media', label: 'Media Library', icon: ImageIcon },
+              ].map((item) => {
+                const Icon = item.icon;
+                const isActive = activeTab === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => {
+                      setActiveTab(item.id as AdminTab);
+                      setMobileSidebarOpen(false);
+                    }}
+                    className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-medium transition-colors cursor-pointer ${
+                      isActive 
+                        ? 'bg-slate-800 text-white shadow-sm' 
+                        : 'text-slate-400 hover:text-slate-200 hover:bg-slate-850'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <Icon size={16} className={isActive ? 'text-amber-400' : 'text-slate-400'} />
+                      <span>{item.label}</span>
+                    </div>
+                    {item.count !== undefined && item.count > 0 && (
+                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-mono ${item.badgeColor || 'bg-slate-800 text-slate-400'}`}>
+                        {item.count}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </nav>
+            <div className="p-4 border-t border-slate-800 space-y-2">
+              <button
+                onClick={() => logout()}
+                className="w-full flex items-center justify-center gap-2 py-2 px-3 text-xs text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded-xl transition-colors cursor-pointer"
+              >
+                <LogOut size={14} />
+                <span>Sign Out</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* MAIN CONTENT AREA */}
       <div className="flex-1 flex flex-col min-w-0">
@@ -512,6 +591,13 @@ export const AdminDashboardPage: React.FC = () => {
                 </div>
               </div>
 
+              {/* Engagement & Analytics Trends Section (Recharts) */}
+              <ActivityTrendsVisualizer
+                trends={trends}
+                messages={messages}
+                accentColor={settings.accentColor || '#C59B63'}
+              />
+
               {/* Recent messages summary */}
               <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-4">
                 <div className="flex items-center justify-between">
@@ -546,6 +632,33 @@ export const AdminDashboardPage: React.FC = () => {
                   </div>
                 )}
               </div>
+            </div>
+          )}
+
+          {/* 2. DEDICATED ANALYTICS & TELEMETRY TAB */}
+          {activeTab === 'analytics' && (
+            <div className="space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <h2 className="text-xl font-bold text-white">Analytics &amp; Engagement Trends</h2>
+                  <p className="text-xs text-slate-400">
+                    Continuous telemetry tracking page views, conversion rates, and client contact inquiries stored in Firestore.
+                  </p>
+                </div>
+                <button
+                  onClick={() => refreshData()}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 transition-colors cursor-pointer self-start sm:self-auto"
+                >
+                  <Search size={14} />
+                  <span>Refresh Telemetry</span>
+                </button>
+              </div>
+
+              <ActivityTrendsVisualizer
+                trends={trends}
+                messages={messages}
+                accentColor={settings.accentColor || '#C59B63'}
+              />
             </div>
           )}
 
@@ -878,14 +991,25 @@ export const AdminDashboardPage: React.FC = () => {
                   e.preventDefault();
                   handleSaveSettings({
                     name: settings.name,
+                    fullName: settings.fullName,
+                    creativeName: settings.creativeName,
                     title: settings.title,
                     bio: settings.bio,
                     aboutBio: settings.aboutBio,
+                    personalStatement: settings.personalStatement,
+                    authorNames: settings.authorNames,
                     careerTrajectory: settings.careerTrajectory,
                     statusText: settings.statusText,
+                    workAvailability: settings.workAvailability,
                     location: settings.location,
                     email: settings.email,
-                    github: settings.github,
+                    emailSecondary: settings.emailSecondary,
+                    phone: settings.phone,
+                    phoneSecondary: settings.phoneSecondary,
+                    whatsapp: settings.whatsapp,
+                    youtube: settings.youtube,
+                    facebook: settings.facebook,
+                    tiktok: settings.tiktok,
                     linkedin: settings.linkedin,
                     telegram: settings.telegram,
                     cvUrl: settings.cvUrl,
@@ -894,126 +1018,260 @@ export const AdminDashboardPage: React.FC = () => {
                 }}
                 className="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-6 text-xs"
               >
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* 1. Identity & Names */}
+                <div className="border-b border-slate-800 pb-5 space-y-4">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-amber-400 font-mono">
+                    Verified Identity &amp; Creative Names
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-slate-400 mb-1 font-semibold">Full Legal Name</label>
+                      <input
+                        type="text"
+                        value={settings.fullName || ''}
+                        onChange={(e) => setSettings({ ...settings, fullName: e.target.value })}
+                        placeholder="Kushan A Wickramasinghe"
+                        className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white font-sans"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-slate-400 mb-1 font-semibold">Professional / Creative Name</label>
+                      <input
+                        type="text"
+                        value={settings.creativeName || settings.name || ''}
+                        onChange={(e) => setSettings({ ...settings, creativeName: e.target.value, name: e.target.value })}
+                        placeholder="Ash Wickramasinghe"
+                        className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white font-sans"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-slate-400 mb-1 font-semibold">Author / Writing Names</label>
+                      <input
+                        type="text"
+                        value={settings.authorNames || ''}
+                        onChange={(e) => setSettings({ ...settings, authorNames: e.target.value })}
+                        placeholder="Writer Ash, Writer Tizzy, Tizzy"
+                        className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white font-sans"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* 2. Professional Role & Statement */}
+                <div className="border-b border-slate-800 pb-5 space-y-4">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-amber-400 font-mono">
+                    Professional Role &amp; Guiding Statement
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-slate-400 mb-1 font-semibold">Professional Title / Roles</label>
+                      <input
+                        type="text"
+                        value={settings.title}
+                        onChange={(e) => setSettings({ ...settings, title: e.target.value })}
+                        placeholder="Graphic Designer • Social Media Manager • Author"
+                        className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-slate-400 mb-1 font-semibold">Personal Statement / Philosophy</label>
+                      <input
+                        type="text"
+                        value={settings.personalStatement || ''}
+                        onChange={(e) => setSettings({ ...settings, personalStatement: e.target.value })}
+                        placeholder="Design with purpose. Create with intention. Write with meaning."
+                        className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-slate-400 mb-1 font-semibold">Location</label>
+                      <input
+                        type="text"
+                        value={settings.location}
+                        onChange={(e) => setSettings({ ...settings, location: e.target.value })}
+                        className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-slate-400 mb-1 font-semibold">Work Availability Status</label>
+                      <input
+                        type="text"
+                        value={settings.statusText || settings.workAvailability || ''}
+                        onChange={(e) => setSettings({ ...settings, statusText: e.target.value, workAvailability: e.target.value })}
+                        className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* 3. Bios */}
+                <div className="border-b border-slate-800 pb-5 space-y-4">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-amber-400 font-mono">
+                    Biographical Content
+                  </h3>
                   <div>
-                    <label className="block text-slate-400 mb-1 font-semibold">Display Name</label>
-                    <input
-                      type="text"
-                      value={settings.name}
-                      onChange={(e) => setSettings({ ...settings, name: e.target.value })}
+                    <label className="block text-slate-400 mb-1 font-semibold">Short Hero Bio</label>
+                    <textarea
+                      rows={2}
+                      value={settings.bio}
+                      onChange={(e) => setSettings({ ...settings, bio: e.target.value })}
                       className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white"
                     />
                   </div>
+
                   <div>
-                    <label className="block text-slate-400 mb-1 font-semibold">Professional Title</label>
-                    <input
-                      type="text"
-                      value={settings.title}
-                      onChange={(e) => setSettings({ ...settings, title: e.target.value })}
+                    <label className="block text-slate-400 mb-1 font-semibold">Comprehensive About Biography</label>
+                    <textarea
+                      rows={4}
+                      value={settings.aboutBio}
+                      onChange={(e) => setSettings({ ...settings, aboutBio: e.target.value })}
                       className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white"
                     />
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-slate-400 mb-1 font-semibold">Short Hero Bio</label>
-                  <textarea
-                    rows={2}
-                    value={settings.bio}
-                    onChange={(e) => setSettings({ ...settings, bio: e.target.value })}
-                    className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white"
-                  />
-                </div>
+                {/* 4. Contact & Social Coordinates */}
+                <div className="space-y-4">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-amber-400 font-mono">
+                    Verified Contact &amp; Social Channels
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-slate-400 mb-1 font-semibold">Primary Contact Email</label>
+                      <input
+                        type="email"
+                        value={settings.email}
+                        onChange={(e) => setSettings({ ...settings, email: e.target.value })}
+                        className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white font-mono"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-slate-400 mb-1 font-semibold">Creative / Business Email</label>
+                      <input
+                        type="email"
+                        value={settings.emailSecondary || ''}
+                        onChange={(e) => setSettings({ ...settings, emailSecondary: e.target.value })}
+                        className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white font-mono"
+                      />
+                    </div>
+                  </div>
 
-                <div>
-                  <label className="block text-slate-400 mb-1 font-semibold">Comprehensive About Biography</label>
-                  <textarea
-                    rows={4}
-                    value={settings.aboutBio}
-                    onChange={(e) => setSettings({ ...settings, aboutBio: e.target.value })}
-                    className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white"
-                  />
-                </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-slate-400 mb-1 font-semibold">Primary Phone</label>
+                      <input
+                        type="tel"
+                        value={settings.phone || ''}
+                        onChange={(e) => setSettings({ ...settings, phone: e.target.value })}
+                        placeholder="+94 75 226 9410"
+                        className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white font-mono"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-slate-400 mb-1 font-semibold">Secondary Phone</label>
+                      <input
+                        type="tel"
+                        value={settings.phoneSecondary || ''}
+                        onChange={(e) => setSettings({ ...settings, phoneSecondary: e.target.value })}
+                        placeholder="+94 74 085 8041"
+                        className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white font-mono"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-slate-400 mb-1 font-semibold">WhatsApp Link</label>
+                      <input
+                        type="url"
+                        value={settings.whatsapp || ''}
+                        onChange={(e) => setSettings({ ...settings, whatsapp: e.target.value })}
+                        placeholder="https://wa.me/94752269410"
+                        className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white font-mono"
+                      />
+                    </div>
+                  </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-slate-400 mb-1 font-semibold">Location</label>
-                    <input
-                      type="text"
-                      value={settings.location}
-                      onChange={(e) => setSettings({ ...settings, location: e.target.value })}
-                      className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white"
-                    />
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-slate-400 mb-1 font-semibold">LinkedIn URL</label>
+                      <input
+                        type="url"
+                        value={settings.linkedin}
+                        onChange={(e) => setSettings({ ...settings, linkedin: e.target.value })}
+                        className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-slate-400 mb-1 font-semibold">Telegram URL</label>
+                      <input
+                        type="url"
+                        value={settings.telegram}
+                        onChange={(e) => setSettings({ ...settings, telegram: e.target.value })}
+                        className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-slate-400 mb-1 font-semibold">YouTube URL</label>
+                      <input
+                        type="url"
+                        value={settings.youtube || ''}
+                        onChange={(e) => setSettings({ ...settings, youtube: e.target.value })}
+                        className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white"
+                      />
+                    </div>
                   </div>
-                  <div>
-                    <label className="block text-slate-400 mb-1 font-semibold">Contact Email</label>
-                    <input
-                      type="email"
-                      value={settings.email}
-                      onChange={(e) => setSettings({ ...settings, email: e.target.value })}
-                      className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white"
-                    />
-                  </div>
-                </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-slate-400 mb-1 font-semibold">GitHub URL</label>
-                    <input
-                      type="url"
-                      value={settings.github}
-                      onChange={(e) => setSettings({ ...settings, github: e.target.value })}
-                      className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white"
-                    />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-slate-400 mb-1 font-semibold">Facebook URL</label>
+                      <input
+                        type="url"
+                        value={settings.facebook || ''}
+                        onChange={(e) => setSettings({ ...settings, facebook: e.target.value })}
+                        className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-slate-400 mb-1 font-semibold">TikTok URL</label>
+                      <input
+                        type="url"
+                        value={settings.tiktok || ''}
+                        onChange={(e) => setSettings({ ...settings, tiktok: e.target.value })}
+                        className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white"
+                      />
+                    </div>
                   </div>
-                  <div>
-                    <label className="block text-slate-400 mb-1 font-semibold">LinkedIn URL</label>
-                    <input
-                      type="url"
-                      value={settings.linkedin}
-                      onChange={(e) => setSettings({ ...settings, linkedin: e.target.value })}
-                      className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-slate-400 mb-1 font-semibold">Telegram URL</label>
-                    <input
-                      type="url"
-                      value={settings.telegram}
-                      onChange={(e) => setSettings({ ...settings, telegram: e.target.value })}
-                      className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white"
-                    />
-                  </div>
-                </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-slate-400 mb-1 font-semibold">Avatar Image URL</label>
-                    <input
-                      type="text"
-                      value={settings.avatarUrl}
-                      onChange={(e) => setSettings({ ...settings, avatarUrl: e.target.value })}
-                      className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-slate-400 mb-1 font-semibold">CV / Resume PDF URL</label>
-                    <input
-                      type="text"
-                      value={settings.cvUrl}
-                      onChange={(e) => setSettings({ ...settings, cvUrl: e.target.value })}
-                      className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white"
-                    />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-slate-400 mb-1 font-semibold">Avatar Image URL</label>
+                      <input
+                        type="text"
+                        value={settings.avatarUrl}
+                        onChange={(e) => setSettings({ ...settings, avatarUrl: e.target.value })}
+                        className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-slate-400 mb-1 font-semibold">CV / Resume PDF URL</label>
+                      <input
+                        type="text"
+                        value={settings.cvUrl}
+                        onChange={(e) => setSettings({ ...settings, cvUrl: e.target.value })}
+                        className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white"
+                      />
+                    </div>
                   </div>
                 </div>
 
                 <div className="pt-4 flex justify-end">
                   <button
                     type="submit"
-                    className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-semibold bg-white text-black hover:bg-slate-200 transition-colors"
+                    className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-semibold bg-white text-black hover:bg-slate-200 transition-colors cursor-pointer"
                   >
                     <Save size={14} />
-                    <span>Save Profile Changes</span>
+                    <span>Save Profile &amp; Identity</span>
                   </button>
                 </div>
               </form>

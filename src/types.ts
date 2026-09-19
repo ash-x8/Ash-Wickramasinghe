@@ -89,22 +89,33 @@ export interface TimelineItem {
 
 export interface SiteSettings {
   name: string;
+  fullName?: string;
+  preferredName?: string;
+  creativeName?: string;
   title: string;
   bio: string;
   aboutBio: string;
   careerTrajectory: string;
+  personalStatement?: string;
+  workAvailability?: string;
   statusText: string;
   avatarUrl: string;
   cvUrl: string;
   email: string;
-  location: string;
+  emailSecondary?: string;
   phone?: string;
+  phoneSecondary?: string;
   whatsapp?: string;
-  github: string;
+  location: string;
+  github?: string;
   linkedin: string;
   telegram: string;
+  youtube?: string;
+  facebook?: string;
+  tiktok?: string;
   behance?: string;
   instagram?: string;
+  authorNames?: string[];
   availabilityStatus?: 'available' | 'busy' | 'selective';
   // Theme & Appearance
   accentColor: string; // e.g. '#c59b63' or '#38bdf8' or '#e07a5f'
@@ -125,6 +136,13 @@ export interface SiteSettings {
     subtext: string;
   }[];
   updatedAt?: string;
+}
+
+export interface PageViewTrend {
+  date: string;
+  views: number;
+  inquiries: number;
+  bounceRate?: number;
 }
 
 export interface ContactMessage {

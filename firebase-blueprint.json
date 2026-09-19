@@ -85,6 +85,18 @@
         "uploadedAt": { "type": "string" }
       },
       "required": ["name", "url"]
+    },
+    "analytics": {
+      "title": "Analytics and Page Views",
+      "description": "Daily page view counts and activity metric trends",
+      "type": "object",
+      "properties": {
+        "date": { "type": "string" },
+        "path": { "type": "string" },
+        "views": { "type": "number" },
+        "inquiries": { "type": "number" },
+        "updatedAt": { "type": "string" }
+      }
     }
   },
   "firestore": {
@@ -107,6 +119,10 @@
     "/messages/{messageId}": {
       "schema": "messages",
       "description": "Inbound contact form messages"
+    },
+    "/analytics/{docId}": {
+      "schema": "analytics",
+      "description": "Page view statistics and contact form activity trends"
     }
   }
 }

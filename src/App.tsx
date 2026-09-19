@@ -1,9 +1,10 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Link, Navigate } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Link, Navigate, useLocation } from 'react-router-dom';
 import { CyberNavbar } from './components/CyberNavbar';
 import { CyberFooter } from './components/CyberFooter';
 import { CyberBackground } from './components/CyberBackground';
 import { AuthProvider, ProtectedRoute, useAuth } from './context/AuthContext';
+import { trackPageView } from './lib/firebase';
 import { HomePage } from './pages/HomePage';
 import { AboutPage } from './pages/AboutPage';
 import { ServicesPage } from './pages/ServicesPage';
@@ -16,6 +17,21 @@ import { ContactPage } from './pages/ContactPage';
 import { AdminLoginPage } from './pages/AdminLoginPage';
 import { AdminDashboardPage } from './pages/AdminDashboardPage';
 import { AlertOctagon, Terminal } from 'lucide-react';
+
+const RouteTracker: React.FC = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    // Only track public page views, exclude admin backend paths
+    if (!location.pathname.startsWith('/admin')) {
+      trackPageView(location.pathname).catch((err) => {
+        console.debug("Telemetry track error:", err);
+      });
+    }
+  }, [location.pathname]);
+
+  return null;
+};
 
 const NotFoundPage: React.FC = () => (
   <div className="min-h-screen pt-32 pb-20 px-4 flex flex-col items-center justify-center text-center font-mono relative z-10">
@@ -65,6 +81,7 @@ export function App() {
   return (
     <AuthProvider>
       <Router>
+        <RouteTracker />
         <div className="min-h-screen bg-[#0A0D14] text-slate-100 flex flex-col selection:bg-[#C59B63] selection:text-[#0A0D14] relative overflow-x-hidden font-sans">
           {/* Cyber Ambiance Background */}
           <CyberBackground />
