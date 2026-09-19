@@ -87,6 +87,15 @@ export interface TimelineItem {
   type: 'work' | 'education' | 'certification';
 }
 
+export interface SocialLinkItem {
+  id: string;
+  platform: string;
+  label: string;
+  url: string;
+  enabled: boolean;
+  order: number;
+}
+
 export interface SiteSettings {
   name: string;
   fullName?: string;
@@ -101,6 +110,8 @@ export interface SiteSettings {
   statusText: string;
   avatarUrl: string;
   cvUrl: string;
+  cvPublished?: boolean;
+  cvLastUpdated?: string;
   email: string;
   emailSecondary?: string;
   phone?: string;
@@ -115,6 +126,7 @@ export interface SiteSettings {
   tiktok?: string;
   behance?: string;
   instagram?: string;
+  socialLinks?: SocialLinkItem[];
   authorNames?: string[];
   availabilityStatus?: 'available' | 'busy' | 'selective';
   // Theme & Appearance

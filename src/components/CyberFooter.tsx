@@ -1,15 +1,43 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Globe, GitBranch, Send, Mail, ArrowUpRight } from 'lucide-react';
+import { getSiteSettings, subscribeToSiteSettings } from '../lib/firebase';
+import { defaultSiteSettings } from '../data/defaultContent';
+import { SiteSettings } from '../types';
 
 export const CyberFooter: React.FC = () => {
   const currentYear = new Date().getFullYear();
   const location = useLocation();
+  const [settings, setSettings] = useState<SiteSettings>(defaultSiteSettings);
+
+  useEffect(() => {
+    getSiteSettings().then((loaded) => {
+      if (loaded) setSettings(loaded);
+    }).catch((err) => console.warn("Fallback settings for footer:", err));
+
+    const unsubscribe = subscribeToSiteSettings((newSettings) => {
+      setSettings(newSettings);
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   // The admin dashboard is completely separated from the public website
   if (location.pathname.startsWith('/admin')) {
     return null;
   }
+
+  // Determine active social links
+  const activeSocials = settings.socialLinks && settings.socialLinks.length > 0
+    ? settings.socialLinks.filter(s => s.enabled)
+    : [
+        { id: '1', platform: 'linkedin', label: 'LinkedIn', url: settings.linkedin, enabled: !!settings.linkedin, order: 1 },
+        { id: '2', platform: 'telegram', label: 'Telegram', url: settings.telegram, enabled: !!settings.telegram, order: 2 },
+        { id: '3', platform: 'whatsapp', label: 'WhatsApp', url: settings.whatsapp || 'https://wa.me/94752269410', enabled: true, order: 3 },
+        { id: '4', platform: 'youtube', label: 'YouTube', url: settings.youtube || 'https://www.youtube.com/@Ash-x8', enabled: !!settings.youtube, order: 4 },
+        { id: '5', platform: 'facebook', label: 'Facebook', url: settings.facebook || 'https://www.facebook.com/share/1UeTQSvLik/', enabled: !!settings.facebook, order: 5 },
+        { id: '6', platform: 'tiktok', label: 'TikTok', url: settings.tiktok || 'https://vm.tiktok.com/ZS9Ypfen3rcYL-KiVCP/', enabled: !!settings.tiktok, order: 6 },
+      ].filter(s => s.enabled && s.url);
 
   return (
     <footer className="bg-[#080B12] border-t border-slate-800/80 text-slate-400 font-mono text-xs relative overflow-hidden">
@@ -88,54 +116,32 @@ export const CyberFooter: React.FC = () => {
           </div>
 
           {/* Col 3: Coordinates */}
-          <div className="space-y-2">
+            <div className="space-y-2">
             <div className="text-slate-200 font-bold uppercase tracking-wider text-[11px] text-[#C59B63]">
               Connect &amp; Social
             </div>
             <div className="flex flex-col space-y-2 text-[11px]">
-              <a 
-                href="https://www.linkedin.com/in/kushan-a-wickramasinghe-28b1aa2a0" 
-                target="_blank" 
-                rel="noreferrer" 
-                className="flex items-center gap-2 text-slate-300 hover:text-[#C59B63] transition-colors"
-              >
-                <Globe size={14} className="text-[#C59B63]" />
-                LinkedIn (Kushan A Wickramasinghe)
-              </a>
-              <a 
-                href="https://t.me/kawickramasinghe" 
-                target="_blank" 
-                rel="noreferrer" 
-                className="flex items-center gap-2 text-slate-300 hover:text-[#C59B63] transition-colors"
-              >
-                <Send size={14} className="text-[#C59B63]" />
-                Telegram (@kawickramasinghe)
-              </a>
-              <a 
-                href="https://wa.me/94752269410" 
-                target="_blank" 
-                rel="noreferrer" 
-                className="flex items-center gap-2 text-slate-300 hover:text-[#C59B63] transition-colors"
-              >
-                <Globe size={14} className="text-[#C59B63]" />
-                WhatsApp (+94 75 226 9410)
-              </a>
-              <a 
-                href="mailto:Kushanashvika216@gmail.com" 
-                className="flex items-center gap-2 text-slate-300 hover:text-[#C59B63] transition-colors"
-              >
-                <Mail size={14} className="text-[#C59B63]" />
-                Kushanashvika216@gmail.com
-              </a>
-              <a 
-                href="https://www.youtube.com/@Ash-x8" 
-                target="_blank" 
-                rel="noreferrer" 
-                className="flex items-center gap-2 text-slate-300 hover:text-[#C59B63] transition-colors"
-              >
-                <ArrowUpRight size={14} className="text-[#C59B63]" />
-                YouTube Channel
-              </a>
+              {settings.email && (
+                <a 
+                  href={`mailto:${settings.email}`} 
+                  className="flex items-center gap-2 text-slate-300 hover:text-[#C59B63] transition-colors"
+                >
+                  <Mail size={14} className="text-[#C59B63]" />
+                  <span>{settings.email}</span>
+                </a>
+              )}
+              {activeSocials.map((soc) => (
+                <a 
+                  key={soc.id}
+                  href={soc.url} 
+                  target="_blank" 
+                  rel="noreferrer" 
+                  className="flex items-center gap-2 text-slate-300 hover:text-[#C59B63] transition-colors"
+                >
+                  <ArrowUpRight size={14} className="text-[#C59B63]" />
+                  <span>{soc.label || soc.platform}</span>
+                </a>
+              ))}
             </div>
           </div>
         </div>

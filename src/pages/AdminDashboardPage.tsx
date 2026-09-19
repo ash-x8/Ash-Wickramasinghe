@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { 
   LayoutDashboard, 
   BarChart3,
@@ -24,7 +25,9 @@ import {
   Upload, 
   Eye, 
   Copy,
-  ChevronRight
+  ChevronRight,
+  Share2,
+  FileCheck
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { 
@@ -50,6 +53,9 @@ import {
 import { Project, SiteSettings, ContactMessage, Article, ServiceItem, MediaItem, PageViewTrend } from '../types';
 import { defaultSiteSettings, defaultProjects, defaultArticles } from '../data/defaultContent';
 import { ActivityTrendsVisualizer } from '../components/admin/ActivityTrendsVisualizer';
+import { SocialManagerTab } from '../components/admin/SocialManagerTab';
+import { CvManagerTab } from '../components/admin/CvManagerTab';
+import { SeoSettingsTab } from '../components/admin/SeoSettingsTab';
 
 type AdminTab = 
   | 'overview' 
@@ -59,13 +65,51 @@ type AdminTab =
   | 'writing' 
   | 'messages' 
   | 'profile' 
+  | 'social'
+  | 'cv'
   | 'theme' 
   | 'seo' 
   | 'media';
 
+const VALID_TABS: AdminTab[] = [
+  'overview', 
+  'analytics',
+  'projects', 
+  'services', 
+  'writing', 
+  'messages', 
+  'profile', 
+  'social',
+  'cv',
+  'theme', 
+  'seo', 
+  'media'
+];
+
 export const AdminDashboardPage: React.FC = () => {
   const { user, logout } = useAuth();
-  const [activeTab, setActiveTab] = useState<AdminTab>('overview');
+  const { tab } = useParams<{ tab?: string }>();
+  const navigate = useNavigate();
+
+  const [activeTab, setActiveTab] = useState<AdminTab>(() => {
+    if (tab && VALID_TABS.includes(tab as AdminTab)) {
+      return tab as AdminTab;
+    }
+    return 'overview';
+  });
+
+  // Keep route and active tab in sync
+  useEffect(() => {
+    if (tab && VALID_TABS.includes(tab as AdminTab)) {
+      setActiveTab(tab as AdminTab);
+    }
+  }, [tab]);
+
+  const handleSelectTab = (newTab: AdminTab) => {
+    setActiveTab(newTab);
+    navigate(`/admin/${newTab}`);
+  };
+
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   // Data states
@@ -374,7 +418,9 @@ export const AdminDashboardPage: React.FC = () => {
             { id: 'services', label: 'Services', icon: Wrench, count: services.length },
             { id: 'writing', label: 'Writing / Articles', icon: FileText, count: articles.length },
             { id: 'messages', label: 'Messages', icon: Mail, count: unreadMessagesCount, badgeColor: 'bg-amber-500 text-black' },
-            { id: 'profile', label: 'Profile & Identity', icon: User },
+            { id: 'profile', label: 'Profile & Bio', icon: User },
+            { id: 'social', label: 'Social Media', icon: Share2 },
+            { id: 'cv', label: 'Curriculum Vitae', icon: FileCheck },
             { id: 'theme', label: 'Theme & Accent', icon: Palette },
             { id: 'seo', label: 'SEO Settings', icon: Globe },
             { id: 'media', label: 'Media Library', icon: ImageIcon },
@@ -384,7 +430,7 @@ export const AdminDashboardPage: React.FC = () => {
             return (
               <button
                 key={item.id}
-                onClick={() => setActiveTab(item.id as AdminTab)}
+                onClick={() => handleSelectTab(item.id as AdminTab)}
                 className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-medium transition-colors cursor-pointer ${
                   isActive 
                     ? 'bg-slate-800 text-white shadow-sm' 
@@ -447,7 +493,9 @@ export const AdminDashboardPage: React.FC = () => {
                 { id: 'services', label: 'Services', icon: Wrench, count: services.length },
                 { id: 'writing', label: 'Writing / Articles', icon: FileText, count: articles.length },
                 { id: 'messages', label: 'Messages', icon: Mail, count: unreadMessagesCount, badgeColor: 'bg-amber-500 text-black' },
-                { id: 'profile', label: 'Profile & Identity', icon: User },
+                { id: 'profile', label: 'Profile & Bio', icon: User },
+                { id: 'social', label: 'Social Media', icon: Share2 },
+                { id: 'cv', label: 'Curriculum Vitae', icon: FileCheck },
                 { id: 'theme', label: 'Theme & Accent', icon: Palette },
                 { id: 'seo', label: 'SEO Settings', icon: Globe },
                 { id: 'media', label: 'Media Library', icon: ImageIcon },
@@ -458,7 +506,7 @@ export const AdminDashboardPage: React.FC = () => {
                   <button
                     key={item.id}
                     onClick={() => {
-                      setActiveTab(item.id as AdminTab);
+                      handleSelectTab(item.id as AdminTab);
                       setMobileSidebarOpen(false);
                     }}
                     className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-medium transition-colors cursor-pointer ${
@@ -1376,60 +1424,33 @@ export const AdminDashboardPage: React.FC = () => {
             </div>
           )}
 
-          {/* 8. SEO SETTINGS */}
+          {/* 8. SOCIAL MEDIA MANAGER */}
+          {activeTab === 'social' && (
+            <SocialManagerTab
+              settings={settings}
+              onSave={async (links) => {
+                await handleSaveSettings({ socialLinks: links });
+              }}
+              showToast={showToast}
+            />
+          )}
+
+          {/* 9. CV & DOSSIER MANAGER */}
+          {activeTab === 'cv' && (
+            <CvManagerTab
+              settings={settings}
+              onSave={handleSaveSettings}
+              showToast={showToast}
+            />
+          )}
+
+          {/* 10. SEO SETTINGS */}
           {activeTab === 'seo' && (
-            <div className="space-y-6">
-              <div>
-                <h2 className="text-xl font-bold text-white">Search Engine Optimization (SEO)</h2>
-                <p className="text-xs text-slate-400">Configure page title, meta description, and social share metadata.</p>
-              </div>
-
-              <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-5 text-xs max-w-2xl">
-                <div>
-                  <label className="block text-slate-400 mb-1 font-semibold">Page Title</label>
-                  <input
-                    type="text"
-                    value={settings.metaTitle || ''}
-                    onChange={(e) => setSettings({ ...settings, metaTitle: e.target.value })}
-                    className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-slate-400 mb-1 font-semibold">Meta Description</label>
-                  <textarea
-                    rows={3}
-                    value={settings.metaDescription || ''}
-                    onChange={(e) => setSettings({ ...settings, metaDescription: e.target.value })}
-                    className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-slate-400 mb-1 font-semibold">Search Keywords</label>
-                  <input
-                    type="text"
-                    value={settings.keywords || ''}
-                    onChange={(e) => setSettings({ ...settings, keywords: e.target.value })}
-                    className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white"
-                  />
-                </div>
-
-                <div className="pt-4 border-t border-slate-800">
-                  <button
-                    onClick={() => handleSaveSettings({
-                      metaTitle: settings.metaTitle,
-                      metaDescription: settings.metaDescription,
-                      keywords: settings.keywords
-                    })}
-                    className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-semibold bg-white text-black hover:bg-slate-200 transition-colors"
-                  >
-                    <Save size={14} />
-                    <span>Save SEO Configurations</span>
-                  </button>
-                </div>
-              </div>
-            </div>
+            <SeoSettingsTab
+              settings={settings}
+              onSave={handleSaveSettings}
+              showToast={showToast}
+            />
           )}
 
           {/* 9. MEDIA LIBRARY */}

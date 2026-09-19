@@ -104,8 +104,17 @@ export function App() {
               
               {/* Isolated Admin Entry Point */}
               <Route path="/admin" element={<AdminEntryPortal />} />
+              <Route path="/admin/login" element={<AdminLoginPage />} />
               <Route 
                 path="/admin/dashboard" 
+                element={
+                  <ProtectedRoute>
+                    <AdminDashboardPage />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/admin/:tab" 
                 element={
                   <ProtectedRoute>
                     <AdminDashboardPage />

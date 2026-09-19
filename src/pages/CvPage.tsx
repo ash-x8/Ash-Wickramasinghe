@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Download, FileText, Printer, ArrowLeft, CheckCircle, ExternalLink } from 'lucide-react';
+import { FileText, Printer, ArrowLeft, Eye, Layout } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { getSiteSettings, subscribeToSiteSettings } from '../lib/firebase';
 import { SiteSettings } from '../types';
@@ -7,6 +7,7 @@ import { defaultSiteSettings } from '../data/defaultContent';
 
 export const CvPage: React.FC = () => {
   const [settings, setSettings] = useState<SiteSettings>(defaultSiteSettings);
+  const [viewMode, setViewMode] = useState<'dossier' | 'embedded'>('dossier');
 
   useEffect(() => {
     getSiteSettings().then((loaded) => {
@@ -24,10 +25,33 @@ export const CvPage: React.FC = () => {
     window.print();
   };
 
+  // If un-published by administrator
+  if (settings.cvPublished === false) {
+    return (
+      <div className="min-h-screen pt-36 pb-24 px-6 sm:px-8 lg:px-12 max-w-3xl mx-auto font-sans text-center">
+        <div className="p-12 rounded-2xl border border-neutral-800 bg-neutral-900/60 backdrop-blur-md space-y-4">
+          <FileText size={40} className="mx-auto text-amber-400 opacity-80" />
+          <h1 className="text-xl font-semibold text-white">Curriculum Vitae Currently Updating</h1>
+          <p className="text-xs text-neutral-400 max-w-md mx-auto leading-relaxed">
+            The professional resume of Ash Wickramasinghe is currently being refreshed with new project milestones. Please check back shortly or connect directly via the contact page.
+          </p>
+          <div className="pt-4">
+            <Link
+              to="/contact"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-semibold bg-white text-black hover:bg-neutral-200 transition-colors"
+            >
+              Contact Ash
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen pt-36 pb-24 px-6 sm:px-8 lg:px-12 max-w-5xl mx-auto font-sans">
       {/* Top Controls */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-12 pb-6 border-b border-neutral-800/80 dark:border-neutral-800/80 light:border-neutral-200 print:hidden">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 pb-6 border-b border-neutral-800/80 dark:border-neutral-800/80 light:border-neutral-200 print:hidden">
         <Link
           to="/about"
           className="inline-flex items-center gap-2 text-xs uppercase tracking-widest font-medium text-neutral-400 hover:text-white dark:hover:text-white light:hover:text-neutral-950 transition-colors"
@@ -37,6 +61,35 @@ export const CvPage: React.FC = () => {
         </Link>
 
         <div className="flex items-center gap-3">
+          {settings.cvUrl && (
+            <div className="inline-flex p-0.5 rounded-full border border-neutral-800 bg-neutral-900/80 text-[11px]">
+              <button
+                type="button"
+                onClick={() => setViewMode('dossier')}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-colors cursor-pointer ${
+                  viewMode === 'dossier'
+                    ? 'bg-white text-black font-semibold shadow-sm'
+                    : 'text-neutral-400 hover:text-white'
+                }`}
+              >
+                <Layout size={12} />
+                <span>Dossier View</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode('embedded')}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-colors cursor-pointer ${
+                  viewMode === 'embedded'
+                    ? 'bg-white text-black font-semibold shadow-sm'
+                    : 'text-neutral-400 hover:text-white'
+                }`}
+              >
+                <Eye size={12} />
+                <span>Document Viewer</span>
+              </button>
+            </div>
+          )}
+
           <button
             onClick={handlePrint}
             className="inline-flex items-center gap-2 px-4 py-2 text-xs uppercase tracking-wider rounded-full border border-neutral-700 text-neutral-300 hover:text-white transition-colors cursor-pointer"
@@ -44,21 +97,24 @@ export const CvPage: React.FC = () => {
             <Printer size={14} />
             <span>Print CV</span>
           </button>
-          {settings.cvUrl && (
-            <a
-              href={settings.cvUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-2 px-5 py-2 text-xs uppercase tracking-wider font-medium rounded-full bg-neutral-100 text-neutral-950 hover:opacity-90 transition-opacity"
-            >
-              <Download size={14} />
-              <span>Download PDF</span>
-            </a>
-          )}
         </div>
       </div>
 
-      {/* Printable CV Dossier Canvas */}
+      {/* Embedded Document Mode */}
+      {viewMode === 'embedded' && settings.cvUrl ? (
+        <div className="rounded-2xl border border-neutral-800 bg-neutral-900/60 overflow-hidden shadow-2xl">
+          <div className="px-6 py-3 border-b border-neutral-800 bg-neutral-950/80 flex items-center justify-between text-xs text-neutral-400">
+            <span className="font-mono">Document Viewer: Curriculum Vitae</span>
+            <span className="text-[10px] text-neutral-500">Ash Wickramasinghe</span>
+          </div>
+          <iframe
+            src={settings.cvUrl}
+            title="Curriculum Vitae Document Viewer"
+            className="w-full h-[800px] border-none bg-neutral-950"
+          />
+        </div>
+      ) : (
+        /* Printable CV Dossier Canvas */
       <div className="p-8 sm:p-14 rounded-2xl border border-neutral-800/80 dark:border-neutral-800/80 light:border-neutral-200 bg-neutral-900/40 dark:bg-neutral-900/40 light:bg-white space-y-12 shadow-sm print:p-0 print:border-none print:bg-white print:text-black">
         {/* CV Header */}
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 pb-8 border-b border-neutral-800 dark:border-neutral-800 light:border-neutral-200">
@@ -180,6 +236,7 @@ export const CvPage: React.FC = () => {
           </div>
         </div>
       </div>
+      )}
     </div>
   );
 };
