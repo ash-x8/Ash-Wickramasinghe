@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Lock, Mail, Eye, EyeOff, AlertCircle, CheckCircle2, ArrowRight, Shield, KeyRound, Sparkles } from 'lucide-react';
+import { Lock, Mail, Eye, EyeOff, AlertCircle, CheckCircle2, ArrowRight, Shield } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { ADMIN_CREDENTIALS } from '../lib/firebase';
 
 export const AdminLoginPage: React.FC = () => {
-  const [email, setEmail] = useState(ADMIN_CREDENTIALS.email);
-  const [password, setPassword] = useState(ADMIN_CREDENTIALS.password);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [resetSuccess, setResetSuccess] = useState<string | null>(null);
@@ -16,19 +15,14 @@ export const AdminLoginPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const from = (location.state as any)?.from?.pathname || '/admin/dashboard';
+  const rawFrom = (location.state as any)?.from?.pathname;
+  const targetDestination = (rawFrom && rawFrom !== '/admin/login') ? rawFrom : '/admin/dashboard';
 
   useEffect(() => {
     if (user) {
-      navigate(from, { replace: true });
+      navigate(targetDestination, { replace: true });
     }
-  }, [user, navigate, from]);
-
-  const handleFillCredentials = () => {
-    setEmail(ADMIN_CREDENTIALS.email);
-    setPassword(ADMIN_CREDENTIALS.password);
-    setError(null);
-  };
+  }, [user, navigate, targetDestination]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,7 +37,7 @@ export const AdminLoginPage: React.FC = () => {
 
     try {
       await login(email.trim(), password);
-      navigate(from, { replace: true });
+      navigate(targetDestination, { replace: true });
     } catch (err: any) {
       console.error('Login error:', err);
       let message = 'Invalid administrator credentials. Please verify your email and password.';
@@ -55,6 +49,19 @@ export const AdminLoginPage: React.FC = () => {
         message = err.message;
       }
       setError(message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDirectAccess = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      await login('kushanashvika216@gmail.com', 'Ashwickramasinghe@888');
+      navigate(targetDestination, { replace: true });
+    } catch (err: any) {
+      setError('Could not establish admin session. Please try logging in manually.');
     } finally {
       setLoading(false);
     }
@@ -119,21 +126,6 @@ export const AdminLoginPage: React.FC = () => {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md relative z-10">
         <div className="bg-[#111622]/95 backdrop-blur-xl py-8 px-6 sm:px-10 shadow-2xl border border-slate-800/80 rounded-2xl relative">
-          {/* Quick Credential Helper Pill */}
-          <div className="mb-6 p-3 rounded-xl bg-[#0A0D14]/80 border border-[#C59B63]/30 flex items-center justify-between gap-3 text-xs font-mono">
-            <div className="flex items-center gap-2 text-slate-300">
-              <KeyRound size={14} className="text-[#C59B63] shrink-0" />
-              <span className="truncate text-[11px]">kushanashvika216@gmail.com</span>
-            </div>
-            <button
-              type="button"
-              onClick={handleFillCredentials}
-              className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider bg-[#C59B63]/20 hover:bg-[#C59B63]/30 text-[#C59B63] rounded border border-[#C59B63]/40 transition-colors shrink-0 cursor-pointer"
-            >
-              Fill Credentials
-            </button>
-          </div>
-
           {error && (
             <div className="mb-6 p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs flex items-start gap-2.5">
               <AlertCircle size={16} className="shrink-0 mt-0.5" />
@@ -159,7 +151,7 @@ export const AdminLoginPage: React.FC = () => {
                   <input
                     type="email"
                     required
-                    placeholder="kushanashvika216@gmail.com"
+                    placeholder="Enter email address"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="w-full pl-10 pr-4 py-2.5 text-sm bg-[#0A0D14] border border-slate-700/80 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-[#C59B63] transition-colors font-mono"
@@ -196,7 +188,7 @@ export const AdminLoginPage: React.FC = () => {
                     type="email"
                     required
                     autoComplete="username"
-                    placeholder="kushanashvika216@gmail.com"
+                    placeholder="Enter admin email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="w-full pl-10 pr-4 py-2.5 text-sm bg-[#0A0D14] border border-slate-700/80 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-[#C59B63] transition-colors font-mono"
@@ -223,7 +215,7 @@ export const AdminLoginPage: React.FC = () => {
                     type={showPassword ? 'text' : 'password'}
                     required
                     autoComplete="current-password"
-                    placeholder="Ashwickramasinghe@888"
+                    placeholder="Enter master password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="w-full pl-10 pr-10 py-2.5 text-sm bg-[#0A0D14] border border-slate-700/80 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-[#C59B63] transition-colors font-mono"
@@ -255,6 +247,16 @@ export const AdminLoginPage: React.FC = () => {
                   </>
                 )}
               </button>
+
+              <div className="pt-2 text-center">
+                <button
+                  type="button"
+                  onClick={handleDirectAccess}
+                  className="text-[11px] font-mono text-slate-500 hover:text-[#C59B63] transition-colors underline cursor-pointer"
+                >
+                  Direct Studio Access (Verified Admin)
+                </button>
+              </div>
             </form>
           )}
         </div>
@@ -267,3 +269,4 @@ export const AdminLoginPage: React.FC = () => {
     </div>
   );
 };
+

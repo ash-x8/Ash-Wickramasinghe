@@ -1,8 +1,44 @@
 import React from 'react';
+import { useTheme } from '../context/ThemeContext';
 
 export const CyberBackground: React.FC = () => {
+  const { isLight } = useTheme();
+
+  if (isLight) {
+    return (
+      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden transition-colors duration-300">
+        {/* Clean Architectural Light Background */}
+        <div className="absolute inset-0 bg-[#F8FAFC]" />
+
+        {/* Subtle Architectural Grid */}
+        <div 
+          className="absolute inset-0 opacity-45"
+          style={{
+            backgroundImage: `
+              linear-gradient(to right, rgba(15, 23, 42, 0.05) 1px, transparent 1px),
+              linear-gradient(to bottom, rgba(15, 23, 42, 0.05) 1px, transparent 1px)
+            `,
+            backgroundSize: '56px 56px'
+          }}
+        />
+
+        {/* Warm Gold Aura - Top Left */}
+        <div className="absolute -top-32 -left-32 w-[600px] h-[600px] bg-[#C59B63] opacity-[0.06] rounded-full blur-[140px]" />
+
+        {/* Technical Slate Accent - Center Right */}
+        <div className="absolute top-1/3 -right-32 w-[550px] h-[550px] bg-[#0284C7] opacity-[0.04] rounded-full blur-[160px]" />
+
+        {/* Corner Markers */}
+        <div className="hidden lg:block absolute top-20 left-8 w-4 h-4 border-t border-l border-slate-300 pointer-events-none" />
+        <div className="hidden lg:block absolute top-20 right-8 w-4 h-4 border-t border-r border-slate-300 pointer-events-none" />
+        <div className="hidden lg:block absolute bottom-8 left-8 w-4 h-4 border-b border-l border-slate-300 pointer-events-none" />
+        <div className="hidden lg:block absolute bottom-8 right-8 w-4 h-4 border-b border-r border-slate-300 pointer-events-none" />
+      </div>
+    );
+  }
+
   return (
-    <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+    <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden transition-colors duration-300">
       {/* Deep Obsidian Background */}
       <div className="absolute inset-0 bg-[#0A0D14]" />
 

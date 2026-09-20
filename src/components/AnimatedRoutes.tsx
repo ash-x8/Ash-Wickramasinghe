@@ -80,9 +80,18 @@ export const AnimatedRoutes: React.FC = () => {
 
           {/* Admin Routes */}
           <Route path="/admin" element={<AdminEntryPortal />} />
+          <Route path="/dashboard" element={<AdminEntryPortal />} />
           <Route path="/admin/login" element={<AdminLoginPage />} />
           <Route 
             path="/admin/dashboard" 
+            element={
+              <ProtectedRoute>
+                <AdminDashboardPage />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/dashboard/:tab" 
             element={
               <ProtectedRoute>
                 <AdminDashboardPage />

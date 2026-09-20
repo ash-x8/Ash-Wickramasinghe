@@ -27,9 +27,12 @@ import {
   Copy,
   ChevronRight,
   Share2,
-  FileCheck
+  FileCheck,
+  Sun,
+  Moon
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import { 
   getSiteSettings, 
   updateSiteSettings, 
@@ -88,6 +91,7 @@ const VALID_TABS: AdminTab[] = [
 
 export const AdminDashboardPage: React.FC = () => {
   const { user, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const { tab } = useParams<{ tab?: string }>();
   const navigate = useNavigate();
 
@@ -559,7 +563,15 @@ export const AdminDashboardPage: React.FC = () => {
             </h1>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={toggleTheme}
+              className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors cursor-pointer"
+              title={`Switch to ${theme === 'dark' ? 'light mode' : 'dark mode'}`}
+            >
+              {theme === 'dark' ? <Sun size={15} className="text-amber-400" /> : <Moon size={15} className="text-slate-200" />}
+            </button>
             <a
               href="/"
               target="_blank"

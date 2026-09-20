@@ -6,6 +6,7 @@ import { Project, ProjectCategory } from '../types';
 import { defaultProjects } from '../data/defaultContent';
 import { ProjectModal } from '../components/ProjectModal';
 import { ContentSkeleton } from '../components/ContentSkeleton';
+import { ScrollReveal } from '../components/ScrollReveal';
 
 export const ProjectsPage: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>(defaultProjects);
@@ -59,49 +60,53 @@ export const ProjectsPage: React.FC = () => {
   return (
     <div className="min-h-screen pt-36 pb-24 px-6 sm:px-8 lg:px-12 max-w-7xl mx-auto font-sans">
       {/* Page Header */}
-      <div className="max-w-3xl space-y-4 mb-16">
-        <span className="text-xs uppercase tracking-widest text-accent font-semibold">
-          Portfolio Archive
-        </span>
-        <h1 className="editorial-section-title font-semibold tracking-tight text-neutral-100 dark:text-neutral-100 light:text-neutral-900">
-          Selected Works &amp; Case Studies
-        </h1>
-        <p className="text-base sm:text-lg text-neutral-400 dark:text-neutral-400 light:text-neutral-600 leading-relaxed font-light">
-          A curated collection of graphic design deliverables, visual identity systems, editorial layouts, and high-conversion social media campaigns.
-        </p>
-      </div>
+      <ScrollReveal direction="up" distance={20}>
+        <div className="max-w-3xl space-y-4 mb-16">
+          <span className="text-xs uppercase tracking-widest text-accent font-semibold">
+            Portfolio Archive
+          </span>
+          <h1 className="editorial-section-title font-semibold tracking-tight text-neutral-100 dark:text-neutral-100 light:text-neutral-900">
+            Selected Works &amp; Case Studies
+          </h1>
+          <p className="text-base sm:text-lg text-neutral-400 dark:text-neutral-400 light:text-neutral-600 leading-relaxed font-light">
+            A curated collection of graphic design deliverables, visual identity systems, editorial layouts, and high-conversion social media campaigns.
+          </p>
+        </div>
+      </ScrollReveal>
 
       {/* Filter and Search Bar */}
-      <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-6 mb-12 pb-6 border-b border-neutral-800/80 dark:border-neutral-800/80 light:border-neutral-200">
-        {/* Category Pills */}
-        <div className="flex flex-wrap gap-2">
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setActiveCategory(cat)}
-              className={`px-4 py-2 rounded-full text-xs font-medium uppercase tracking-wider transition-all cursor-pointer ${
-                activeCategory === cat
-                  ? 'bg-neutral-100 text-neutral-950 font-semibold'
-                  : 'bg-neutral-900 dark:bg-neutral-900 light:bg-neutral-100 text-neutral-400 hover:text-white dark:hover:text-white light:hover:text-neutral-950 border border-neutral-800 dark:border-neutral-800 light:border-neutral-200'
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
+      <ScrollReveal direction="up" distance={15} delay={0.1}>
+        <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-6 mb-12 pb-6 border-b border-neutral-800/80 dark:border-neutral-800/80 light:border-neutral-200">
+          {/* Category Pills */}
+          <div className="flex flex-wrap gap-2">
+            {categories.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setActiveCategory(cat)}
+                className={`px-4 py-2 rounded-full text-xs font-medium uppercase tracking-wider transition-all cursor-pointer ${
+                  activeCategory === cat
+                    ? 'bg-neutral-100 text-neutral-950 font-semibold'
+                    : 'bg-neutral-900 dark:bg-neutral-900 light:bg-neutral-100 text-neutral-400 hover:text-white dark:hover:text-white light:hover:text-neutral-950 border border-neutral-800 dark:border-neutral-800 light:border-neutral-200'
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
 
-        {/* Search Input */}
-        <div className="relative w-full md:w-72">
-          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-500" />
-          <input
-            type="text"
-            placeholder="Search projects or tools..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 text-xs rounded-full bg-neutral-900 dark:bg-neutral-900 light:bg-neutral-100 border border-neutral-800 dark:border-neutral-800 light:border-neutral-300 text-neutral-200 dark:text-neutral-200 light:text-neutral-800 placeholder-neutral-500 focus:outline-none focus:border-accent transition-colors"
-          />
+          {/* Search Input */}
+          <div className="relative w-full md:w-72">
+            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-500" />
+            <input
+              type="text"
+              placeholder="Search projects or tools..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 text-xs rounded-full bg-neutral-900 dark:bg-neutral-900 light:bg-neutral-100 border border-neutral-800 dark:border-neutral-800 light:border-neutral-300 text-neutral-200 dark:text-neutral-200 light:text-neutral-800 placeholder-neutral-500 focus:outline-none focus:border-accent transition-colors"
+            />
+          </div>
         </div>
-      </div>
+      </ScrollReveal>
 
       {/* Projects Grid */}
       {loading ? (

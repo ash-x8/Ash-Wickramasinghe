@@ -1,77 +1,74 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { getSiteSettings } from '../lib/firebase';
-import { defaultSiteSettings } from '../data/defaultContent';
+
+export type ThemeMode = 'dark' | 'light';
 
 interface ThemeContextType {
-  theme: 'dark' | 'light';
+  theme: ThemeMode;
+  isDark: boolean;
+  isLight: boolean;
   toggleTheme: () => void;
-  accentColor: string;
-  setAccentColor: (color: string) => void;
+  setTheme: (theme: ThemeMode) => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
+const THEME_STORAGE_KEY = 'ash_theme_mode';
+
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
-    const saved = localStorage.getItem('aw_theme_mode');
-    return (saved === 'light' ? 'light' : 'dark');
-  });
-
-  const [accentColor, setAccentColorState] = useState<string>(defaultSiteSettings.accentColor || '#c59b63');
-
-  useEffect(() => {
-    // Load accent color and default theme from Firestore
-    async function loadThemeSettings() {
-      try {
-        const settings = await getSiteSettings();
-        if (settings.accentColor) {
-          setAccentColorState(settings.accentColor);
-        }
-        if (!localStorage.getItem('aw_theme_mode') && settings.defaultTheme) {
-          setTheme(settings.defaultTheme);
-        }
-      } catch (e) {
-        // use default
+  const [theme, setThemeState] = useState<ThemeMode>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(THEME_STORAGE_KEY) as ThemeMode | null;
+      if (saved === 'light' || saved === 'dark') {
+        return saved;
       }
     }
-    loadThemeSettings();
-  }, []);
+    return 'dark'; // Default to signature obsidian/gold dark mode
+  });
 
   useEffect(() => {
     const root = document.documentElement;
-    if (theme === 'dark') {
-      root.classList.add('dark');
-      root.classList.remove('light');
-    } else {
-      root.classList.add('light');
+    if (theme === 'light') {
       root.classList.remove('dark');
+      root.classList.add('light');
+      root.setAttribute('data-theme', 'light');
+    } else {
+      root.classList.remove('light');
+      root.classList.add('dark');
+      root.setAttribute('data-theme', 'dark');
     }
-    localStorage.setItem('aw_theme_mode', theme);
+    localStorage.setItem(THEME_STORAGE_KEY, theme);
   }, [theme]);
 
-  useEffect(() => {
-    document.documentElement.style.setProperty('--accent-color', accentColor);
-  }, [accentColor]);
-
   const toggleTheme = () => {
-    setTheme(prev => (prev === 'dark' ? 'light' : 'dark'));
+    setThemeState((prev) => (prev === 'dark' ? 'light' : 'dark'));
   };
 
-  const setAccentColor = (color: string) => {
-    setAccentColorState(color);
+  const setTheme = (newTheme: ThemeMode) => {
+    setThemeState(newTheme);
   };
+
+  const isDark = theme === 'dark';
+  const isLight = theme === 'light';
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme, accentColor, setAccentColor }}>
+    <ThemeContext.Provider value={{ theme, isDark, isLight, toggleTheme, setTheme }}>
       {children}
     </ThemeContext.Provider>
   );
 };
 
-export const useTheme = () => {
+const defaultThemeContext: ThemeContextType = {
+  theme: 'dark',
+  isDark: true,
+  isLight: false,
+  toggleTheme: () => {},
+  setTheme: () => {},
+};
+
+export const useTheme = (): ThemeContextType => {
   const context = useContext(ThemeContext);
   if (!context) {
-    throw new Error('useTheme must be used within a ThemeProvider');
+    return defaultThemeContext;
   }
   return context;
 };

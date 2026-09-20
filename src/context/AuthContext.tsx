@@ -22,28 +22,46 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    // Check for existing verified admin session in local storage
-    const cached = localStorage.getItem('ash_admin_session');
-    if (cached) {
-      try {
-        const parsed = JSON.parse(cached);
-        if (parsed?.email?.toLowerCase() === AUTHORIZED_ADMIN_EMAIL.toLowerCase()) {
-          setUser({
-            uid: parsed.uid || 'admin_ash_wickramasinghe_authorized',
-            email: parsed.email,
-            displayName: parsed.displayName || 'Ash Wickramasinghe',
-            emailVerified: true
-          } as User);
+  const [user, setUser] = useState<User | null>(() => {
+    if (typeof window !== 'undefined') {
+      const cached = localStorage.getItem('ash_admin_session');
+      if (cached) {
+        try {
+          const parsed = JSON.parse(cached);
+          if (parsed?.email?.toLowerCase() === AUTHORIZED_ADMIN_EMAIL.toLowerCase()) {
+            return {
+              uid: parsed.uid || 'admin_ash_wickramasinghe_authorized',
+              email: parsed.email,
+              displayName: parsed.displayName || 'Ash Wickramasinghe',
+              emailVerified: true
+            } as User;
+          }
+        } catch {
+          localStorage.removeItem('ash_admin_session');
         }
-      } catch {
-        localStorage.removeItem('ash_admin_session');
       }
     }
+    return null;
+  });
 
+  const [loading, setLoading] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const cached = localStorage.getItem('ash_admin_session');
+      if (cached) {
+        try {
+          const parsed = JSON.parse(cached);
+          if (parsed?.email?.toLowerCase() === AUTHORIZED_ADMIN_EMAIL.toLowerCase()) {
+            return false;
+          }
+        } catch {
+          // ignore
+        }
+      }
+    }
+    return true;
+  });
+
+  useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       if (currentUser) {
         setUser(currentUser);

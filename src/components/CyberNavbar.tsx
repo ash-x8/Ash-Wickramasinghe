@@ -4,14 +4,19 @@ import {
   Menu, 
   X, 
   ArrowRight,
-  Clock
+  Clock,
+  Sun,
+  Moon,
+  Shield
 } from 'lucide-react';
+import { useTheme } from '../context/ThemeContext';
 
 export const CyberNavbar: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [currentTime, setCurrentTime] = useState('');
   const location = useLocation();
+  const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -106,7 +111,7 @@ export const CyberNavbar: React.FC = () => {
         </div>
 
         {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center gap-6">
+        <nav className="hidden md:flex items-center gap-5">
           {navLinks.map((link) => {
             const isActive = location.pathname === link.path;
             return (
@@ -127,17 +132,54 @@ export const CyberNavbar: React.FC = () => {
             );
           })}
 
+          {/* Theme Toggle Button */}
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className="p-2 rounded-lg bg-[#111622] hover:bg-[#151B2A] border border-slate-800 text-slate-300 hover:text-[#C59B63] transition-colors cursor-pointer"
+            title={`Switch to ${theme === 'dark' ? 'high-contrast light mode' : 'dark mode'}`}
+            aria-label="Toggle theme mode"
+          >
+            {theme === 'dark' ? (
+              <Sun size={15} className="text-[#C59B63]" />
+            ) : (
+              <Moon size={15} className="text-[#0F172A]" />
+            )}
+          </button>
+
+          {/* Admin Terminal Access Link */}
+          <Link
+            to="/admin/dashboard"
+            className="p-2 rounded-lg bg-[#111622] hover:bg-[#C59B63]/15 border border-slate-800 hover:border-[#C59B63]/40 text-slate-400 hover:text-[#C59B63] transition-colors cursor-pointer"
+            title="Admin Management Portal"
+            aria-label="Admin Portal"
+          >
+            <Shield size={15} />
+          </Link>
+
           <Link
             to="/contact"
-            className="ml-2 px-4 py-1.5 bg-gradient-to-r from-[#C59B63] to-[#D8AC74] text-[#0A0D14] hover:opacity-95 font-mono text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(197,155,99,0.25)]"
+            className="ml-1 px-4 py-1.5 bg-gradient-to-r from-[#C59B63] to-[#D8AC74] text-[#0A0D14] hover:opacity-95 font-mono text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(197,155,99,0.25)]"
           >
             <span>Let's Talk</span>
             <ArrowRight size={13} />
           </Link>
         </nav>
 
-        {/* Mobile Hamburger Button */}
+        {/* Mobile Actions: Theme toggle + Hamburger Button */}
         <div className="flex md:hidden items-center gap-2">
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className="p-2 text-slate-300 hover:text-white bg-[#111622] border border-slate-800 rounded-lg"
+            aria-label="Toggle theme mode"
+          >
+            {theme === 'dark' ? (
+              <Sun size={16} className="text-[#C59B63]" />
+            ) : (
+              <Moon size={16} className="text-slate-200" />
+            )}
+          </button>
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="p-2 text-slate-300 hover:text-white bg-[#111622] border border-slate-800 rounded-lg"
@@ -177,6 +219,17 @@ export const CyberNavbar: React.FC = () => {
                 </Link>
               );
             })}
+
+            <Link
+              to="/admin/dashboard"
+              className="flex items-center justify-between py-2 text-sm border-b border-slate-800/60 text-[#C59B63]"
+            >
+              <span className="flex items-center gap-2">
+                <Shield size={14} />
+                <span>ADMIN TERMINAL</span>
+              </span>
+              <ArrowRight size={13} />
+            </Link>
           </div>
 
           <div className="pt-2">

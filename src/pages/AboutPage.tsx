@@ -7,6 +7,7 @@ import { SiteSettings } from '../types';
 import { defaultSiteSettings } from '../data/defaultContent';
 import { ImageWithLoading } from '../components/ImageWithLoading';
 import { ProfilePhotoFrame } from '../components/ProfilePhotoFrame';
+import { ScrollReveal } from '../components/ScrollReveal';
 
 export const AboutPage: React.FC = () => {
   const [settings, setSettings] = useState<SiteSettings>(defaultSiteSettings);
@@ -81,47 +82,51 @@ export const AboutPage: React.FC = () => {
 
         {/* Right: Narrative Story */}
         <div className="lg:col-span-7 space-y-8">
-          <div className="space-y-6 text-neutral-300 dark:text-neutral-300 light:text-neutral-700 leading-relaxed text-base sm:text-lg">
-            <p>
-              {settings.aboutBio}
-            </p>
-            <p>
-              {settings.careerTrajectory}
-            </p>
-          </div>
+          <ScrollReveal direction="up" distance={20}>
+            <div className="space-y-6 text-neutral-300 dark:text-neutral-300 light:text-neutral-700 leading-relaxed text-base sm:text-lg">
+              <p>
+                {settings.aboutBio}
+              </p>
+              <p>
+                {settings.careerTrajectory}
+              </p>
+            </div>
+          </ScrollReveal>
 
           {/* Creative Principles */}
-          <div className="pt-6 border-t border-neutral-800 dark:border-neutral-800 light:border-neutral-200 space-y-6">
-            <h3 className="text-sm uppercase tracking-widest text-accent font-semibold">
-              Guiding Principles
-            </h3>
+          <ScrollReveal direction="up" distance={20} delay={0.1}>
+            <div className="pt-6 border-t border-neutral-800 dark:border-neutral-800 light:border-neutral-200 space-y-6">
+              <h3 className="text-sm uppercase tracking-widest text-accent font-semibold">
+                Guiding Principles
+              </h3>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              <div className="p-5 rounded-xl border border-neutral-800 dark:border-neutral-800 light:border-neutral-200 bg-neutral-900/20 dark:bg-neutral-900/20 light:bg-white space-y-2">
-                <div className="text-xs uppercase tracking-wider text-neutral-400 font-semibold">
-                  01. Deliberate Restraint
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div className="p-5 rounded-xl border border-neutral-800 dark:border-neutral-800 light:border-neutral-200 bg-neutral-900/20 dark:bg-neutral-900/20 light:bg-white space-y-2">
+                  <div className="text-xs uppercase tracking-wider text-neutral-400 font-semibold">
+                    01. Deliberate Restraint
+                  </div>
+                  <div className="text-sm font-medium text-neutral-100 dark:text-neutral-100 light:text-neutral-900">
+                    Subtractive Clarity
+                  </div>
+                  <p className="text-xs text-neutral-400 dark:text-neutral-400 light:text-neutral-600 leading-relaxed">
+                    Removing non-essential elements until only the core message and visual elegance remain.
+                  </p>
                 </div>
-                <div className="text-sm font-medium text-neutral-100 dark:text-neutral-100 light:text-neutral-900">
-                  Subtractive Clarity
-                </div>
-                <p className="text-xs text-neutral-400 dark:text-neutral-400 light:text-neutral-600 leading-relaxed">
-                  Removing non-essential elements until only the core message and visual elegance remain.
-                </p>
-              </div>
 
-              <div className="p-5 rounded-xl border border-neutral-800 dark:border-neutral-800 light:border-neutral-200 bg-neutral-900/20 dark:bg-neutral-900/20 light:bg-white space-y-2">
-                <div className="text-xs uppercase tracking-wider text-neutral-400 font-semibold">
-                  02. Typographic Gravity
+                <div className="p-5 rounded-xl border border-neutral-800 dark:border-neutral-800 light:border-neutral-200 bg-neutral-900/20 dark:bg-neutral-900/20 light:bg-white space-y-2">
+                  <div className="text-xs uppercase tracking-wider text-neutral-400 font-semibold">
+                    02. Typographic Gravity
+                  </div>
+                  <div className="text-sm font-medium text-neutral-100 dark:text-neutral-100 light:text-neutral-900">
+                    Mathematical Harmony
+                  </div>
+                  <p className="text-xs text-neutral-400 dark:text-neutral-400 light:text-neutral-600 leading-relaxed">
+                    Relying on precise baseline grids and thoughtful hierarchy rather than loud ornamentation.
+                  </p>
                 </div>
-                <div className="text-sm font-medium text-neutral-100 dark:text-neutral-100 light:text-neutral-900">
-                  Mathematical Harmony
-                </div>
-                <p className="text-xs text-neutral-400 dark:text-neutral-400 light:text-neutral-600 leading-relaxed">
-                  Relying on precise baseline grids and thoughtful hierarchy rather than loud ornamentation.
-                </p>
               </div>
             </div>
-          </div>
+          </ScrollReveal>
 
           <div className="pt-4 flex flex-wrap items-center gap-4">
             <Link
@@ -144,14 +149,16 @@ export const AboutPage: React.FC = () => {
 
       {/* Skills & Capabilities Matrix */}
       <section className="py-16 border-t border-neutral-800/60 dark:border-neutral-800/60 light:border-neutral-200">
-        <div className="space-y-4 mb-10">
-          <span className="text-xs uppercase tracking-widest text-accent font-semibold">
-            Technical &amp; Creative Proficiency
-          </span>
-          <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight text-neutral-100 dark:text-neutral-100 light:text-neutral-900">
-            Skills &amp; Capabilities
-          </h2>
-        </div>
+        <ScrollReveal direction="up" distance={20}>
+          <div className="space-y-4 mb-10">
+            <span className="text-xs uppercase tracking-widest text-accent font-semibold">
+              Technical &amp; Creative Proficiency
+            </span>
+            <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight text-neutral-100 dark:text-neutral-100 light:text-neutral-900">
+              Skills &amp; Capabilities
+            </h2>
+          </div>
+        </ScrollReveal>
 
         {/* Category Filters */}
         <div className="flex flex-wrap gap-2 mb-8">
@@ -173,28 +180,29 @@ export const AboutPage: React.FC = () => {
         {/* Skill Bars Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredSkills.map((skill, idx) => (
-            <div
-              key={idx}
-              className="p-5 rounded-xl border border-neutral-800/80 dark:border-neutral-800/80 light:border-neutral-200 bg-neutral-900/30 dark:bg-neutral-900/30 light:bg-white space-y-3"
-            >
-              <div className="flex items-center justify-between text-xs">
-                <span className="font-medium text-neutral-200 dark:text-neutral-200 light:text-neutral-800">
-                  {skill.name}
-                </span>
-                <span className="text-accent font-mono text-[11px]">
-                  {skill.level}%
-                </span>
+            <ScrollReveal key={idx} delay={idx * 0.05} direction="up" distance={15}>
+              <div
+                className="p-5 rounded-xl border border-neutral-800/80 dark:border-neutral-800/80 light:border-neutral-200 bg-neutral-900/30 dark:bg-neutral-900/30 light:bg-white space-y-3"
+              >
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-medium text-neutral-200 dark:text-neutral-200 light:text-neutral-800">
+                    {skill.name}
+                  </span>
+                  <span className="text-accent font-mono text-[11px]">
+                    {skill.level}%
+                  </span>
+                </div>
+                <div className="w-full h-1.5 rounded-full bg-neutral-800 dark:bg-neutral-800 light:bg-neutral-200 overflow-hidden">
+                  <div
+                    className="h-full rounded-full bg-accent transition-all duration-500"
+                    style={{ width: `${skill.level}%` }}
+                  />
+                </div>
+                <div className="text-[10px] uppercase tracking-wider text-neutral-500">
+                  {skill.category}
+                </div>
               </div>
-              <div className="w-full h-1.5 rounded-full bg-neutral-800 dark:bg-neutral-800 light:bg-neutral-200 overflow-hidden">
-                <div
-                  className="h-full rounded-full bg-accent transition-all duration-500"
-                  style={{ width: `${skill.level}%` }}
-                />
-              </div>
-              <div className="text-[10px] uppercase tracking-wider text-neutral-500">
-                {skill.category}
-              </div>
-            </div>
+            </ScrollReveal>
           ))}
         </div>
       </section>
@@ -202,48 +210,51 @@ export const AboutPage: React.FC = () => {
       {/* Career & Academic Timeline */}
       {settings.timeline && settings.timeline.length > 0 && (
         <section className="py-16 border-t border-neutral-800/60 dark:border-neutral-800/60 light:border-neutral-200">
-          <div className="space-y-4 mb-12">
-            <span className="text-xs uppercase tracking-widest text-accent font-semibold">
-              Trajectory
-            </span>
-            <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight text-neutral-100 dark:text-neutral-100 light:text-neutral-900">
-              Experience &amp; Education
-            </h2>
-          </div>
+          <ScrollReveal direction="up" distance={20}>
+            <div className="space-y-4 mb-12">
+              <span className="text-xs uppercase tracking-widest text-accent font-semibold">
+                Trajectory
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight text-neutral-100 dark:text-neutral-100 light:text-neutral-900">
+                Experience &amp; Education
+              </h2>
+            </div>
+          </ScrollReveal>
 
           <div className="space-y-8">
-            {settings.timeline.map((item) => (
-              <div
-                key={item.id}
-                className="grid grid-cols-1 md:grid-cols-12 gap-4 pb-8 border-b border-neutral-800/60 dark:border-neutral-800/60 light:border-neutral-200"
-              >
-                <div className="md:col-span-3 text-xs uppercase tracking-wider font-mono text-accent">
-                  {item.period}
-                </div>
-                <div className="md:col-span-9 space-y-2">
-                  <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1">
-                    <h3 className="text-lg font-medium text-neutral-100 dark:text-neutral-100 light:text-neutral-900">
-                      {item.role}
-                    </h3>
-                    <span className="text-xs text-neutral-400">
-                      {item.organization}
-                    </span>
+            {settings.timeline.map((item, idx) => (
+              <ScrollReveal key={item.id} delay={idx * 0.08} direction="up" distance={20}>
+                <div
+                  className="grid grid-cols-1 md:grid-cols-12 gap-4 pb-8 border-b border-neutral-800/60 dark:border-neutral-800/60 light:border-neutral-200"
+                >
+                  <div className="md:col-span-3 text-xs uppercase tracking-wider font-mono text-accent">
+                    {item.period}
                   </div>
-                  <p className="text-xs sm:text-sm text-neutral-300 dark:text-neutral-300 light:text-neutral-700 leading-relaxed">
-                    {item.description}
-                  </p>
-                  <div className="flex flex-wrap gap-2 pt-2">
-                    {item.skills.map((s, i) => (
-                      <span
-                        key={i}
-                        className="text-[10px] px-2.5 py-0.5 rounded-full bg-neutral-900 dark:bg-neutral-900 light:bg-neutral-100 text-neutral-400 border border-neutral-800 dark:border-neutral-800 light:border-neutral-200"
-                      >
-                        {s}
+                  <div className="md:col-span-9 space-y-2">
+                    <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1">
+                      <h3 className="text-lg font-medium text-neutral-100 dark:text-neutral-100 light:text-neutral-900">
+                        {item.role}
+                      </h3>
+                      <span className="text-xs text-neutral-400">
+                        {item.organization}
                       </span>
-                    ))}
+                    </div>
+                    <p className="text-xs sm:text-sm text-neutral-300 dark:text-neutral-300 light:text-neutral-700 leading-relaxed">
+                      {item.description}
+                    </p>
+                    <div className="flex flex-wrap gap-2 pt-2">
+                      {item.skills.map((s, i) => (
+                        <span
+                          key={i}
+                          className="text-[10px] px-2.5 py-0.5 rounded-full bg-neutral-900 dark:bg-neutral-900 light:bg-neutral-100 text-neutral-400 border border-neutral-800 dark:border-neutral-800 light:border-neutral-200"
+                        >
+                          {s}
+                        </span>
+                      ))}
+                    </div>
                   </div>
                 </div>
-              </div>
+              </ScrollReveal>
             ))}
           </div>
         </section>
