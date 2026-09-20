@@ -248,7 +248,7 @@ export async function createProject(projectData: Omit<Project, 'id'>): Promise<s
 
 export async function updateProject(id: string, projectData: Partial<Project>): Promise<void> {
   const docRef = doc(db, 'projects', id);
-  await updateDoc(docRef, projectData);
+  await setDoc(docRef, projectData, { merge: true });
 }
 
 export async function deleteProject(id: string): Promise<void> {
@@ -352,7 +352,7 @@ export async function createArticle(articleData: Omit<Article, 'id'>): Promise<s
 
 export async function updateArticle(id: string, articleData: Partial<Article>): Promise<void> {
   const docRef = doc(db, 'articles', id);
-  await updateDoc(docRef, articleData);
+  await setDoc(docRef, articleData, { merge: true });
 }
 
 export async function deleteArticle(id: string): Promise<void> {

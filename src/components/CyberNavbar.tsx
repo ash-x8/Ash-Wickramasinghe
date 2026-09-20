@@ -147,16 +147,6 @@ export const CyberNavbar: React.FC = () => {
             )}
           </button>
 
-          {/* Admin Terminal Access Link */}
-          <Link
-            to="/admin/dashboard"
-            className="p-2 rounded-lg bg-[#111622] hover:bg-[#C59B63]/15 border border-slate-800 hover:border-[#C59B63]/40 text-slate-400 hover:text-[#C59B63] transition-colors cursor-pointer"
-            title="Admin Management Portal"
-            aria-label="Admin Portal"
-          >
-            <Shield size={15} />
-          </Link>
-
           <Link
             to="/contact"
             className="ml-1 px-4 py-1.5 bg-gradient-to-r from-[#C59B63] to-[#D8AC74] text-[#0A0D14] hover:opacity-95 font-mono text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(197,155,99,0.25)]"
@@ -220,16 +210,6 @@ export const CyberNavbar: React.FC = () => {
               );
             })}
 
-            <Link
-              to="/admin/dashboard"
-              className="flex items-center justify-between py-2 text-sm border-b border-slate-800/60 text-[#C59B63]"
-            >
-              <span className="flex items-center gap-2">
-                <Shield size={14} />
-                <span>ADMIN TERMINAL</span>
-              </span>
-              <ArrowRight size={13} />
-            </Link>
           </div>
 
           <div className="pt-2">

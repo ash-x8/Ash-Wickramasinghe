@@ -203,6 +203,7 @@ export const AdminDashboardPage: React.FC = () => {
   const handleDeleteProject = async (id: string) => {
     try {
       await deleteProject(id);
+      setProjects(prev => prev.filter(p => p.id !== id));
       showToast("Project deleted");
       setDeleteConfirm(null);
       await refreshData();
@@ -244,6 +245,7 @@ export const AdminDashboardPage: React.FC = () => {
   const handleDeleteArticle = async (id: string) => {
     try {
       await deleteArticle(id);
+      setArticles(prev => prev.filter(a => a.id !== id));
       showToast("Article deleted");
       setDeleteConfirm(null);
       await refreshData();
@@ -621,28 +623,28 @@ export const AdminDashboardPage: React.FC = () => {
                 <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-300">Quick Actions</h2>
                 <div className="flex flex-wrap gap-3">
                   <button
-                    onClick={() => { setEditingProject(null); setIsNewProjectModalOpen(true); setActiveTab('projects'); }}
+                    onClick={() => { setEditingProject(null); setIsNewProjectModalOpen(true); handleSelectTab('projects'); }}
                     className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold bg-white text-black hover:bg-slate-200 transition-colors cursor-pointer"
                   >
                     <Plus size={14} />
                     <span>Create New Project</span>
                   </button>
                   <button
-                    onClick={() => { setEditingArticle(null); setIsNewArticleModalOpen(true); setActiveTab('writing'); }}
+                    onClick={() => { setEditingArticle(null); setIsNewArticleModalOpen(true); handleSelectTab('writing'); }}
                     className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold bg-slate-800 text-white hover:bg-slate-700 transition-colors cursor-pointer"
                   >
                     <Plus size={14} />
                     <span>Write New Article</span>
                   </button>
                   <button
-                    onClick={() => setActiveTab('messages')}
+                    onClick={() => handleSelectTab('messages')}
                     className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold bg-slate-800 text-white hover:bg-slate-700 transition-colors cursor-pointer"
                   >
                     <Mail size={14} />
                     <span>Open Messages Inbox ({unreadMessagesCount})</span>
                   </button>
                   <button
-                    onClick={() => setActiveTab('theme')}
+                    onClick={() => handleSelectTab('theme')}
                     className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold bg-slate-800 text-white hover:bg-slate-700 transition-colors cursor-pointer"
                   >
                     <Palette size={14} />
@@ -663,7 +665,7 @@ export const AdminDashboardPage: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-300">Recent Contact Messages</h2>
                   <button
-                    onClick={() => setActiveTab('messages')}
+                    onClick={() => handleSelectTab('messages')}
                     className="text-xs text-amber-400 hover:underline"
                   >
                     View All
@@ -1108,8 +1110,12 @@ export const AdminDashboardPage: React.FC = () => {
                       <label className="block text-slate-400 mb-1 font-semibold">Author / Writing Names</label>
                       <input
                         type="text"
-                        value={settings.authorNames || ''}
-                        onChange={(e) => setSettings({ ...settings, authorNames: e.target.value })}
+                        value={Array.isArray(settings.authorNames) ? settings.authorNames.join(', ') : (settings.authorNames || '')}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          const namesArr = val.split(',').map(s => s.trim()).filter(Boolean);
+                          setSettings({ ...settings, authorNames: namesArr });
+                        }}
                         placeholder="Writer Ash, Writer Tizzy, Tizzy"
                         className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white font-sans"
                       />
