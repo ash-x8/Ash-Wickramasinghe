@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { 
   ArrowLeft, 
   ExternalLink, 
@@ -10,23 +10,24 @@ import {
   CheckCircle2, 
   Layers, 
   ArrowRight,
-  Sparkles,
   Share2,
   Check,
-  Eye
+  Maximize2
 } from 'lucide-react';
 import { getProjectBySlug, getProjects, trackProjectClick } from '../lib/firebase';
 import { Project } from '../types';
 import { defaultProjects } from '../data/defaultContent';
+import { ImageWithLoading } from '../components/ImageWithLoading';
+import { ImageLightbox } from '../components/ImageLightbox';
 
 export const ProjectDetailPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
-  const navigate = useNavigate();
   const [project, setProject] = useState<Project | null>(null);
   const [allProjects, setAllProjects] = useState<Project[]>([]);
   const [activeImage, setActiveImage] = useState<string>('');
   const [copied, setCopied] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [lightboxImg, setLightboxImg] = useState<string | null>(null);
 
   useEffect(() => {
     async function load() {
@@ -118,7 +119,7 @@ export const ProjectDetailPage: React.FC = () => {
 
         <button
           onClick={handleCopyLink}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#111622] hover:bg-[#1A2234] border border-slate-800 rounded text-slate-300 font-mono text-xs transition-colors"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#111622] hover:bg-[#1A2234] border border-slate-800 rounded text-slate-300 font-mono text-xs transition-colors cursor-pointer"
           title="Share Case Study"
         >
           {copied ? (
@@ -203,34 +204,43 @@ export const ProjectDetailPage: React.FC = () => {
       </header>
 
       {/* Main Image Showcase */}
-      <div className="mb-8">
-        <div className="relative aspect-[16/10] rounded-2xl overflow-hidden border border-slate-800 bg-[#111622] shadow-2xl">
-          <img
+      <div className="mb-8 space-y-4">
+        <div
+          className="relative group rounded-2xl overflow-hidden border border-slate-800 bg-[#111622] shadow-2xl cursor-pointer"
+          onClick={() => setLightboxImg(activeImage || project.image)}
+        >
+          <ImageWithLoading
             src={activeImage || project.image}
             alt={project.title}
-            referrerPolicy="no-referrer"
-            className="w-full h-full object-cover transition-all duration-300"
+            containerClassName="aspect-[16/10] w-full"
+            className="w-full h-full object-cover"
+            enableLightbox={false}
           />
+          <div className="absolute top-4 right-4 z-20 px-3 py-1.5 rounded-full bg-black/60 backdrop-blur-md text-white text-xs font-mono flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+            <Maximize2 size={13} className="text-[#C59B63]" />
+            <span>Click for Fullscreen</span>
+          </div>
         </div>
 
         {/* Gallery Thumbnails */}
         {galleryImages.length > 1 && (
-          <div className="flex items-center gap-3 mt-4 overflow-x-auto pb-2">
+          <div className="flex items-center gap-3 overflow-x-auto pb-2">
             {galleryImages.map((img, idx) => (
               <button
                 key={idx}
                 onClick={() => setActiveImage(img)}
-                className={`relative w-24 h-16 rounded-lg overflow-hidden shrink-0 border transition-all ${
+                className={`relative w-28 h-18 rounded-xl overflow-hidden shrink-0 border transition-all cursor-pointer ${
                   activeImage === img
-                    ? 'border-[#C59B63] ring-2 ring-[#C59B63]/40'
+                    ? 'border-[#C59B63] ring-2 ring-[#C59B63]/50 scale-102'
                     : 'border-slate-800 opacity-60 hover:opacity-100'
                 }`}
               >
-                <img
+                <ImageWithLoading
                   src={img}
                   alt={`Thumbnail ${idx + 1}`}
-                  referrerPolicy="no-referrer"
+                  containerClassName="w-full h-full"
                   className="w-full h-full object-cover"
+                  enableLightbox={false}
                 />
               </button>
             ))}
@@ -373,6 +383,13 @@ export const ProjectDetailPage: React.FC = () => {
           </Link>
         </div>
       )}
+
+      {/* Fullscreen Image Lightbox Modal */}
+      <ImageLightbox
+        src={lightboxImg}
+        alt={project.title}
+        onClose={() => setLightboxImg(null)}
+      />
     </div>
   );
 };

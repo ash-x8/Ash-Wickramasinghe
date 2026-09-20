@@ -118,6 +118,17 @@ export const AdminDashboardPage: React.FC = () => {
 
   // Data states
   const [settings, setSettings] = useState<SiteSettings>(defaultSiteSettings);
+  const [authorNamesInput, setAuthorNamesInput] = useState<string>('');
+
+  useEffect(() => {
+    if (settings.authorNames) {
+      setAuthorNamesInput(
+        Array.isArray(settings.authorNames)
+          ? settings.authorNames.join(', ')
+          : String(settings.authorNames)
+      );
+    }
+  }, [settings.authorNames]);
   const [projects, setProjects] = useState<Project[]>(defaultProjects);
   const [articles, setArticles] = useState<Article[]>(defaultArticles);
   const [services, setServices] = useState<ServiceItem[]>(defaultSiteSettings.services || []);
@@ -1059,7 +1070,7 @@ export const AdminDashboardPage: React.FC = () => {
                     bio: settings.bio,
                     aboutBio: settings.aboutBio,
                     personalStatement: settings.personalStatement,
-                    authorNames: settings.authorNames,
+                    authorNames: authorNamesInput.split(',').map(s => s.trim()).filter(Boolean),
                     careerTrajectory: settings.careerTrajectory,
                     statusText: settings.statusText,
                     workAvailability: settings.workAvailability,
@@ -1110,12 +1121,8 @@ export const AdminDashboardPage: React.FC = () => {
                       <label className="block text-slate-400 mb-1 font-semibold">Author / Writing Names</label>
                       <input
                         type="text"
-                        value={Array.isArray(settings.authorNames) ? settings.authorNames.join(', ') : (settings.authorNames || '')}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          const namesArr = val.split(',').map(s => s.trim()).filter(Boolean);
-                          setSettings({ ...settings, authorNames: namesArr });
-                        }}
+                        value={authorNamesInput}
+                        onChange={(e) => setAuthorNamesInput(e.target.value)}
                         placeholder="Writer Ash, Writer Tizzy, Tizzy"
                         className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white font-sans"
                       />

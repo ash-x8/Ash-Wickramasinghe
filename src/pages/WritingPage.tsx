@@ -1,18 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Calendar, Clock, User, ArrowUpRight, X, ChevronRight, BookOpen } from 'lucide-react';
+import { Calendar, Clock, User, X, ChevronRight } from 'lucide-react';
 import { getArticles, subscribeToArticles, trackArticleView } from '../lib/firebase';
 import { Article } from '../types';
 import { defaultArticles } from '../data/defaultContent';
 import { calculateReadingTime } from '../utils/readingTime';
 import { ContentSkeleton } from '../components/ContentSkeleton';
+import { ImageWithLoading } from '../components/ImageWithLoading';
+import { ImageLightbox } from '../components/ImageLightbox';
 
 export const WritingPage: React.FC = () => {
   const [articles, setArticles] = useState<Article[]>(defaultArticles);
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
   const [activeCategory, setActiveCategory] = useState<string>('All');
   const [loading, setLoading] = useState(true);
+  const [lightboxImg, setLightboxImg] = useState<string | null>(null);
   const location = useLocation();
 
   useEffect(() => {
@@ -202,11 +205,16 @@ export const WritingPage: React.FC = () => {
             {/* Modal Body */}
             <div className="p-6 sm:p-10 overflow-y-auto space-y-8">
               {selectedArticle.coverImage && (
-                <div className="relative aspect-video w-full rounded-xl overflow-hidden bg-neutral-950 border border-neutral-800">
-                  <img
+                <div
+                  className="relative aspect-video w-full rounded-xl overflow-hidden bg-neutral-950 border border-neutral-800 cursor-pointer group"
+                  onClick={() => setLightboxImg(selectedArticle.coverImage || null)}
+                >
+                  <ImageWithLoading
                     src={selectedArticle.coverImage}
                     alt={selectedArticle.title}
-                    className="w-full h-full object-cover"
+                    containerClassName="w-full h-full"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    enableLightbox={false}
                   />
                 </div>
               )}
@@ -243,6 +251,13 @@ export const WritingPage: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Lightbox Modal */}
+      <ImageLightbox
+        src={lightboxImg}
+        alt={selectedArticle?.title}
+        onClose={() => setLightboxImg(null)}
+      />
     </div>
   );
 };
