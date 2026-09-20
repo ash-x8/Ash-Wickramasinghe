@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Calendar, Clock, User, ArrowUpRight, X, ChevronRight } from 'lucide-react';
-import { getArticles, subscribeToArticles } from '../lib/firebase';
+import { motion } from 'framer-motion';
+import { Calendar, Clock, User, ArrowUpRight, X, ChevronRight, BookOpen } from 'lucide-react';
+import { getArticles, subscribeToArticles, trackArticleView } from '../lib/firebase';
 import { Article } from '../types';
 import { defaultArticles } from '../data/defaultContent';
+import { calculateReadingTime } from '../utils/readingTime';
 
 export const WritingPage: React.FC = () => {
   const [articles, setArticles] = useState<Article[]>(defaultArticles);
@@ -38,6 +40,12 @@ export const WritingPage: React.FC = () => {
 
     return () => unsubscribe();
   }, [location.hash]);
+
+  const handleSelectArticle = (article: Article) => {
+    setSelectedArticle(article);
+    const rt = calculateReadingTime(article.content, article.excerpt);
+    trackArticleView(article.id, article.title, article.category, rt.text);
+  };
 
   const categories = ['All', ...Array.from(new Set(articles.map(a => a.category)))];
 
@@ -81,59 +89,76 @@ export const WritingPage: React.FC = () => {
 
       {/* Articles List */}
       <div className="space-y-8">
-        {filteredArticles.map((article) => (
-          <article
-            key={article.id}
-            id={article.slug}
-            onClick={() => setSelectedArticle(article)}
-            className="group cursor-pointer p-8 rounded-2xl border border-neutral-800/80 dark:border-neutral-800/80 light:border-neutral-200 bg-neutral-900/30 dark:bg-neutral-900/30 light:bg-white hover:border-neutral-700 dark:hover:border-neutral-700 light:hover:border-neutral-300 transition-colors space-y-6"
-          >
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-neutral-500">
-              <div className="flex items-center gap-3">
-                <span className="text-accent uppercase tracking-wider font-semibold text-[11px]">
-                  {article.category}
-                </span>
-                <span>&bull;</span>
-                <span className="flex items-center gap-1">
-                  <User size={12} />
-                  By {article.author}
-                </span>
-              </div>
-              <div className="flex items-center gap-3 text-neutral-500">
-                <span>{article.publishedAt}</span>
-                <span>&bull;</span>
-                <span>{article.readTime}</span>
-              </div>
-            </div>
+        {filteredArticles.map((article, idx) => {
+          const readingInfo = calculateReadingTime(article.content, article.excerpt);
+          const displayReadTime = readingInfo.text;
 
-            <div className="space-y-3">
-              <h2 className="text-xl sm:text-2xl font-medium tracking-tight text-neutral-100 dark:text-neutral-100 light:text-neutral-900 group-hover:text-accent transition-colors">
-                {article.title}
-              </h2>
-              <p className="text-sm sm:text-base text-neutral-400 dark:text-neutral-400 light:text-neutral-600 leading-relaxed">
-                {article.excerpt}
-              </p>
-            </div>
-
-            <div className="flex items-center justify-between pt-4 border-t border-neutral-800/60 dark:border-neutral-800/60 light:border-neutral-200 text-xs">
-              <div className="flex flex-wrap gap-1.5">
-                {article.tags.map((tag, idx) => (
-                  <span
-                    key={idx}
-                    className="text-[10px] px-2 py-0.5 rounded bg-neutral-900 dark:bg-neutral-900 light:bg-neutral-100 text-neutral-400"
-                  >
-                    #{tag}
+          return (
+            <motion.article
+              key={article.id}
+              id={article.slug}
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.35, delay: Math.min(idx * 0.08, 0.4) }}
+              whileHover={{ 
+                y: -5, 
+                transition: { duration: 0.22, ease: "easeOut" } 
+              }}
+              whileTap={{ scale: 0.995 }}
+              onClick={() => handleSelectArticle(article)}
+              className="group cursor-pointer p-8 rounded-2xl border border-neutral-800/80 dark:border-neutral-800/80 light:border-neutral-200 bg-neutral-900/30 dark:bg-neutral-900/30 light:bg-white hover:border-[#C59B63]/60 dark:hover:border-[#C59B63]/60 light:hover:border-[#C59B63]/60 hover:shadow-xl hover:shadow-[#C59B63]/5 transition-all space-y-6"
+            >
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-neutral-500">
+                <div className="flex items-center gap-3">
+                  <span className="text-accent uppercase tracking-wider font-semibold text-[11px]">
+                    {article.category}
                   </span>
-                ))}
+                  <span>&bull;</span>
+                  <span className="flex items-center gap-1">
+                    <User size={12} />
+                    By {article.author}
+                  </span>
+                </div>
+                <div className="flex items-center gap-3 text-neutral-400 font-mono text-[11px]">
+                  <span>{article.publishedAt}</span>
+                  <span>&bull;</span>
+                  <span className="inline-flex items-center gap-1 text-[#C59B63]">
+                    <Clock size={12} />
+                    <span>{displayReadTime}</span>
+                  </span>
+                  <span className="hidden sm:inline text-neutral-600">({readingInfo.wordCount} words)</span>
+                </div>
               </div>
 
-              <span className="inline-flex items-center gap-1 text-xs uppercase tracking-widest font-medium text-neutral-300 dark:text-neutral-300 light:text-neutral-800 group-hover:translate-x-1 transition-transform">
-                <span>Read Full Essay</span>
-                <ChevronRight size={14} />
-              </span>
-            </div>
-          </article>
-        ))}
+              <div className="space-y-3">
+                <h2 className="text-xl sm:text-2xl font-medium tracking-tight text-neutral-100 dark:text-neutral-100 light:text-neutral-900 group-hover:text-accent transition-colors">
+                  {article.title}
+                </h2>
+                <p className="text-sm sm:text-base text-neutral-400 dark:text-neutral-400 light:text-neutral-600 leading-relaxed">
+                  {article.excerpt}
+                </p>
+              </div>
+
+              <div className="flex items-center justify-between pt-4 border-t border-neutral-800/60 dark:border-neutral-800/60 light:border-neutral-200 text-xs">
+                <div className="flex flex-wrap gap-1.5">
+                  {article.tags.map((tag, tIdx) => (
+                    <span
+                      key={tIdx}
+                      className="text-[10px] px-2 py-0.5 rounded bg-neutral-900 dark:bg-neutral-900 light:bg-neutral-100 text-neutral-400"
+                    >
+                      #{tag}
+                    </span>
+                  ))}
+                </div>
+
+                <span className="inline-flex items-center gap-1 text-xs uppercase tracking-widest font-medium text-neutral-300 dark:text-neutral-300 light:text-neutral-800 group-hover:text-[#C59B63] group-hover:translate-x-1.5 transition-all">
+                  <span>Read Full Essay</span>
+                  <ChevronRight size={14} />
+                </span>
+              </div>
+            </motion.article>
+          );
+        })}
       </div>
 
       {/* Reading Modal / Full View */}
@@ -148,10 +173,17 @@ export const WritingPage: React.FC = () => {
           >
             {/* Modal Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-800 dark:border-neutral-800 light:border-neutral-200 bg-neutral-950/50">
-              <div className="flex items-center gap-2 text-xs text-neutral-400">
+              <div className="flex items-center gap-2 text-xs text-neutral-400 font-mono">
                 <span className="text-accent uppercase tracking-widest font-semibold">{selectedArticle.category}</span>
                 <span>&bull;</span>
-                <span>{selectedArticle.readTime}</span>
+                <span className="inline-flex items-center gap-1 text-[#C59B63]">
+                  <Clock size={12} />
+                  <span>{calculateReadingTime(selectedArticle.content, selectedArticle.excerpt).text}</span>
+                </span>
+                <span>&bull;</span>
+                <span className="text-neutral-500">
+                  {calculateReadingTime(selectedArticle.content, selectedArticle.excerpt).wordCount} words
+                </span>
               </div>
               <button
                 onClick={() => setSelectedArticle(null)}

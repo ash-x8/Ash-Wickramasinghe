@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Link, Navigate, useLocation } f
 import { CyberNavbar } from './components/CyberNavbar';
 import { CyberFooter } from './components/CyberFooter';
 import { CyberBackground } from './components/CyberBackground';
+import { SiteLoadingBar } from './components/SiteLoadingBar';
 import { AuthProvider, ProtectedRoute, useAuth } from './context/AuthContext';
 import { trackPageView } from './lib/firebase';
 import { HomePage } from './pages/HomePage';
@@ -81,6 +82,7 @@ export function App() {
   return (
     <AuthProvider>
       <Router>
+        <SiteLoadingBar />
         <RouteTracker />
         <div className="min-h-screen bg-[#0A0D14] text-slate-100 flex flex-col selection:bg-[#C59B63] selection:text-[#0A0D14] relative overflow-x-hidden font-sans">
           {/* Cyber Ambiance Background */}

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowUpRight, ArrowRight, Sparkles, CheckCircle2, ChevronRight } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { ArrowUpRight, ArrowRight, Sparkles, CheckCircle2, ChevronRight, Clock } from 'lucide-react';
 import { 
   getProjects, 
   getSiteSettings, 
@@ -9,11 +10,15 @@ import {
   subscribeToSiteSettings,
   subscribeToProjects,
   subscribeToArticles,
-  subscribeToServices
+  subscribeToServices,
+  trackProjectClick,
+  trackArticleView
 } from '../lib/firebase';
 import { Project, SiteSettings, Article, ServiceItem } from '../types';
 import { defaultSiteSettings, defaultProjects, defaultArticles } from '../data/defaultContent';
 import { ProjectModal } from '../components/ProjectModal';
+import { ImageWithLoading } from '../components/ImageWithLoading';
+import { calculateReadingTime } from '../utils/readingTime';
 
 export const HomePage: React.FC = () => {
   const [settings, setSettings] = useState<SiteSettings>(defaultSiteSettings);
@@ -147,21 +152,26 @@ export const HomePage: React.FC = () => {
         {/* Projects Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
           {featuredProjects.map((project) => (
-            <div
+            <motion.div
               key={project.id}
-              onClick={() => setSelectedProject(project)}
+              whileHover={{ y: -6 }}
+              transition={{ duration: 0.25, ease: 'easeOut' }}
+              onClick={() => {
+                trackProjectClick(project.id, project.title, project.category);
+                setSelectedProject(project);
+              }}
               className="group cursor-pointer space-y-4"
             >
-              {/* Image Canvas */}
+              {/* Image Canvas with smooth loading */}
               <div className="relative aspect-[16/10] w-full rounded-xl overflow-hidden bg-neutral-900 border border-neutral-800 dark:border-neutral-800 light:border-neutral-200">
-                <img
+                <ImageWithLoading
                   src={project.image}
                   alt={project.title}
                   className="w-full h-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
-                  loading="lazy"
+                  containerClassName="w-full h-full"
                 />
-                <div className="absolute inset-0 bg-neutral-950/20 group-hover:bg-transparent transition-colors" />
-                <div className="absolute top-4 left-4 px-3 py-1 rounded-full bg-neutral-950/80 backdrop-blur-sm text-[11px] font-medium tracking-wider uppercase text-neutral-200">
+                <div className="absolute inset-0 bg-neutral-950/20 group-hover:bg-transparent transition-colors pointer-events-none" />
+                <div className="absolute top-4 left-4 px-3 py-1 rounded-full bg-neutral-950/80 backdrop-blur-sm text-[11px] font-medium tracking-wider uppercase text-neutral-200 z-20 pointer-events-none">
                   {project.category}
                 </div>
               </div>
@@ -192,7 +202,7 @@ export const HomePage: React.FC = () => {
                   </span>
                 ))}
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
       </section>
@@ -259,18 +269,20 @@ export const HomePage: React.FC = () => {
       <section className="py-20 border-t border-neutral-800/60 dark:border-neutral-800/60 light:border-neutral-200 px-6 sm:px-8 lg:px-12 max-w-7xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-12 items-center">
           <div className="md:col-span-5">
-            <div className="relative aspect-[4/5] rounded-2xl overflow-hidden border border-neutral-800 dark:border-neutral-800 light:border-neutral-200 bg-neutral-900">
-              <img
+            <div className="relative aspect-[4/5] rounded-2xl overflow-hidden border border-neutral-800 dark:border-neutral-800 light:border-neutral-200 bg-neutral-900 shadow-2xl shadow-black/40">
+              <ImageWithLoading
                 src={settings.avatarUrl || '/ash_cyber_portrait.jpg'}
-                alt="Ash Wickramasinghe"
+                alt="Ash Wickramasinghe - Portrait"
                 className="w-full h-full object-cover grayscale contrast-110"
+                containerClassName="w-full h-full"
               />
-              <div className="absolute inset-0 bg-neutral-950/20" />
+              <div className="absolute inset-0 bg-neutral-950/20 pointer-events-none" />
             </div>
           </div>
 
           <div className="md:col-span-7 space-y-6">
-            <span className="text-xs uppercase tracking-widest text-accent font-semibold">
+            <span className="text-xs uppercase tracking-widest text-accent font-semibold flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#C59B63]" />
               Biography &amp; Philosophy
             </span>
             <h2 className="editorial-section-title font-semibold tracking-tight text-neutral-100 dark:text-neutral-100 light:text-neutral-900">
@@ -282,7 +294,7 @@ export const HomePage: React.FC = () => {
             <div className="pt-2 flex flex-wrap items-center gap-4">
               <Link
                 to="/about"
-                className="inline-flex items-center gap-2 px-5 py-2.5 text-xs uppercase tracking-widest font-medium rounded-full bg-neutral-100 text-neutral-950 hover:opacity-90 transition-opacity"
+                className="inline-flex items-center gap-2 px-5 py-2.5 text-xs uppercase tracking-widest font-medium rounded-full bg-neutral-100 text-neutral-950 hover:opacity-90 transition-opacity shadow-sm"
               >
                 <span>Read Full Story</span>
                 <ArrowRight size={14} />
@@ -304,7 +316,8 @@ export const HomePage: React.FC = () => {
         <section className="py-20 border-t border-neutral-800/60 dark:border-neutral-800/60 light:border-neutral-200 px-6 sm:px-8 lg:px-12 max-w-7xl mx-auto">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-12 gap-4">
             <div className="space-y-2">
-              <span className="text-xs uppercase tracking-widest text-accent font-semibold">
+              <span className="text-xs uppercase tracking-widest text-accent font-semibold flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#C59B63]" />
                 Publications &amp; Notes
               </span>
               <h2 className="editorial-section-title font-semibold tracking-tight text-neutral-100 dark:text-neutral-100 light:text-neutral-900">
@@ -321,35 +334,48 @@ export const HomePage: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {recentArticles.map((article) => (
-              <Link
-                key={article.id}
-                to={`/writing#${article.slug}`}
-                className="group flex flex-col justify-between p-6 rounded-xl border border-neutral-800/80 dark:border-neutral-800/80 light:border-neutral-200 bg-neutral-900/30 dark:bg-neutral-900/30 light:bg-white hover:border-neutral-700 transition-colors"
-              >
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between text-xs text-neutral-400">
-                    <span className="text-accent uppercase tracking-wider text-[11px] font-medium">
-                      {article.category}
-                    </span>
-                    <span>{article.readTime}</span>
-                  </div>
-                  <h3 className="text-base sm:text-lg font-medium tracking-tight text-neutral-100 dark:text-neutral-100 light:text-neutral-900 group-hover:text-accent transition-colors">
-                    {article.title}
-                  </h3>
-                  <p className="text-xs sm:text-sm text-neutral-400 dark:text-neutral-400 light:text-neutral-600 line-clamp-3 leading-relaxed">
-                    {article.excerpt}
-                  </p>
-                </div>
+            {recentArticles.map((article) => {
+              const readingTime = calculateReadingTime(article.content, article.excerpt);
+              return (
+                <motion.div
+                  key={article.id}
+                  whileHover={{ y: -5 }}
+                  transition={{ duration: 0.22, ease: 'easeOut' }}
+                  className="flex"
+                >
+                  <Link
+                    to={`/writing#${article.slug}`}
+                    onClick={() => trackArticleView(article.id, article.title, article.category, readingTime.text)}
+                    className="group flex flex-col justify-between p-6 rounded-xl border border-neutral-800/80 dark:border-neutral-800/80 light:border-neutral-200 bg-neutral-900/30 dark:bg-neutral-900/30 light:bg-white hover:border-[#C59B63]/40 transition-colors w-full"
+                  >
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between text-xs text-neutral-400">
+                        <span className="text-accent uppercase tracking-wider text-[11px] font-medium">
+                          {article.category}
+                        </span>
+                        <span className="inline-flex items-center gap-1 text-neutral-400">
+                          <Clock size={11} className="text-[#C59B63]" />
+                          {readingTime.text}
+                        </span>
+                      </div>
+                      <h3 className="text-base sm:text-lg font-medium tracking-tight text-neutral-100 dark:text-neutral-100 light:text-neutral-900 group-hover:text-accent transition-colors">
+                        {article.title}
+                      </h3>
+                      <p className="text-xs sm:text-sm text-neutral-400 dark:text-neutral-400 light:text-neutral-600 line-clamp-3 leading-relaxed">
+                        {article.excerpt}
+                      </p>
+                    </div>
 
-                <div className="pt-6 mt-6 border-t border-neutral-800/60 dark:border-neutral-800/60 light:border-neutral-200 flex items-center justify-between text-xs text-neutral-500">
-                  <span>By {article.author}</span>
-                  <span className="group-hover:translate-x-1 transition-transform inline-flex items-center gap-1 text-neutral-300">
-                    Read Article <ChevronRight size={13} />
-                  </span>
-                </div>
-              </Link>
-            ))}
+                    <div className="pt-6 mt-6 border-t border-neutral-800/60 dark:border-neutral-800/60 light:border-neutral-200 flex items-center justify-between text-xs text-neutral-500">
+                      <span>By {article.author}</span>
+                      <span className="group-hover:translate-x-1 transition-transform inline-flex items-center gap-1 text-neutral-300">
+                        Read Article <ChevronRight size={13} />
+                      </span>
+                    </div>
+                  </Link>
+                </motion.div>
+              );
+            })}
           </div>
         </section>
       )}

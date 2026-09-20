@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { ArrowUpRight, ArrowRight, CheckCircle2, Download } from 'lucide-react';
 import { getSiteSettings, subscribeToSiteSettings } from '../lib/firebase';
 import { SiteSettings } from '../types';
 import { defaultSiteSettings } from '../data/defaultContent';
+import { ImageWithLoading } from '../components/ImageWithLoading';
 
 export const AboutPage: React.FC = () => {
   const [settings, setSettings] = useState<SiteSettings>(defaultSiteSettings);
@@ -45,12 +47,18 @@ export const AboutPage: React.FC = () => {
       {/* Main Narrative & Portrait Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start mb-24">
         {/* Left: Portrait and Quick Facts */}
-        <div className="lg:col-span-5 space-y-8">
-          <div className="relative aspect-[4/5] rounded-2xl overflow-hidden bg-neutral-900 border border-neutral-800 dark:border-neutral-800 light:border-neutral-200">
-            <img
+        <motion.div 
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="lg:col-span-5 space-y-8"
+        >
+          <div className="relative aspect-[4/5] rounded-2xl overflow-hidden bg-neutral-900 border border-neutral-800 dark:border-neutral-800 light:border-neutral-200 shadow-2xl shadow-black/40">
+            <ImageWithLoading
               src={settings.avatarUrl || '/ash_cyber_portrait.jpg'}
-              alt="Ash Wickramasinghe"
+              alt="Ash Wickramasinghe - Portrait"
               className="w-full h-full object-cover grayscale contrast-110"
+              containerClassName="w-full h-full"
             />
           </div>
 
@@ -72,7 +80,7 @@ export const AboutPage: React.FC = () => {
               <span className="font-medium text-emerald-400">{settings.statusText || "Open for Select Projects"}</span>
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {/* Right: Narrative Story */}
         <div className="lg:col-span-7 space-y-8">

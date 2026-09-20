@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { Search, ArrowUpRight, Filter } from 'lucide-react';
-import { getProjects, subscribeToProjects } from '../lib/firebase';
+import { getProjects, subscribeToProjects, trackProjectClick } from '../lib/firebase';
 import { Project, ProjectCategory } from '../types';
 import { defaultProjects } from '../data/defaultContent';
 import { ProjectModal } from '../components/ProjectModal';
@@ -11,6 +12,11 @@ export const ProjectsPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const handleSelectProject = (project: Project) => {
+    setSelectedProject(project);
+    trackProjectClick(project.id, project.title, project.category);
+  };
 
   useEffect(() => {
     getProjects()
@@ -109,19 +115,27 @@ export const ProjectsPage: React.FC = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filteredProjects.map((project) => (
-            <div
+          {filteredProjects.map((project, idx) => (
+            <motion.div
               key={project.id}
-              onClick={() => setSelectedProject(project)}
-              className="group cursor-pointer flex flex-col justify-between space-y-4"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.35, delay: Math.min(idx * 0.05, 0.35) }}
+              whileHover={{ 
+                y: -6, 
+                transition: { duration: 0.22, ease: "easeOut" } 
+              }}
+              whileTap={{ scale: 0.99 }}
+              onClick={() => handleSelectProject(project)}
+              className="group cursor-pointer flex flex-col justify-between space-y-4 p-3 -m-3 rounded-2xl transition-colors hover:bg-neutral-900/30 dark:hover:bg-neutral-900/30 light:hover:bg-neutral-100/60"
             >
               <div className="space-y-4">
                 {/* Image */}
-                <div className="relative aspect-[16/10] w-full rounded-xl overflow-hidden bg-neutral-900 border border-neutral-800 dark:border-neutral-800 light:border-neutral-200">
+                <div className="relative aspect-[16/10] w-full rounded-xl overflow-hidden bg-neutral-900 border border-neutral-800 dark:border-neutral-800 light:border-neutral-200 group-hover:border-[#C59B63]/40 group-hover:shadow-lg group-hover:shadow-[#C59B63]/5 transition-all">
                   <img
                     src={project.image}
                     alt={project.title}
-                    className="w-full h-full object-cover object-center transition-transform duration-500 ease-out group-hover:scale-105"
+                    className="w-full h-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
                     loading="lazy"
                   />
                   <div className="absolute top-3 left-3 px-2.5 py-0.5 rounded-full bg-neutral-950/80 backdrop-blur-sm text-[10px] font-medium tracking-wider uppercase text-neutral-200">
@@ -140,7 +154,7 @@ export const ProjectsPage: React.FC = () => {
                     <h3 className="text-base sm:text-lg font-medium tracking-tight text-neutral-100 dark:text-neutral-100 light:text-neutral-900 group-hover:text-accent transition-colors">
                       {project.title}
                     </h3>
-                    <div className="w-6 h-6 rounded-full border border-neutral-800 dark:border-neutral-800 light:border-neutral-300 flex items-center justify-center shrink-0 text-neutral-400 group-hover:text-white group-hover:border-neutral-500 transition-colors">
+                    <div className="w-6 h-6 rounded-full border border-neutral-800 dark:border-neutral-800 light:border-neutral-300 flex items-center justify-center shrink-0 text-neutral-400 group-hover:text-[#C59B63] group-hover:border-[#C59B63]/60 transition-colors">
                       <ArrowUpRight size={13} />
                     </div>
                   </div>
@@ -152,16 +166,16 @@ export const ProjectsPage: React.FC = () => {
 
               {/* Tags footer */}
               <div className="flex flex-wrap gap-1.5 pt-2 border-t border-neutral-900 dark:border-neutral-900 light:border-neutral-100">
-                {project.tags.slice(0, 3).map((tag, idx) => (
+                {project.tags.slice(0, 3).map((tag, tIdx) => (
                   <span
-                    key={idx}
+                    key={tIdx}
                     className="text-[10px] px-2 py-0.5 rounded bg-neutral-900 dark:bg-neutral-900 light:bg-neutral-100 text-neutral-400"
                   >
-                    {tag}
+                    #{tag}
                   </span>
                 ))}
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
       )}

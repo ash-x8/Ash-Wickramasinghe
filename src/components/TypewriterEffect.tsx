@@ -46,9 +46,9 @@ export const TypewriterEffect: React.FC<TypewriterEffectProps> = ({
 
   return (
     <span className={`inline-flex items-center font-mono ${className}`}>
-      {prefix && <span className="text-[#00f0ff]/70 mr-2">{prefix}</span>}
-      <span className="text-[#00f0ff]">{currentText}</span>
-      <span className="w-2.5 h-5 ml-1 bg-[#00f0ff] animate-pulse inline-block" />
+      {prefix && <span className="text-[#C59B63]/80 mr-2">{prefix}</span>}
+      <span className="text-[#C59B63]">{currentText}</span>
+      <span className="w-2 h-4 ml-1 bg-[#C59B63] animate-pulse inline-block" />
     </span>
   );
 };

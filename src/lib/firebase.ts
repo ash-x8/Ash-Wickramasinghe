@@ -32,6 +32,12 @@ import {
   getDownloadURL,
   deleteObject
 } from 'firebase/storage';
+import { 
+  getAnalytics, 
+  isSupported as isAnalyticsSupported, 
+  logEvent, 
+  Analytics 
+} from 'firebase/analytics';
 import firebaseConfig from '../../firebase-applet-config.json';
 import { Project, SiteSettings, ContactMessage, Article, ServiceItem, MediaItem, PageViewTrend } from '../types';
 import { defaultSiteSettings, defaultProjects, defaultArticles } from '../data/defaultContent';
@@ -41,6 +47,28 @@ export const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 export const auth = getAuth(app);
 export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
 export const storage = getStorage(app);
+
+// Safe Firebase Analytics initialization - only if a valid Google Analytics measurementId is configured
+export let analyticsInstance: Analytics | null = null;
+if (
+  typeof window !== 'undefined' && 
+  firebaseConfig.measurementId && 
+  firebaseConfig.measurementId.trim() !== ''
+) {
+  isAnalyticsSupported()
+    .then((supported) => {
+      if (supported) {
+        try {
+          analyticsInstance = getAnalytics(app);
+        } catch (e) {
+          console.debug('Firebase Analytics initialization deferred:', e);
+        }
+      }
+    })
+    .catch((err) => {
+      console.debug('Firebase Analytics initialization skipped:', err);
+    });
+}
 
 export const AUTHORIZED_ADMIN_EMAIL = 'kushanashvika216@gmail.com';
 
@@ -470,11 +498,97 @@ export async function deleteContactMessage(id: string): Promise<void> {
 }
 
 /* =========================================================================
-   ANALYTICS & ACTIVITY TRENDS (Page Views & Contact Inquiries)
+   ANALYTICS & ACTIVITY TRENDS (Page Views, Events & User Engagement)
    ========================================================================= */
+
+export async function trackEvent(eventName: string, params: Record<string, any> = {}): Promise<void> {
+  try {
+    // 1. Log to standard Firebase Analytics if supported
+    if (analyticsInstance) {
+      try {
+        logEvent(analyticsInstance, eventName, params);
+      } catch (analyticsErr) {
+        console.debug('Firebase Analytics logEvent ignored:', analyticsErr);
+      }
+    }
+
+    // 2. Track real engagement in Firestore for admin dashboard insights
+    const today = new Date().toISOString().slice(0, 10);
+    const dayDocRef = doc(db, 'analytics', `day_${today}`);
+    const metricsDocRef = doc(db, 'analytics', 'engagement_metrics');
+
+    const updatePayload: Record<string, any> = {
+      updatedAt: new Date().toISOString(),
+      [`events.${eventName}`]: increment(1)
+    };
+
+    await Promise.allSettled([
+      setDoc(dayDocRef, {
+        date: today,
+        lastEvent: eventName,
+        [`events.${eventName}`]: increment(1),
+        updatedAt: new Date().toISOString()
+      }, { merge: true }),
+      setDoc(metricsDocRef, updatePayload, { merge: true })
+    ]);
+  } catch (err) {
+    console.debug('Telemetry event logging deferred:', err);
+  }
+}
+
+export async function trackProjectClick(projectId: string, title: string, category: string): Promise<void> {
+  await trackEvent('select_content', {
+    content_type: 'project',
+    item_id: projectId,
+    item_name: title,
+    item_category: category
+  });
+}
+
+export async function trackArticleView(articleId: string, title: string, category: string, readTime?: string): Promise<void> {
+  await trackEvent('view_item', {
+    content_type: 'article',
+    item_id: articleId,
+    item_name: title,
+    item_category: category,
+    read_time: readTime
+  });
+}
+
+export async function trackContactSubmission(service: string): Promise<void> {
+  await trackEvent('generate_lead', {
+    service_type: service
+  });
+}
+
+export async function trackSocialClick(platform: string, url: string): Promise<void> {
+  await trackEvent('social_click', {
+    social_network: platform,
+    target_url: url
+  });
+}
+
+export async function trackCvAction(action: 'view' | 'download_open' | 'copy_link'): Promise<void> {
+  await trackEvent('cv_action', {
+    action_type: action
+  });
+}
+
+export async function trackServiceInquiry(serviceTitle: string): Promise<void> {
+  await trackEvent('service_inquiry_start', {
+    service_title: serviceTitle
+  });
+}
 
 export async function trackPageView(path: string = '/'): Promise<void> {
   try {
+    if (analyticsInstance) {
+      try {
+        logEvent(analyticsInstance, 'page_view', { page_path: path });
+      } catch (analyticsErr) {
+        console.debug('Firebase Analytics page_view ignored:', analyticsErr);
+      }
+    }
     const today = new Date().toISOString().slice(0, 10);
     const docRef = doc(db, 'analytics', `day_${today}`);
     await setDoc(docRef, {

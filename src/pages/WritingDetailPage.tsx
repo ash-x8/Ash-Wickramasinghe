@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { 
   ArrowLeft, 
   Clock, 
@@ -12,9 +13,10 @@ import {
   Sparkles,
   ArrowRight
 } from 'lucide-react';
-import { getArticleBySlug, getArticles } from '../lib/firebase';
+import { getArticleBySlug, getArticles, trackArticleView } from '../lib/firebase';
 import { Article } from '../types';
 import { defaultArticles } from '../data/defaultContent';
+import { calculateReadingTime } from '../utils/readingTime';
 
 export const WritingDetailPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -29,12 +31,12 @@ export const WritingDetailPage: React.FC = () => {
       if (!slug) return;
       try {
         const found = await getArticleBySlug(slug);
-        if (found) {
-          setArticle(found);
-        } else {
-          // Check defaultArticles
-          const fallback = defaultArticles.find(a => a.slug === slug || a.id === slug);
-          setArticle(fallback || null);
+        const resolved = found || defaultArticles.find(a => a.slug === slug || a.id === slug) || null;
+        setArticle(resolved);
+
+        if (resolved) {
+          const rt = calculateReadingTime(resolved.content, resolved.excerpt);
+          trackArticleView(resolved.id, resolved.title, resolved.category, rt.text);
         }
 
         const all = await getArticles();
@@ -46,6 +48,10 @@ export const WritingDetailPage: React.FC = () => {
         console.warn("Error fetching article:", e);
         const fallback = defaultArticles.find(a => a.slug === slug || a.id === slug);
         setArticle(fallback || null);
+        if (fallback) {
+          const rt = calculateReadingTime(fallback.content, fallback.excerpt);
+          trackArticleView(fallback.id, fallback.title, fallback.category, rt.text);
+        }
       } finally {
         setLoading(false);
       }
@@ -133,9 +139,13 @@ export const WritingDetailPage: React.FC = () => {
             <span>{article.publishedAt}</span>
           </span>
           <span>&bull;</span>
-          <span className="flex items-center gap-1.5">
+          <span className="flex items-center gap-1.5 text-[#C59B63] font-semibold">
             <Clock size={13} />
-            <span>{article.readTime}</span>
+            <span>{calculateReadingTime(article.content, article.excerpt).text}</span>
+          </span>
+          <span>&bull;</span>
+          <span className="text-slate-400">
+            {calculateReadingTime(article.content, article.excerpt).wordCount} words
           </span>
         </div>
 
@@ -148,15 +158,19 @@ export const WritingDetailPage: React.FC = () => {
         </p>
       </header>
 
-      {/* Hero Cover Image */}
+      {/* Hero Cover Image with Smooth Reveal */}
       {article.coverImage && (
-        <div className="relative aspect-[16/9] rounded-2xl overflow-hidden mb-12 border border-slate-800 bg-[#111622]">
-          <img
+        <div className="relative aspect-[16/9] rounded-2xl overflow-hidden mb-12 border border-slate-800 bg-[#111622] group">
+          <motion.img
+            initial={{ opacity: 0, scale: 1.03 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
             src={article.coverImage}
             alt={article.title}
             referrerPolicy="no-referrer"
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
           />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0A0D14]/60 via-transparent to-transparent pointer-events-none" />
         </div>
       )}
 
@@ -263,23 +277,35 @@ export const WritingDetailPage: React.FC = () => {
             Continue Reading
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            {relatedArticles.map((rel) => (
-              <Link
-                key={rel.id}
-                to={`/writing/${rel.slug}`}
-                className="group p-5 bg-[#0D111A] border border-slate-800 hover:border-[#C59B63]/40 rounded-xl transition-all block"
-              >
-                <span className="font-mono text-[10px] text-[#C59B63] uppercase tracking-wider block mb-2">
-                  {rel.category} &bull; {rel.readTime}
-                </span>
-                <h4 className="text-base font-bold text-white group-hover:text-[#C59B63] transition-colors font-sans mb-2 line-clamp-2">
-                  {rel.title}
-                </h4>
-                <p className="text-slate-400 text-xs line-clamp-2">
-                  {rel.excerpt}
-                </p>
-              </Link>
-            ))}
+            {relatedArticles.map((rel) => {
+              const relRead = calculateReadingTime(rel.content, rel.excerpt);
+              return (
+                <motion.div
+                  key={rel.id}
+                  whileHover={{ y: -5 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <Link
+                    to={`/writing/${rel.slug}`}
+                    className="group p-5 bg-[#0D111A] border border-slate-800 hover:border-[#C59B63]/60 rounded-xl transition-all block h-full hover:shadow-lg hover:shadow-[#C59B63]/5"
+                  >
+                    <div className="flex items-center justify-between font-mono text-[10px] text-[#C59B63] uppercase tracking-wider mb-2">
+                      <span>{rel.category}</span>
+                      <span className="flex items-center gap-1 text-slate-400">
+                        <Clock size={10} />
+                        <span>{relRead.text}</span>
+                      </span>
+                    </div>
+                    <h4 className="text-base font-bold text-white group-hover:text-[#C59B63] transition-colors font-sans mb-2 line-clamp-2">
+                      {rel.title}
+                    </h4>
+                    <p className="text-slate-400 text-xs line-clamp-2">
+                      {rel.excerpt}
+                    </p>
+                  </Link>
+                </motion.div>
+              );
+            })}
           </div>
         </section>
       )}

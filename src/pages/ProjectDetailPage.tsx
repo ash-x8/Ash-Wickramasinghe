@@ -15,7 +15,7 @@ import {
   Check,
   Eye
 } from 'lucide-react';
-import { getProjectBySlug, getProjects } from '../lib/firebase';
+import { getProjectBySlug, getProjects, trackProjectClick } from '../lib/firebase';
 import { Project } from '../types';
 import { defaultProjects } from '../data/defaultContent';
 
@@ -33,13 +33,11 @@ export const ProjectDetailPage: React.FC = () => {
       if (!slug) return;
       try {
         const found = await getProjectBySlug(slug);
-        if (found) {
-          setProject(found);
-          setActiveImage(found.image);
-        } else {
-          const fallback = defaultProjects.find(p => p.slug === slug || p.id === slug);
-          setProject(fallback || null);
-          if (fallback) setActiveImage(fallback.image);
+        const resolved = found || defaultProjects.find(p => p.slug === slug || p.id === slug) || null;
+        setProject(resolved);
+        if (resolved) {
+          setActiveImage(resolved.image);
+          trackProjectClick(resolved.id, resolved.title, resolved.category);
         }
 
         const list = await getProjects();
@@ -48,7 +46,10 @@ export const ProjectDetailPage: React.FC = () => {
         console.warn("Could not load project:", e);
         const fallback = defaultProjects.find(p => p.slug === slug || p.id === slug);
         setProject(fallback || null);
-        if (fallback) setActiveImage(fallback.image);
+        if (fallback) {
+          setActiveImage(fallback.image);
+          trackProjectClick(fallback.id, fallback.title, fallback.category);
+        }
       } finally {
         setLoading(false);
       }
