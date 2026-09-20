@@ -24,10 +24,13 @@ import {
   Mail, 
   Cpu, 
   Database, 
-  Clock,
   Palette,
-  Megaphone,
-  Film,
+  Globe,
+  Copy,
+  CheckCircle2,
+  Image as ImageIcon,
+  BookOpen,
+  Settings,
   Sparkles,
   ArrowRight
 } from 'lucide-react';
@@ -40,25 +43,35 @@ import {
   createProject, 
   updateProject, 
   deleteProject, 
+  getServices,
+  createService,
+  updateService,
+  deleteService,
+  getArticles,
+  createArticle,
+  updateArticle,
+  deleteArticle,
   getContactMessages, 
   updateMessageStatus, 
   deleteContactMessage, 
   uploadMediaFile 
-} from '@/lib/firebase';
+} from '@/utils/firebase-service';
 import { CyberCard } from '@/app/components/CyberCard';
-import type { SiteSettings, Project, ContactMessage, SkillItem, ProjectCategory } from '@/lib/types';
-import { defaultSiteSettings, defaultProjects } from '@/lib/defaultContent';
+import type { SiteSettings, Project, ServiceItem, WritingArticle, ContactMessage, SkillItem, ProjectCategory } from '@/lib/types';
+import { defaultSiteSettings, defaultProjects, defaultServices, defaultArticles } from '@/lib/defaultContent';
 
 export default function AdminDashboard() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [authChecking, setAuthChecking] = useState(true);
 
-  const [activeTab, setActiveTab] = useState<'profile' | 'cv' | 'projects' | 'skills' | 'messages'>('profile');
+  const [activeTab, setActiveTab] = useState<'profile' | 'cv' | 'projects' | 'services' | 'writing' | 'media' | 'messages' | 'theme' | 'seo'>('profile');
   
   // Data States
   const [settings, setSettings] = useState<SiteSettings>(defaultSiteSettings);
   const [projects, setProjects] = useState<Project[]>(defaultProjects);
+  const [services, setServices] = useState<ServiceItem[]>(defaultServices);
+  const [articles, setArticles] = useState<WritingArticle[]>(defaultArticles);
   const [messages, setMessages] = useState<ContactMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -67,39 +80,53 @@ export default function AdminDashboard() {
   // Upload States
   const [avatarUploading, setAvatarUploading] = useState(false);
   const [cvUploading, setCvUploading] = useState(false);
+  const [mediaUploading, setMediaUploading] = useState(false);
+  const [uploadedMediaList, setUploadedMediaList] = useState<string[]>([]);
+  const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
 
-  // Project Modal / Edit State
+  // Project Modal State
   const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
   const [editingProject, setEditingProject] = useState<Partial<Project> | null>(null);
   const [projectImageUploading, setProjectImageUploading] = useState(false);
   const [tagInput, setTagInput] = useState('');
 
-  // Skill Add State
-  const [newSkillName, setNewSkillName] = useState('');
-  const [newSkillLevel, setNewSkillLevel] = useState(90);
-  const [newSkillCategory, setNewSkillCategory] = useState<SkillItem['category']>('Frontend & UI');
+  // Service Modal State
+  const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
+  const [editingService, setEditingService] = useState<Partial<ServiceItem> | null>(null);
+  const [serviceTagInput, setServiceTagInput] = useState('');
 
-  // Listen to Auth
+  // Article Modal State
+  const [isArticleModalOpen, setIsArticleModalOpen] = useState(false);
+  const [editingArticle, setEditingArticle] = useState<Partial<WritingArticle> | null>(null);
+
+  // Listen to Auth State
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       setAuthChecking(false);
+      if (!currentUser) {
+        router.push('/admin');
+      }
     });
     return () => unsubscribe();
-  }, []);
+  }, [router]);
 
   // Fetch Dashboard Data
   useEffect(() => {
     async function fetchAllData() {
       setLoading(true);
       try {
-        const [loadedSettings, loadedProjects, loadedMessages] = await Promise.all([
+        const [loadedSettings, loadedProjects, loadedServices, loadedArticles, loadedMessages] = await Promise.all([
           getSiteSettings().catch(() => null),
           getProjects().catch(() => null),
+          getServices().catch(() => null),
+          getArticles().catch(() => null),
           getContactMessages().catch(() => [])
         ]);
         if (loadedSettings) setSettings(loadedSettings);
         if (loadedProjects && loadedProjects.length > 0) setProjects(loadedProjects);
+        if (loadedServices && loadedServices.length > 0) setServices(loadedServices);
+        if (loadedArticles && loadedArticles.length > 0) setArticles(loadedArticles);
         if (loadedMessages) setMessages(loadedMessages);
       } catch (err) {
         console.error("Error loading dashboard data:", err);
@@ -120,7 +147,7 @@ export default function AdminDashboard() {
     }
   };
 
-  // Save Settings
+  // Save Site Settings
   const handleSaveSettings = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaveSuccess(false);
@@ -157,7 +184,7 @@ export default function AdminDashboard() {
     }
   };
 
-  // CV PDF Upload Handler
+  // CV Upload Handler
   const handleCvUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -177,6 +204,32 @@ export default function AdminDashboard() {
     } finally {
       setCvUploading(false);
     }
+  };
+
+  // Media Library Upload
+  const handleMediaLibraryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setMediaUploading(true);
+    try {
+      const downloadUrl = await uploadMediaFile(file, 'media_library');
+      setUploadedMediaList(prev => [downloadUrl, ...prev]);
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 3000);
+    } catch (err: any) {
+      console.error("Media upload failed:", err);
+      setSaveError("Media Upload failed: " + err.message);
+    } finally {
+      setMediaUploading(false);
+    }
+  };
+
+  // Copy to Clipboard helper
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedUrl(text);
+    setTimeout(() => setCopiedUrl(null), 2500);
   };
 
   // Project Image Upload Handler
@@ -203,18 +256,18 @@ export default function AdminDashboard() {
     } else {
       setEditingProject({
         title: '',
-        category: 'Full-Stack',
+        slug: '',
+        category: 'Graphic Design',
         description: '',
         detailedDescription: '',
         image: '/ash_cyber_portrait.jpg',
-        tags: ['Graphic Design', 'Branding', 'Creative'],
-        technologies: ['Graphic Design', 'Branding'],
-        githubUrl: 'https://github.com/ash-wickramasinghe',
+        tags: ['Graphic Design', 'Branding'],
+        githubUrl: '',
         liveUrl: '',
         featured: false,
         order: projects.length + 1
       });
-      setTagInput('Graphic Design, Branding, Creative');
+      setTagInput('Graphic Design, Branding');
     }
     setIsProjectModalOpen(true);
   };
@@ -224,14 +277,13 @@ export default function AdminDashboard() {
     e.preventDefault();
     if (!editingProject || !editingProject.title || !editingProject.description) return;
 
-    const parsedTags = tagInput
-      .split(',')
-      .map(t => t.trim())
-      .filter(Boolean);
+    const parsedTags = tagInput.split(',').map(t => t.trim()).filter(Boolean);
+    const slug = editingProject.slug || editingProject.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 
     const projectPayload: Omit<Project, 'id'> = {
       title: editingProject.title || 'Untitled Project',
-      category: (editingProject.category as ProjectCategory) || 'Full-Stack',
+      slug,
+      category: (editingProject.category as ProjectCategory) || 'Graphic Design',
       description: editingProject.description || '',
       detailedDescription: editingProject.detailedDescription || editingProject.description || '',
       image: editingProject.image || '/ash_cyber_portrait.jpg',
@@ -241,19 +293,18 @@ export default function AdminDashboard() {
       liveUrl: editingProject.liveUrl || '',
       featured: !!editingProject.featured,
       order: editingProject.order || (projects.length + 1),
+      client: editingProject.client || '',
+      year: editingProject.year || new Date().getFullYear().toString(),
       architectureNotes: editingProject.architectureNotes || []
     };
 
     try {
       if (editingProject.id) {
-        // Update existing
         await updateProject(editingProject.id, projectPayload);
         setProjects(prev => prev.map(p => p.id === editingProject.id ? { ...p, ...projectPayload } : p));
       } else {
-        // Create new
         const newId = await createProject(projectPayload);
-        const created: Project = { id: newId, ...projectPayload };
-        setProjects(prev => [created, ...prev]);
+        setProjects(prev => [{ id: newId, ...projectPayload }, ...prev]);
       }
       setIsProjectModalOpen(false);
       setEditingProject(null);
@@ -265,56 +316,138 @@ export default function AdminDashboard() {
 
   // Delete Project
   const handleDeleteProject = async (id: string) => {
-    if (!window.confirm("Are you sure you want to permanently delete this project record?")) return;
+    if (!window.confirm("Permanently delete this project?")) return;
     try {
       await deleteProject(id);
       setProjects(prev => prev.filter(p => p.id !== id));
     } catch (err: any) {
       console.error("Error deleting project:", err);
-      alert("Could not delete project: " + err.message);
     }
   };
 
-  // Add Skill
-  const handleAddSkill = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newSkillName.trim()) return;
+  // Service Modal Handler
+  const openServiceModal = (serv?: ServiceItem) => {
+    if (serv) {
+      setEditingService({ ...serv });
+      setServiceTagInput((serv.tags || []).join(', '));
+    } else {
+      setEditingService({
+        title: '',
+        description: '',
+        category: 'Design',
+        tags: [],
+        featured: true,
+        order: services.length + 1
+      });
+      setServiceTagInput('');
+    }
+    setIsServiceModalOpen(true);
+  };
 
-    const newSkill: SkillItem = {
-      name: newSkillName.trim(),
-      level: Number(newSkillLevel),
-      category: newSkillCategory
+  const handleSaveService = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingService || !editingService.title || !editingService.description) return;
+
+    const parsedTags = serviceTagInput.split(',').map(t => t.trim()).filter(Boolean);
+    const servicePayload: Omit<ServiceItem, 'id'> = {
+      title: editingService.title || '',
+      description: editingService.description || '',
+      category: editingService.category || 'Design',
+      tags: parsedTags,
+      featured: !!editingService.featured,
+      order: editingService.order || (services.length + 1)
     };
 
-    const updatedSkills = [...(settings.skills || []), newSkill];
-    const updatedSettings = { ...settings, skills: updatedSkills };
-    setSettings(updatedSettings);
-    setNewSkillName('');
-
     try {
-      await updateSiteSettings(updatedSettings);
-      setSaveSuccess(true);
-      setTimeout(() => setSaveSuccess(false), 2000);
+      if (editingService.id) {
+        await updateService(editingService.id, servicePayload);
+        setServices(prev => prev.map(s => s.id === editingService.id ? { ...s, ...servicePayload } : s));
+      } else {
+        const newId = await createService(servicePayload);
+        setServices(prev => [{ id: newId, ...servicePayload }, ...prev]);
+      }
+      setIsServiceModalOpen(false);
+      setEditingService(null);
     } catch (err: any) {
-      console.error("Error saving skill:", err);
-      setSaveError("Failed to save skill: " + err.message);
+      console.error("Error saving service:", err);
     }
   };
 
-  // Delete Skill
-  const handleDeleteSkill = async (index: number) => {
-    const updatedSkills = (settings.skills || []).filter((_, i) => i !== index);
-    const updatedSettings = { ...settings, skills: updatedSkills };
-    setSettings(updatedSettings);
-
+  const handleDeleteService = async (id: string) => {
+    if (!window.confirm("Delete this service?")) return;
     try {
-      await updateSiteSettings(updatedSettings);
-    } catch (err: any) {
-      console.error("Error updating skills:", err);
+      await deleteService(id);
+      setServices(prev => prev.filter(s => s.id !== id));
+    } catch (err) {
+      console.error("Error deleting service:", err);
     }
   };
 
-  // Toggle Message Status
+  // Article Modal Handler
+  const openArticleModal = (art?: WritingArticle) => {
+    if (art) {
+      setEditingArticle({ ...art });
+    } else {
+      setEditingArticle({
+        title: '',
+        slug: '',
+        summary: '',
+        content: '',
+        author: 'Writer Ash',
+        authorRole: 'Lead Creative Designer',
+        date: new Date().toISOString().split('T')[0],
+        category: 'Design Strategy',
+        readTime: '4 min read',
+        published: true
+      });
+    }
+    setIsArticleModalOpen(true);
+  };
+
+  const handleSaveArticle = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingArticle || !editingArticle.title || !editingArticle.content) return;
+
+    const slug = editingArticle.slug || editingArticle.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    const articlePayload: Omit<WritingArticle, 'id'> = {
+      title: editingArticle.title || '',
+      slug,
+      summary: editingArticle.summary || '',
+      content: editingArticle.content || '',
+      author: editingArticle.author || 'Writer Ash',
+      authorRole: editingArticle.authorRole || 'Editorial Specialist',
+      date: editingArticle.date || new Date().toISOString().split('T')[0],
+      category: editingArticle.category || 'Design Strategy',
+      readTime: editingArticle.readTime || '4 min read',
+      published: editingArticle.published !== false
+    };
+
+    try {
+      if (editingArticle.id) {
+        await updateArticle(editingArticle.id, articlePayload);
+        setArticles(prev => prev.map(a => a.id === editingArticle.id ? { ...a, ...articlePayload } : a));
+      } else {
+        const newId = await createArticle(articlePayload);
+        setArticles(prev => [{ id: newId, ...articlePayload }, ...prev]);
+      }
+      setIsArticleModalOpen(false);
+      setEditingArticle(null);
+    } catch (err: any) {
+      console.error("Error saving article:", err);
+    }
+  };
+
+  const handleDeleteArticle = async (id: string) => {
+    if (!window.confirm("Delete this writing article?")) return;
+    try {
+      await deleteArticle(id);
+      setArticles(prev => prev.filter(a => a.id !== id));
+    } catch (err) {
+      console.error("Error deleting article:", err);
+    }
+  };
+
+  // Toggle Contact Message Status
   const handleToggleMessage = async (id: string, currentStatus?: 'read' | 'unread') => {
     const nextStatus = currentStatus === 'read' ? 'unread' : 'read';
     try {
@@ -325,9 +458,8 @@ export default function AdminDashboard() {
     }
   };
 
-  // Delete Message
   const handleDeleteMessage = async (id: string) => {
-    if (!window.confirm("Delete this message?")) return;
+    if (!window.confirm("Delete message?")) return;
     try {
       await deleteContactMessage(id);
       setMessages(prev => prev.filter(m => m.id !== id));
@@ -336,41 +468,19 @@ export default function AdminDashboard() {
     }
   };
 
-  // Unauthenticated or Checking State
   if (authChecking) {
     return (
-      <main className="min-h-screen pt-32 pb-20 flex items-center justify-center font-mono text-[#06B6D4]">
+      <main className="min-h-screen pt-32 flex items-center justify-center font-mono text-[#06B6D4]">
         <div className="flex items-center gap-3">
           <span className="w-3 h-3 rounded-full bg-[#06B6D4] animate-ping" />
-          <span>VERIFYING CRYPTOGRAPHIC SESSION...</span>
+          <span>VERIFYING ADMINISTRATOR SESSION...</span>
         </div>
       </main>
     );
   }
 
   if (!user) {
-    return (
-      <main className="min-h-[75vh] flex items-center justify-center px-4 py-32">
-        <CyberCard glowColor="cyan" highlightHeader="ACCESS_RESTRICTED" className="max-w-md p-8 text-center space-y-6">
-          <div className="w-12 h-12 mx-auto rounded-full bg-red-950/40 border border-red-500/40 flex items-center justify-center text-red-400">
-            <ShieldCheck size={24} />
-          </div>
-          <div className="space-y-2">
-            <h1 className="text-2xl font-bold text-white font-sans">Authentication Required</h1>
-            <p className="text-sm text-slate-400 font-mono">
-              You must be signed in with an authorized administrator account to access the CMS portal.
-            </p>
-          </div>
-          <Link
-            href="/admin"
-            className="inline-flex items-center justify-center gap-2 w-full py-3 bg-gradient-to-r from-[#06B6D4] to-[#3B82F6] text-[#0B0F17] font-mono text-xs font-bold uppercase tracking-wider rounded-lg shadow-lg"
-          >
-            <span>GO TO SIGN IN</span>
-            <ArrowRight size={14} />
-          </Link>
-        </CyberCard>
-      </main>
-    );
+    return null;
   }
 
   const unreadCount = messages.filter(m => m.status === 'unread').length;
@@ -378,18 +488,18 @@ export default function AdminDashboard() {
   return (
     <div className="relative min-h-screen pt-28 pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto z-10 font-sans">
       
-      {/* TOP HUD BAR */}
+      {/* TOP BAR */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-6 mb-8">
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#111827] border border-slate-800 text-xs font-mono text-[#06B6D4] mb-2">
             <ShieldCheck size={14} />
-            <span>OPERATOR_PANEL // AUTHENTICATED</span>
+            <span>OPERATOR CONTROL PLANE</span>
           </div>
           <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-            Portfolio CMS Dashboard
+            Portfolio CMS Control Panel
           </h1>
           <p className="text-slate-400 text-xs font-mono mt-1">
-            Active Session: <span className="text-[#10B981] font-bold">{user.email}</span>
+            Authenticated Admin: <span className="text-[#10B981] font-bold">{user.email}</span>
           </p>
         </div>
 
@@ -400,12 +510,12 @@ export default function AdminDashboard() {
             className="px-4 py-2 bg-[#111827] hover:bg-slate-800 text-slate-300 hover:text-white font-mono text-xs rounded-lg border border-slate-700 flex items-center gap-1.5 transition-all"
           >
             <Eye size={14} />
-            <span>VIEW LIVE SITE</span>
+            <span>PREVIEW PUBLIC SITE</span>
           </Link>
 
           <button
             onClick={handleLogout}
-            className="px-4 py-2 bg-red-950/40 hover:bg-red-900/60 text-red-300 font-mono text-xs rounded-lg border border-red-500/40 flex items-center gap-1.5 transition-all"
+            className="px-4 py-2 bg-red-950/40 hover:bg-red-900/60 text-red-300 font-mono text-xs rounded-lg border border-red-500/40 flex items-center gap-1.5 transition-all cursor-pointer"
           >
             <LogOut size={14} />
             <span>SIGN OUT</span>
@@ -415,40 +525,40 @@ export default function AdminDashboard() {
 
       {/* STATUS NOTICES */}
       {saveSuccess && (
-        <div className="mb-6 p-4 rounded-xl bg-[#10B981]/10 border border-[#10B981]/40 text-[#10B981] font-mono text-xs flex items-center gap-2 animate-in fade-in">
+        <div className="mb-6 p-4 rounded-xl bg-[#10B981]/10 border border-[#10B981]/40 text-[#10B981] font-mono text-xs flex items-center gap-2">
           <Check size={16} />
-          <span>FIRESTORE SYNCHRONIZATION COMPLETE. ALL CHANGES PERSISTED.</span>
+          <span>FIRESTORE &amp; STORAGE SYNCHRONIZATION COMPLETE.</span>
         </div>
       )}
 
       {saveError && (
-        <div className="mb-6 p-4 rounded-xl bg-red-950/40 border border-red-500/40 text-red-300 font-mono text-xs flex items-center gap-2 animate-in fade-in">
+        <div className="mb-6 p-4 rounded-xl bg-red-950/40 border border-red-500/40 text-red-300 font-mono text-xs flex items-center gap-2">
           <AlertCircle size={16} />
-          <span>SYSTEM ALERT: {saveError}</span>
+          <span>ALERT: {saveError}</span>
         </div>
       )}
 
-      {/* TELEMETRY METRICS */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-        <div className="p-4 rounded-xl bg-[#111827]/60 border border-slate-800 font-mono">
+      {/* METRICS HUD */}
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-8 font-mono">
+        <div className="p-4 rounded-xl bg-[#111827]/60 border border-slate-800">
           <div className="text-xs text-slate-400 uppercase">PROJECTS</div>
           <div className="text-2xl font-bold text-white mt-1">{projects.length}</div>
-          <div className="text-[10px] text-[#06B6D4] mt-0.5">{projects.filter(p => p.featured).length} Featured</div>
         </div>
-        <div className="p-4 rounded-xl bg-[#111827]/60 border border-slate-800 font-mono">
-          <div className="text-xs text-slate-400 uppercase">UNREAD INQUIRIES</div>
-          <div className="text-2xl font-bold text-[#06B6D4] mt-1">{unreadCount}</div>
-          <div className="text-[10px] text-slate-400 mt-0.5">{messages.length} Total Messages</div>
+        <div className="p-4 rounded-xl bg-[#111827]/60 border border-slate-800">
+          <div className="text-xs text-slate-400 uppercase">SERVICES</div>
+          <div className="text-2xl font-bold text-white mt-1">{services.length}</div>
         </div>
-        <div className="p-4 rounded-xl bg-[#111827]/60 border border-slate-800 font-mono">
-          <div className="text-xs text-slate-400 uppercase">ACTIVE SKILLS</div>
-          <div className="text-2xl font-bold text-white mt-1">{(settings.skills || []).length}</div>
-          <div className="text-[10px] text-[#10B981] mt-0.5">Competency Matrix</div>
+        <div className="p-4 rounded-xl bg-[#111827]/60 border border-slate-800">
+          <div className="text-xs text-slate-400 uppercase">ARTICLES</div>
+          <div className="text-2xl font-bold text-white mt-1">{articles.length}</div>
         </div>
-        <div className="p-4 rounded-xl bg-[#111827]/60 border border-slate-800 font-mono">
-          <div className="text-xs text-slate-400 uppercase">DATABASE</div>
-          <div className="text-2xl font-bold text-[#10B981] mt-1">CONNECTED</div>
-          <div className="text-[10px] text-slate-400 mt-0.5">Firestore Cloud DB</div>
+        <div className="p-4 rounded-xl bg-[#111827]/60 border border-slate-800">
+          <div className="text-xs text-slate-400 uppercase">MESSAGES</div>
+          <div className="text-2xl font-bold text-[#06B6D4] mt-1">{unreadCount} New</div>
+        </div>
+        <div className="p-4 rounded-xl bg-[#111827]/60 border border-slate-800 col-span-2 sm:col-span-1">
+          <div className="text-xs text-slate-400 uppercase">STORAGE</div>
+          <div className="text-2xl font-bold text-[#10B981] mt-1">FIREBASE</div>
         </div>
       </div>
 
@@ -458,15 +568,19 @@ export default function AdminDashboard() {
           { id: 'profile', label: 'PROFILE & DOSSIER', icon: <Terminal size={14} /> },
           { id: 'cv', label: 'CV & CREDENTIALS', icon: <FileText size={14} /> },
           { id: 'projects', label: `PROJECTS (${projects.length})`, icon: <Layers size={14} /> },
-          { id: 'skills', label: `SKILLS (${(settings.skills || []).length})`, icon: <Cpu size={14} /> },
-          { id: 'messages', label: `MESSAGES (${unreadCount} NEW)`, icon: <Mail size={14} /> }
+          { id: 'services', label: `SERVICES (${services.length})`, icon: <Sparkles size={14} /> },
+          { id: 'writing', label: `WRITING (${articles.length})`, icon: <BookOpen size={14} /> },
+          { id: 'media', label: 'MEDIA LIBRARY', icon: <ImageIcon size={14} /> },
+          { id: 'messages', label: `MESSAGES (${unreadCount})`, icon: <Mail size={14} /> },
+          { id: 'theme', label: 'THEME & ACCENT', icon: <Palette size={14} /> },
+          { id: 'seo', label: 'SEO & META', icon: <Globe size={14} /> }
         ].map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id as any)}
-            className={`px-4 py-2.5 rounded-lg font-mono text-xs tracking-wider flex items-center gap-2 transition-all ${
+            className={`px-3.5 py-2 rounded-lg font-mono text-xs tracking-wider flex items-center gap-2 transition-all cursor-pointer ${
               activeTab === tab.id
-                ? 'bg-[#06B6D4]/10 text-[#06B6D4] border border-[#06B6D4]/40 font-bold shadow-[0_0_12px_rgba(6,182,212,0.2)]'
+                ? 'bg-[#06B6D4]/15 text-[#06B6D4] border border-[#06B6D4]/40 font-bold shadow-[0_0_12px_rgba(6,182,212,0.2)]'
                 : 'text-slate-400 hover:text-white hover:bg-slate-900 border border-transparent'
             }`}
           >
@@ -478,7 +592,7 @@ export default function AdminDashboard() {
 
       {/* TAB 1: PROFILE */}
       {activeTab === 'profile' && (
-        <form onSubmit={handleSaveSettings} className="space-y-8">
+        <form onSubmit={handleSaveSettings} className="space-y-6">
           <CyberCard glowColor="cyan" highlightHeader="CONFIG // PROFILE_DATA" className="p-6 space-y-6">
             <h3 className="text-lg font-bold text-white">Identity &amp; Narrative Parameters</h3>
 
@@ -489,7 +603,7 @@ export default function AdminDashboard() {
                   type="text"
                   value={settings.name}
                   onChange={(e) => setSettings({ ...settings, name: e.target.value })}
-                  className="w-full px-4 py-2.5 bg-[#0B0F17] border border-slate-700 rounded-lg text-white font-mono text-sm focus:border-[#06B6D4] outline-none"
+                  className="w-full px-4 py-2.5 bg-[#070A10] border border-slate-700 rounded-lg text-white font-mono text-sm focus:border-[#06B6D4] outline-none"
                 />
               </label>
 
@@ -499,29 +613,7 @@ export default function AdminDashboard() {
                   type="text"
                   value={settings.title}
                   onChange={(e) => setSettings({ ...settings, title: e.target.value })}
-                  className="w-full px-4 py-2.5 bg-[#0B0F17] border border-slate-700 rounded-lg text-white font-mono text-sm focus:border-[#06B6D4] outline-none"
-                />
-              </label>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <label className="block space-y-2">
-                <span className="text-xs font-mono text-slate-300 uppercase">Availability Status</span>
-                <input
-                  type="text"
-                  value={settings.statusText}
-                  onChange={(e) => setSettings({ ...settings, statusText: e.target.value })}
-                  className="w-full px-4 py-2.5 bg-[#0B0F17] border border-slate-700 rounded-lg text-white font-mono text-sm focus:border-[#06B6D4] outline-none"
-                />
-              </label>
-
-              <label className="block space-y-2">
-                <span className="text-xs font-mono text-slate-300 uppercase">Clearance Marker</span>
-                <input
-                  type="text"
-                  value={settings.clearanceLevel}
-                  onChange={(e) => setSettings({ ...settings, clearanceLevel: e.target.value })}
-                  className="w-full px-4 py-2.5 bg-[#0B0F17] border border-slate-700 rounded-lg text-white font-mono text-sm focus:border-[#06B6D4] outline-none"
+                  className="w-full px-4 py-2.5 bg-[#070A10] border border-slate-700 rounded-lg text-white font-mono text-sm focus:border-[#06B6D4] outline-none"
                 />
               </label>
             </div>
@@ -532,7 +624,7 @@ export default function AdminDashboard() {
                 rows={3}
                 value={settings.bio}
                 onChange={(e) => setSettings({ ...settings, bio: e.target.value })}
-                className="w-full px-4 py-2.5 bg-[#0B0F17] border border-slate-700 rounded-lg text-white font-sans text-sm focus:border-[#06B6D4] outline-none"
+                className="w-full px-4 py-2.5 bg-[#070A10] border border-slate-700 rounded-lg text-white font-sans text-sm focus:border-[#06B6D4] outline-none"
               />
             </label>
 
@@ -542,7 +634,7 @@ export default function AdminDashboard() {
                 rows={4}
                 value={settings.aboutBio}
                 onChange={(e) => setSettings({ ...settings, aboutBio: e.target.value })}
-                className="w-full px-4 py-2.5 bg-[#0B0F17] border border-slate-700 rounded-lg text-white font-sans text-sm focus:border-[#06B6D4] outline-none"
+                className="w-full px-4 py-2.5 bg-[#070A10] border border-slate-700 rounded-lg text-white font-sans text-sm focus:border-[#06B6D4] outline-none"
               />
             </label>
 
@@ -550,7 +642,7 @@ export default function AdminDashboard() {
             <div className="pt-4 border-t border-slate-800">
               <span className="text-xs font-mono text-slate-300 uppercase block mb-3">Operator Avatar / Portrait</span>
               <div className="flex flex-col sm:flex-row items-center gap-6">
-                <div className="w-24 h-24 rounded-xl overflow-hidden border border-slate-700 bg-[#0B0F17] flex-shrink-0">
+                <div className="w-24 h-24 rounded-xl overflow-hidden border border-slate-700 bg-[#070A10] flex-shrink-0">
                   <img
                     src={settings.avatarUrl || "/ash_cyber_portrait.jpg"}
                     alt="Preview"
@@ -564,61 +656,27 @@ export default function AdminDashboard() {
                     value={settings.avatarUrl}
                     onChange={(e) => setSettings({ ...settings, avatarUrl: e.target.value })}
                     placeholder="Direct Image URL or upload below"
-                    className="w-full px-4 py-2 bg-[#0B0F17] border border-slate-700 rounded-lg text-white font-mono text-xs focus:border-[#06B6D4] outline-none"
+                    className="w-full px-4 py-2 bg-[#070A10] border border-slate-700 rounded-lg text-white font-mono text-xs focus:border-[#06B6D4] outline-none"
                   />
-                  <div className="flex items-center gap-3">
-                    <label className="cursor-pointer px-4 py-2 bg-[#111827] hover:bg-slate-800 text-white font-mono text-xs rounded-lg border border-slate-700 flex items-center gap-2 transition-all">
-                      <UploadCloud size={14} className="text-[#06B6D4]" />
-                      <span>{avatarUploading ? 'UPLOADING...' : 'UPLOAD NEW AVATAR'}</span>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleAvatarUpload}
-                        disabled={avatarUploading}
-                        className="hidden"
-                      />
-                    </label>
-                    <span className="text-xs text-slate-500 font-mono">PNG, JPG, WEBP (Max 10MB)</span>
-                  </div>
+                  <label className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-[#111827] hover:bg-slate-800 text-white font-mono text-xs rounded-lg border border-slate-700 transition-all">
+                    <UploadCloud size={14} className="text-[#06B6D4]" />
+                    <span>{avatarUploading ? 'UPLOADING...' : 'UPLOAD NEW AVATAR'}</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleAvatarUpload}
+                      disabled={avatarUploading}
+                      className="hidden"
+                    />
+                  </label>
                 </div>
               </div>
-            </div>
-
-            {/* Channels & Location */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-slate-800">
-              <label className="block space-y-1.5">
-                <span className="text-xs font-mono text-slate-400">Email</span>
-                <input
-                  type="email"
-                  value={settings.email}
-                  onChange={(e) => setSettings({ ...settings, email: e.target.value })}
-                  className="w-full px-3 py-2 bg-[#0B0F17] border border-slate-700 rounded text-white font-mono text-xs"
-                />
-              </label>
-              <label className="block space-y-1.5">
-                <span className="text-xs font-mono text-slate-400">Location</span>
-                <input
-                  type="text"
-                  value={settings.location}
-                  onChange={(e) => setSettings({ ...settings, location: e.target.value })}
-                  className="w-full px-3 py-2 bg-[#0B0F17] border border-slate-700 rounded text-white font-mono text-xs"
-                />
-              </label>
-              <label className="block space-y-1.5">
-                <span className="text-xs font-mono text-slate-400">GitHub</span>
-                <input
-                  type="text"
-                  value={settings.github}
-                  onChange={(e) => setSettings({ ...settings, github: e.target.value })}
-                  className="w-full px-3 py-2 bg-[#0B0F17] border border-slate-700 rounded text-white font-mono text-xs"
-                />
-              </label>
             </div>
 
             <div className="pt-4 flex justify-end">
               <button
                 type="submit"
-                className="px-6 py-3 bg-gradient-to-r from-[#06B6D4] to-[#3B82F6] hover:from-[#0891B2] hover:to-[#2563EB] text-[#0B0F17] font-mono text-xs font-bold uppercase tracking-wider rounded-lg shadow-lg flex items-center gap-2"
+                className="px-6 py-3 bg-gradient-to-r from-[#06B6D4] to-[#3B82F6] text-[#070A10] font-mono text-xs font-bold uppercase tracking-wider rounded-lg shadow-lg flex items-center gap-2 cursor-pointer"
               >
                 <Save size={15} />
                 <span>SAVE PROFILE CONFIGURATION</span>
@@ -635,38 +693,38 @@ export default function AdminDashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-lg font-bold text-white">Curriculum Vitae Document Asset</h3>
-                <p className="text-sm text-slate-400 font-mono">Synchronized with the interactive /cv dossier view.</p>
+                <p className="text-sm text-slate-400 font-mono">Synchronized with interactive /cv page.</p>
               </div>
               <Link
                 href="/cv"
                 target="_blank"
                 className="px-3 py-1.5 bg-[#111827] text-[#06B6D4] font-mono text-xs rounded border border-slate-700 hover:border-[#06B6D4] flex items-center gap-1.5"
               >
-                <span>TEST VIEWER</span>
+                <span>VIEW DOSSIER</span>
                 <ExternalLink size={12} />
               </Link>
             </div>
 
             <label className="block space-y-2">
-              <span className="text-xs font-mono text-slate-300 uppercase">Current CV Document URL (PDF)</span>
+              <span className="text-xs font-mono text-slate-300 uppercase">CV Document URL (PDF)</span>
               <input
                 type="text"
                 value={settings.cvUrl}
                 onChange={(e) => setSettings({ ...settings, cvUrl: e.target.value })}
-                className="w-full px-4 py-2.5 bg-[#0B0F17] border border-slate-700 rounded-lg text-white font-mono text-sm focus:border-[#06B6D4] outline-none"
+                className="w-full px-4 py-2.5 bg-[#070A10] border border-slate-700 rounded-lg text-white font-mono text-sm focus:border-[#06B6D4] outline-none"
               />
             </label>
 
-            <div className="p-6 rounded-xl bg-[#0B0F17] border border-dashed border-slate-700 text-center space-y-3">
+            <div className="p-6 rounded-xl bg-[#070A10] border border-dashed border-slate-700 text-center space-y-3">
               <FileText size={32} className="mx-auto text-[#06B6D4]" />
-              <div className="text-sm text-white font-bold">Upload New CV / Resume Document</div>
+              <div className="text-sm text-white font-bold">Upload New Resume / CV PDF</div>
               <p className="text-xs text-slate-400 max-w-sm mx-auto font-mono">
-                Upload your updated PDF resume. The file will be stored in Firebase Storage and set as your live active dossier.
+                Upload your latest PDF resume directly into Firebase Storage.
               </p>
               <div>
                 <label className="cursor-pointer inline-flex items-center gap-2 px-5 py-2.5 bg-[#111827] hover:bg-slate-800 text-white font-mono text-xs rounded-lg border border-slate-600 transition-all">
                   <UploadCloud size={16} className="text-[#06B6D4]" />
-                  <span>{cvUploading ? 'UPLOADING TO STORAGE...' : 'SELECT PDF DOCUMENT'}</span>
+                  <span>{cvUploading ? 'UPLOADING TO STORAGE...' : 'SELECT PDF FILE'}</span>
                   <input
                     type="file"
                     accept=".pdf,application/pdf"
@@ -681,10 +739,10 @@ export default function AdminDashboard() {
             <div className="pt-2 flex justify-end">
               <button
                 type="submit"
-                className="px-6 py-3 bg-gradient-to-r from-[#06B6D4] to-[#3B82F6] text-[#0B0F17] font-mono text-xs font-bold uppercase tracking-wider rounded-lg shadow-lg flex items-center gap-2"
+                className="px-6 py-3 bg-gradient-to-r from-[#06B6D4] to-[#3B82F6] text-[#070A10] font-mono text-xs font-bold uppercase tracking-wider rounded-lg shadow-lg flex items-center gap-2 cursor-pointer"
               >
                 <Save size={15} />
-                <span>SAVE CV SETTINGS</span>
+                <span>SAVE CV CONFIGURATION</span>
               </button>
             </div>
           </CyberCard>
@@ -696,12 +754,12 @@ export default function AdminDashboard() {
         <div className="space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h3 className="text-xl font-bold text-white">Project Catalog ({projects.length})</h3>
-              <p className="text-xs font-mono text-slate-400">Add, modify, or retire portfolio showcase entries.</p>
+              <h3 className="text-xl font-bold text-white">Project Showcase Catalog ({projects.length})</h3>
+              <p className="text-xs font-mono text-slate-400">Manage graphic design, branding, social, and web projects.</p>
             </div>
             <button
               onClick={() => openProjectModal()}
-              className="px-5 py-2.5 bg-gradient-to-r from-[#06B6D4] to-[#3B82F6] text-[#0B0F17] font-mono text-xs font-bold uppercase tracking-wider rounded-lg shadow-lg flex items-center gap-2 self-start"
+              className="px-5 py-2.5 bg-gradient-to-r from-[#06B6D4] to-[#3B82F6] text-[#070A10] font-mono text-xs font-bold uppercase tracking-wider rounded-lg shadow-lg flex items-center gap-2 self-start cursor-pointer"
             >
               <Plus size={16} />
               <span>NEW PROJECT</span>
@@ -711,7 +769,7 @@ export default function AdminDashboard() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {projects.map((proj) => (
               <CyberCard key={proj.id} highlightHeader={proj.category} className="flex flex-col justify-between overflow-hidden">
-                <div className="relative h-44 w-full bg-[#0B0F17]">
+                <div className="relative h-44 w-full bg-[#070A10]">
                   <img
                     src={proj.image}
                     alt={proj.title}
@@ -719,7 +777,7 @@ export default function AdminDashboard() {
                     onError={(e) => { (e.target as HTMLImageElement).src = "/ash_cyber_portrait.jpg"; }}
                   />
                   {proj.featured && (
-                    <span className="absolute top-2 left-2 px-2 py-0.5 rounded bg-[#10B981]/90 text-[10px] font-mono font-bold text-slate-950">
+                    <span className="absolute top-2 left-2 px-2 py-0.5 rounded bg-[#10B981] text-[10px] font-mono font-bold text-slate-950">
                       FEATURED
                     </span>
                   )}
@@ -735,23 +793,23 @@ export default function AdminDashboard() {
                     <div className="flex gap-2">
                       <button
                         onClick={() => openProjectModal(proj)}
-                        className="p-1.5 rounded bg-[#111827] text-slate-300 hover:text-[#06B6D4] border border-slate-700"
+                        className="p-1.5 rounded bg-[#111827] text-slate-300 hover:text-[#06B6D4] border border-slate-700 cursor-pointer"
                         title="Edit Project"
                       >
                         <Edit3 size={14} />
                       </button>
                       <button
                         onClick={() => handleDeleteProject(proj.id)}
-                        className="p-1.5 rounded bg-red-950/40 text-red-300 hover:text-red-100 border border-red-500/30"
+                        className="p-1.5 rounded bg-red-950/40 text-red-300 hover:text-red-100 border border-red-500/30 cursor-pointer"
                         title="Delete Project"
                       >
                         <Trash2 size={14} />
                       </button>
                     </div>
 
-                    <div className="text-xs font-mono text-slate-500">
-                      Order: #{proj.order ?? 0}
-                    </div>
+                    <span className="text-[10px] font-mono text-slate-500">
+                      Slug: {proj.slug || proj.id}
+                    </span>
                   </div>
                 </div>
               </CyberCard>
@@ -760,108 +818,154 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* TAB 4: SKILLS */}
-      {activeTab === 'skills' && (
-        <div className="space-y-8">
-          {/* Add Skill Form */}
-          <CyberCard glowColor="cyan" highlightHeader="NEW_COMPETENCY // APPEND" className="p-6">
-            <form onSubmit={handleAddSkill} className="space-y-4">
-              <h3 className="text-base font-bold text-white">Add Skill or Tool to Matrix</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <label className="block space-y-1">
-                  <span className="text-xs font-mono text-slate-400">Skill Name</span>
-                  <input
-                    type="text"
-                    required
-                    value={newSkillName}
-                    onChange={(e) => setNewSkillName(e.target.value)}
-                    placeholder="e.g., Graphic Design, Premiere Pro, Figma"
-                    className="w-full px-3 py-2 bg-[#0B0F17] border border-slate-700 rounded text-white font-mono text-xs focus:border-[#06B6D4] outline-none"
-                  />
-                </label>
-
-                <label className="block space-y-1">
-                  <span className="text-xs font-mono text-slate-400">Category</span>
-                  <select
-                    value={newSkillCategory}
-                    onChange={(e) => setNewSkillCategory(e.target.value as any)}
-                    className="w-full px-3 py-2 bg-[#0B0F17] border border-slate-700 rounded text-white font-mono text-xs focus:border-[#06B6D4] outline-none"
-                  >
-                    <option value="Frontend & UI">Frontend &amp; UI / Design</option>
-                    <option value="Backend & APIs">Creative Tools &amp; Adobe Suite</option>
-                    <option value="Cyber & Security">Video &amp; Motion Media</option>
-                    <option value="Cloud & DevOps">Social Media &amp; Web Tech</option>
-                    <option value="Databases & Tools">Digital Marketing &amp; Analytics</option>
-                  </select>
-                </label>
-
-                <label className="block space-y-1">
-                  <span className="text-xs font-mono text-slate-400">Proficiency: {newSkillLevel}%</span>
-                  <input
-                    type="range"
-                    min={40}
-                    max={100}
-                    value={newSkillLevel}
-                    onChange={(e) => setNewSkillLevel(Number(e.target.value))}
-                    className="w-full mt-2"
-                  />
-                </label>
-              </div>
-
-              <div className="flex justify-end">
-                <button
-                  type="submit"
-                  className="px-5 py-2 bg-[#06B6D4] hover:bg-[#0891B2] text-[#0B0F17] font-mono text-xs font-bold uppercase rounded flex items-center gap-1.5"
-                >
-                  <Plus size={14} />
-                  <span>ADD TO MATRIX</span>
-                </button>
-              </div>
-            </form>
-          </CyberCard>
-
-          {/* Current Skills List */}
-          <CyberCard highlightHeader="MATRIX // ACTIVE_SKILLS" className="p-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {(settings.skills || []).map((skill, idx) => (
-                <div key={idx} className="p-3 rounded-lg bg-[#0B0F17] border border-slate-800 flex items-center justify-between gap-2">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between text-xs font-mono mb-1">
-                      <span className="text-white font-bold truncate">{skill.name}</span>
-                      <span className="text-[#06B6D4] ml-2">{skill.level}%</span>
-                    </div>
-                    <div className="w-full h-1 bg-slate-800 rounded-full overflow-hidden">
-                      <div className="h-full bg-[#06B6D4]" style={{ width: `${skill.level}%` }} />
-                    </div>
-                    <div className="text-[10px] text-slate-500 font-mono mt-1">{skill.category}</div>
-                  </div>
-                  <button
-                    onClick={() => handleDeleteSkill(idx)}
-                    className="p-1 text-slate-500 hover:text-red-400 transition-colors ml-2"
-                    title="Remove Skill"
-                  >
-                    <Trash2 size={13} />
-                  </button>
-                </div>
-              ))}
-            </div>
-          </CyberCard>
-        </div>
-      )}
-
-      {/* TAB 5: MESSAGES */}
-      {activeTab === 'messages' && (
+      {/* TAB 4: SERVICES */}
+      {activeTab === 'services' && (
         <div className="space-y-6">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-xl font-bold text-white">Direct Communications ({messages.length})</h3>
-              <p className="text-xs font-mono text-slate-400">Incoming inquiries submitted via the /contact dossier terminal.</p>
+              <h3 className="text-xl font-bold text-white">Services &amp; Offerings Management ({services.length})</h3>
+              <p className="text-xs font-mono text-slate-400">Dynamically rendered on the public /services page.</p>
             </div>
+            <button
+              onClick={() => openServiceModal()}
+              className="px-5 py-2.5 bg-gradient-to-r from-[#06B6D4] to-[#3B82F6] text-[#070A10] font-mono text-xs font-bold uppercase rounded-lg shadow-lg flex items-center gap-2 cursor-pointer"
+            >
+              <Plus size={16} />
+              <span>NEW SERVICE</span>
+            </button>
           </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {services.map((serv) => (
+              <CyberCard key={serv.id} highlightHeader={serv.category || 'SERVICE'} className="p-5 flex flex-col justify-between space-y-4">
+                <div>
+                  <h4 className="text-base font-bold text-white">{serv.title}</h4>
+                  <p className="text-xs text-slate-400 mt-2 leading-relaxed">{serv.description}</p>
+                </div>
+
+                <div className="pt-3 border-t border-slate-800 flex items-center justify-between">
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => openServiceModal(serv)}
+                      className="p-1.5 rounded bg-[#111827] text-slate-300 hover:text-[#06B6D4] border border-slate-700 cursor-pointer"
+                    >
+                      <Edit3 size={14} />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteService(serv.id)}
+                      className="p-1.5 rounded bg-red-950/40 text-red-300 border border-red-500/30 cursor-pointer"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                  <span className="text-[10px] font-mono text-slate-500">Order #{serv.order || 0}</span>
+                </div>
+              </CyberCard>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* TAB 5: WRITING */}
+      {activeTab === 'writing' && (
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-xl font-bold text-white">Writing &amp; Articles Management ({articles.length})</h3>
+              <p className="text-xs font-mono text-slate-400">Published editorial content for /writing.</p>
+            </div>
+            <button
+              onClick={() => openArticleModal()}
+              className="px-5 py-2.5 bg-gradient-to-r from-[#06B6D4] to-[#3B82F6] text-[#070A10] font-mono text-xs font-bold uppercase rounded-lg shadow-lg flex items-center gap-2 cursor-pointer"
+            >
+              <Plus size={16} />
+              <span>NEW ARTICLE</span>
+            </button>
+          </div>
+
+          <div className="space-y-4">
+            {articles.map((art) => (
+              <CyberCard key={art.id} highlightHeader={`ARTICLE // ${art.author.toUpperCase()}`} className="p-5 space-y-3">
+                <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+                  <div>
+                    <h4 className="text-base font-bold text-white">{art.title}</h4>
+                    <span className="text-xs font-mono text-[#06B6D4]">{art.author} ({art.authorRole}) // {art.date}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => openArticleModal(art)}
+                      className="p-1.5 rounded bg-[#111827] text-slate-300 hover:text-[#06B6D4] border border-slate-700 cursor-pointer"
+                    >
+                      <Edit3 size={14} />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteArticle(art.id)}
+                      className="p-1.5 rounded bg-red-950/40 text-red-300 border border-red-500/30 cursor-pointer"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                </div>
+                <p className="text-xs text-slate-300 leading-relaxed">{art.summary}</p>
+              </CyberCard>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* TAB 6: MEDIA LIBRARY */}
+      {activeTab === 'media' && (
+        <CyberCard glowColor="cyan" highlightHeader="STORAGE // MEDIA_LIBRARY" className="p-6 space-y-6">
+          <div>
+            <h3 className="text-lg font-bold text-white">Firebase Storage Media Uploader</h3>
+            <p className="text-xs font-mono text-slate-400 mt-1">Upload images, graphics, or PDFs and generate direct URLs for portfolio use.</p>
+          </div>
+
+          <div className="p-6 rounded-xl bg-[#070A10] border border-dashed border-slate-700 text-center space-y-3">
+            <UploadCloud size={36} className="mx-auto text-[#06B6D4]" />
+            <div className="text-sm font-bold text-white">Upload Media Asset</div>
+            <label className="cursor-pointer inline-flex items-center gap-2 px-5 py-2.5 bg-[#111827] hover:bg-slate-800 text-white font-mono text-xs rounded-lg border border-slate-600 transition-all">
+              <span>{mediaUploading ? 'UPLOADING...' : 'SELECT IMAGE / ASSET'}</span>
+              <input
+                type="file"
+                accept="image/*,application/pdf"
+                onChange={handleMediaLibraryUpload}
+                disabled={mediaUploading}
+                className="hidden"
+              />
+            </label>
+          </div>
+
+          {uploadedMediaList.length > 0 && (
+            <div className="space-y-3 pt-4 border-t border-slate-800">
+              <h4 className="text-xs font-mono uppercase text-slate-300">Recently Uploaded Media URLs</h4>
+              <div className="space-y-2">
+                {uploadedMediaList.map((url, idx) => (
+                  <div key={idx} className="p-3 bg-[#070A10] border border-slate-800 rounded-lg flex items-center justify-between gap-3 text-xs font-mono">
+                    <span className="text-slate-300 truncate">{url}</span>
+                    <button
+                      onClick={() => copyToClipboard(url)}
+                      className="px-3 py-1 bg-[#111827] hover:bg-[#06B6D4] hover:text-[#070A10] text-[#06B6D4] rounded border border-slate-700 flex items-center gap-1 shrink-0 cursor-pointer"
+                    >
+                      {copiedUrl === url ? <CheckCircle2 size={13} /> : <Copy size={13} />}
+                      <span>{copiedUrl === url ? 'COPIED!' : 'COPY URL'}</span>
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </CyberCard>
+      )}
+
+      {/* TAB 7: MESSAGES */}
+      {activeTab === 'messages' && (
+        <div className="space-y-6">
+          <h3 className="text-xl font-bold text-white">Contact Inquiries ({messages.length})</h3>
 
           {messages.length === 0 ? (
             <CyberCard className="p-12 text-center text-slate-400 font-mono text-xs">
-              NO INCOMING TRANSMISSIONS RECORDED IN DATABASE.
+              NO INCOMING MESSAGES RECORDED IN FIRESTORE.
             </CyberCard>
           ) : (
             <div className="space-y-4">
@@ -884,7 +988,7 @@ export default function AdminDashboard() {
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => msg.id && handleToggleMessage(msg.id, msg.status)}
-                        className={`px-3 py-1 rounded text-xs font-mono transition-all ${
+                        className={`px-3 py-1 rounded text-xs font-mono transition-all cursor-pointer ${
                           msg.status === 'unread'
                             ? 'bg-[#06B6D4]/20 text-[#06B6D4] border border-[#06B6D4]/40'
                             : 'bg-slate-800 text-slate-400'
@@ -894,8 +998,7 @@ export default function AdminDashboard() {
                       </button>
                       <button
                         onClick={() => msg.id && handleDeleteMessage(msg.id)}
-                        className="p-1.5 rounded bg-red-950/40 text-red-300 hover:text-red-100 border border-red-500/30"
-                        title="Delete Message"
+                        className="p-1.5 rounded bg-red-950/40 text-red-300 border border-red-500/30 cursor-pointer"
                       >
                         <Trash2 size={14} />
                       </button>
@@ -912,21 +1015,105 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* PROJECT MODAL (ADD / EDIT) */}
-      {isProjectModalOpen && editingProject && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in">
-          <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-[#0B0F17] border border-slate-700 rounded-2xl p-6 sm:p-8 space-y-6">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-4">
-              <div className="flex items-center gap-2">
-                <div className="w-2.5 h-2.5 rounded-full bg-[#06B6D4]" />
-                <h3 className="text-xl font-bold text-white">
-                  {editingProject.id ? 'Edit Project Dossier' : 'Create New Project'}
-                </h3>
-              </div>
+      {/* TAB 8: THEME */}
+      {activeTab === 'theme' && (
+        <form onSubmit={handleSaveSettings} className="space-y-6">
+          <CyberCard glowColor="cyan" highlightHeader="CONFIG // THEME_ACCENT" className="p-6 space-y-6">
+            <h3 className="text-lg font-bold text-white">Visual System &amp; Accent Configuration</h3>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <label className="block space-y-2">
+                <span className="text-xs font-mono text-slate-300 uppercase">Configurable Accent Color Code</span>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="color"
+                    value={settings.accentColor || '#06B6D4'}
+                    onChange={(e) => setSettings({ ...settings, accentColor: e.target.value })}
+                    className="w-10 h-10 rounded border-0 cursor-pointer bg-transparent"
+                  />
+                  <input
+                    type="text"
+                    value={settings.accentColor || '#06B6D4'}
+                    onChange={(e) => setSettings({ ...settings, accentColor: e.target.value })}
+                    className="flex-1 px-4 py-2 bg-[#070A10] border border-slate-700 rounded text-white font-mono text-xs focus:border-[#06B6D4] outline-none"
+                  />
+                </div>
+              </label>
+
+              <label className="block space-y-2">
+                <span className="text-xs font-mono text-slate-300 uppercase">Default Appearance Preference</span>
+                <select
+                  value={settings.themeMode || 'dark'}
+                  onChange={(e) => setSettings({ ...settings, themeMode: e.target.value as any })}
+                  className="w-full px-4 py-2.5 bg-[#070A10] border border-slate-700 rounded-lg text-white font-mono text-xs focus:border-[#06B6D4] outline-none"
+                >
+                  <option value="dark">Dark First (Default)</option>
+                  <option value="light">Light Mode</option>
+                </select>
+              </label>
+            </div>
+
+            <div className="pt-2 flex justify-end">
               <button
-                onClick={() => setIsProjectModalOpen(false)}
-                className="p-1 text-slate-400 hover:text-white"
+                type="submit"
+                className="px-6 py-3 bg-gradient-to-r from-[#06B6D4] to-[#3B82F6] text-[#070A10] font-mono text-xs font-bold uppercase tracking-wider rounded-lg shadow-lg flex items-center gap-2 cursor-pointer"
               >
+                <Save size={15} />
+                <span>PERSIST THEME SETTINGS</span>
+              </button>
+            </div>
+          </CyberCard>
+        </form>
+      )}
+
+      {/* TAB 9: SEO */}
+      {activeTab === 'seo' && (
+        <form onSubmit={handleSaveSettings} className="space-y-6">
+          <CyberCard glowColor="cyan" highlightHeader="CONFIG // SEO_METADATA" className="p-6 space-y-6">
+            <h3 className="text-lg font-bold text-white">Public Portfolio Search Engine Optimization</h3>
+
+            <label className="block space-y-2">
+              <span className="text-xs font-mono text-slate-300 uppercase">Default Site Title</span>
+              <input
+                type="text"
+                value={settings.title}
+                onChange={(e) => setSettings({ ...settings, title: e.target.value })}
+                className="w-full px-4 py-2.5 bg-[#070A10] border border-slate-700 rounded-lg text-white font-mono text-sm focus:border-[#06B6D4] outline-none"
+              />
+            </label>
+
+            <label className="block space-y-2">
+              <span className="text-xs font-mono text-slate-300 uppercase">Site Description / Bio</span>
+              <textarea
+                rows={3}
+                value={settings.bio}
+                onChange={(e) => setSettings({ ...settings, bio: e.target.value })}
+                className="w-full px-4 py-2.5 bg-[#070A10] border border-slate-700 rounded-lg text-white font-sans text-sm focus:border-[#06B6D4] outline-none"
+              />
+            </label>
+
+            <div className="pt-2 flex justify-end">
+              <button
+                type="submit"
+                className="px-6 py-3 bg-gradient-to-r from-[#06B6D4] to-[#3B82F6] text-[#070A10] font-mono text-xs font-bold uppercase tracking-wider rounded-lg shadow-lg flex items-center gap-2 cursor-pointer"
+              >
+                <Save size={15} />
+                <span>SAVE SEO SETTINGS</span>
+              </button>
+            </div>
+          </CyberCard>
+        </form>
+      )}
+
+      {/* PROJECT MODAL */}
+      {isProjectModalOpen && editingProject && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+          <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-[#070A10] border border-slate-700 rounded-2xl p-6 sm:p-8 space-y-6 font-sans">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+              <h3 className="text-xl font-bold text-white">
+                {editingProject.id ? 'Edit Project' : 'Create New Project'}
+              </h3>
+              <button onClick={() => setIsProjectModalOpen(false)} className="p-1 text-slate-400 hover:text-white cursor-pointer">
                 <X size={20} />
               </button>
             </div>
@@ -940,59 +1127,62 @@ export default function AdminDashboard() {
                     required
                     value={editingProject.title || ''}
                     onChange={(e) => setEditingProject({ ...editingProject, title: e.target.value })}
-                    className="w-full px-3 py-2 bg-[#111827] border border-slate-700 rounded text-white font-sans text-sm focus:border-[#06B6D4] outline-none"
+                    className="w-full px-3 py-2 bg-[#111827] border border-slate-700 rounded text-white font-sans text-sm outline-none"
                   />
                 </label>
 
                 <label className="block space-y-1">
                   <span className="text-xs font-mono text-slate-300">Category *</span>
                   <select
-                    value={editingProject.category || 'Full-Stack'}
+                    value={editingProject.category || 'Graphic Design'}
                     onChange={(e) => setEditingProject({ ...editingProject, category: e.target.value as any })}
-                    className="w-full px-3 py-2 bg-[#111827] border border-slate-700 rounded text-white font-mono text-xs focus:border-[#06B6D4] outline-none"
+                    className="w-full px-3 py-2 bg-[#111827] border border-slate-700 rounded text-white font-mono text-xs outline-none"
                   >
-                    <option value="Full-Stack">Full-Stack / Web</option>
-                    <option value="Web Apps">Web Applications</option>
-                    <option value="Cyber/Tools">Creative &amp; Branding</option>
-                    <option value="Cloud & Systems">Social Media &amp; Content</option>
-                    <option value="Scripts">Video &amp; Motion Media</option>
+                    <option value="Graphic Design">Graphic Design</option>
+                    <option value="Branding">Branding</option>
+                    <option value="Social Media">Social Media</option>
+                    <option value="Posters">Posters</option>
+                    <option value="Creative Projects">Creative Projects</option>
+                    <option value="Web Projects">Web Projects</option>
+                    <option value="Writing">Writing</option>
+                    <option value="Other">Other</option>
                   </select>
                 </label>
               </div>
 
               <label className="block space-y-1">
-                <span className="text-xs font-mono text-slate-300">Short Summary Description *</span>
+                <span className="text-xs font-mono text-slate-300">Summary Description *</span>
                 <textarea
                   rows={2}
                   required
                   value={editingProject.description || ''}
                   onChange={(e) => setEditingProject({ ...editingProject, description: e.target.value })}
-                  className="w-full px-3 py-2 bg-[#111827] border border-slate-700 rounded text-white font-sans text-sm focus:border-[#06B6D4] outline-none"
+                  className="w-full px-3 py-2 bg-[#111827] border border-slate-700 rounded text-white font-sans text-sm outline-none"
                 />
               </label>
 
               <label className="block space-y-1">
-                <span className="text-xs font-mono text-slate-300">Detailed Case Study Description</span>
+                <span className="text-xs font-mono text-slate-300">Detailed Narrative Description</span>
                 <textarea
                   rows={3}
                   value={editingProject.detailedDescription || ''}
                   onChange={(e) => setEditingProject({ ...editingProject, detailedDescription: e.target.value })}
-                  className="w-full px-3 py-2 bg-[#111827] border border-slate-700 rounded text-white font-sans text-sm focus:border-[#06B6D4] outline-none"
+                  className="w-full px-3 py-2 bg-[#111827] border border-slate-700 rounded text-white font-sans text-sm outline-none"
                 />
               </label>
 
-              {/* Project Image */}
+              {/* Cover Image */}
               <div className="space-y-2">
-                <span className="text-xs font-mono text-slate-300 block">Project Poster Image</span>
+                <span className="text-xs font-mono text-slate-300 block">Cover Poster Image</span>
                 <div className="flex items-center gap-3">
                   <input
                     type="text"
                     value={editingProject.image || ''}
                     onChange={(e) => setEditingProject({ ...editingProject, image: e.target.value })}
-                    placeholder="Image URL or upload below"
-                    className="flex-1 px-3 py-2 bg-[#111827] border border-slate-700 rounded text-white font-mono text-xs focus:border-[#06B6D4] outline-none"
+                    placeholder="Image URL or upload"
+                    className="flex-1 px-3 py-2 bg-[#111827] border border-slate-700 rounded text-white font-mono text-xs outline-none"
                   />
-                  <label className="cursor-pointer px-3 py-2 bg-[#111827] hover:bg-slate-800 text-slate-300 font-mono text-xs rounded border border-slate-700 flex items-center gap-1.5 flex-shrink-0">
+                  <label className="cursor-pointer px-3 py-2 bg-[#111827] hover:bg-slate-800 text-slate-300 font-mono text-xs rounded border border-slate-700 flex items-center gap-1.5 shrink-0">
                     <UploadCloud size={14} className="text-[#06B6D4]" />
                     <span>{projectImageUploading ? 'UPLOADING...' : 'UPLOAD'}</span>
                     <input
@@ -1013,8 +1203,7 @@ export default function AdminDashboard() {
                     type="url"
                     value={editingProject.liveUrl || ''}
                     onChange={(e) => setEditingProject({ ...editingProject, liveUrl: e.target.value })}
-                    placeholder="https://..."
-                    className="w-full px-3 py-2 bg-[#111827] border border-slate-700 rounded text-white font-mono text-xs focus:border-[#06B6D4] outline-none"
+                    className="w-full px-3 py-2 bg-[#111827] border border-slate-700 rounded text-white font-mono text-xs outline-none"
                   />
                 </label>
 
@@ -1024,8 +1213,7 @@ export default function AdminDashboard() {
                     type="url"
                     value={editingProject.githubUrl || ''}
                     onChange={(e) => setEditingProject({ ...editingProject, githubUrl: e.target.value })}
-                    placeholder="https://github.com/..."
-                    className="w-full px-3 py-2 bg-[#111827] border border-slate-700 rounded text-white font-mono text-xs focus:border-[#06B6D4] outline-none"
+                    className="w-full px-3 py-2 bg-[#111827] border border-slate-700 rounded text-white font-mono text-xs outline-none"
                   />
                 </label>
               </div>
@@ -1036,8 +1224,7 @@ export default function AdminDashboard() {
                   type="text"
                   value={tagInput}
                   onChange={(e) => setTagInput(e.target.value)}
-                  placeholder="Graphic Design, Branding, Next.js"
-                  className="w-full px-3 py-2 bg-[#111827] border border-slate-700 rounded text-white font-mono text-xs focus:border-[#06B6D4] outline-none"
+                  className="w-full px-3 py-2 bg-[#111827] border border-slate-700 rounded text-white font-mono text-xs outline-none"
                 />
               </label>
 
@@ -1051,32 +1238,160 @@ export default function AdminDashboard() {
                   />
                   <span className="text-xs font-mono text-white">Featured Project</span>
                 </label>
-
-                <label className="flex items-center gap-2">
-                  <span className="text-xs font-mono text-slate-400">Order:</span>
-                  <input
-                    type="number"
-                    value={editingProject.order || 1}
-                    onChange={(e) => setEditingProject({ ...editingProject, order: Number(e.target.value) })}
-                    className="w-16 px-2 py-1 bg-[#111827] border border-slate-700 rounded text-white font-mono text-xs"
-                  />
-                </label>
               </div>
 
               <div className="flex justify-end gap-3 pt-4 border-t border-slate-800">
                 <button
                   type="button"
                   onClick={() => setIsProjectModalOpen(false)}
-                  className="px-4 py-2 bg-slate-800 text-slate-300 font-mono text-xs rounded hover:bg-slate-700"
+                  className="px-4 py-2 bg-slate-800 text-slate-300 font-mono text-xs rounded hover:bg-slate-700 cursor-pointer"
                 >
                   CANCEL
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 bg-gradient-to-r from-[#06B6D4] to-[#3B82F6] text-[#0B0F17] font-mono text-xs font-bold uppercase rounded"
+                  className="px-6 py-2 bg-gradient-to-r from-[#06B6D4] to-[#3B82F6] text-[#070A10] font-mono text-xs font-bold uppercase rounded cursor-pointer"
                 >
                   SAVE PROJECT
                 </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* SERVICE MODAL */}
+      {isServiceModalOpen && editingService && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+          <div className="relative w-full max-w-lg bg-[#070A10] border border-slate-700 rounded-2xl p-6 space-y-6 font-sans">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+              <h3 className="text-xl font-bold text-white">{editingService.id ? 'Edit Service' : 'New Service'}</h3>
+              <button onClick={() => setIsServiceModalOpen(false)} className="p-1 text-slate-400 hover:text-white cursor-pointer"><X size={20} /></button>
+            </div>
+
+            <form onSubmit={handleSaveService} className="space-y-4 font-sans text-xs">
+              <label className="block space-y-1">
+                <span className="text-slate-300 font-mono">Service Title *</span>
+                <input
+                  type="text"
+                  required
+                  value={editingService.title || ''}
+                  onChange={(e) => setEditingService({ ...editingService, title: e.target.value })}
+                  className="w-full px-3 py-2 bg-[#111827] border border-slate-700 rounded text-white text-sm"
+                />
+              </label>
+
+              <label className="block space-y-1">
+                <span className="text-slate-300 font-mono">Service Description *</span>
+                <textarea
+                  rows={3}
+                  required
+                  value={editingService.description || ''}
+                  onChange={(e) => setEditingService({ ...editingService, description: e.target.value })}
+                  className="w-full px-3 py-2 bg-[#111827] border border-slate-700 rounded text-white text-sm"
+                />
+              </label>
+
+              <label className="block space-y-1">
+                <span className="text-slate-300 font-mono">Category</span>
+                <input
+                  type="text"
+                  value={editingService.category || 'Design'}
+                  onChange={(e) => setEditingService({ ...editingService, category: e.target.value })}
+                  className="w-full px-3 py-2 bg-[#111827] border border-slate-700 rounded text-white font-mono text-xs"
+                />
+              </label>
+
+              <label className="block space-y-1">
+                <span className="text-slate-300 font-mono">Tags (Comma-separated)</span>
+                <input
+                  type="text"
+                  value={serviceTagInput}
+                  onChange={(e) => setServiceTagInput(e.target.value)}
+                  className="w-full px-3 py-2 bg-[#111827] border border-slate-700 rounded text-white font-mono text-xs"
+                />
+              </label>
+
+              <div className="flex justify-end gap-3 pt-4 border-t border-slate-800">
+                <button type="button" onClick={() => setIsServiceModalOpen(false)} className="px-4 py-2 bg-slate-800 text-slate-300 font-mono text-xs rounded cursor-pointer">CANCEL</button>
+                <button type="submit" className="px-6 py-2 bg-[#06B6D4] text-[#070A10] font-mono text-xs font-bold uppercase rounded cursor-pointer">SAVE SERVICE</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ARTICLE MODAL */}
+      {isArticleModalOpen && editingArticle && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+          <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-[#070A10] border border-slate-700 rounded-2xl p-6 space-y-6 font-sans">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+              <h3 className="text-xl font-bold text-white">{editingArticle.id ? 'Edit Article' : 'New Writing Piece'}</h3>
+              <button onClick={() => setIsArticleModalOpen(false)} className="p-1 text-slate-400 hover:text-white cursor-pointer"><X size={20} /></button>
+            </div>
+
+            <form onSubmit={handleSaveArticle} className="space-y-4 text-xs font-sans">
+              <label className="block space-y-1">
+                <span className="text-slate-300 font-mono">Article Title *</span>
+                <input
+                  type="text"
+                  required
+                  value={editingArticle.title || ''}
+                  onChange={(e) => setEditingArticle({ ...editingArticle, title: e.target.value })}
+                  className="w-full px-3 py-2 bg-[#111827] border border-slate-700 rounded text-white text-sm"
+                />
+              </label>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <label className="block space-y-1">
+                  <span className="text-slate-300 font-mono">Author Identity</span>
+                  <select
+                    value={editingArticle.author || 'Writer Ash'}
+                    onChange={(e) => setEditingArticle({ ...editingArticle, author: e.target.value as any })}
+                    className="w-full px-3 py-2 bg-[#111827] border border-slate-700 rounded text-white font-mono text-xs"
+                  >
+                    <option value="Writer Ash">Writer Ash</option>
+                    <option value="Writer Tizzy">Writer Tizzy</option>
+                    <option value="Tizzy">Tizzy</option>
+                  </select>
+                </label>
+
+                <label className="block space-y-1">
+                  <span className="text-slate-300 font-mono">Category</span>
+                  <input
+                    type="text"
+                    value={editingArticle.category || 'Design Strategy'}
+                    onChange={(e) => setEditingArticle({ ...editingArticle, category: e.target.value })}
+                    className="w-full px-3 py-2 bg-[#111827] border border-slate-700 rounded text-white font-mono text-xs"
+                  />
+                </label>
+              </div>
+
+              <label className="block space-y-1">
+                <span className="text-slate-300 font-mono">Summary *</span>
+                <textarea
+                  rows={2}
+                  required
+                  value={editingArticle.summary || ''}
+                  onChange={(e) => setEditingArticle({ ...editingArticle, summary: e.target.value })}
+                  className="w-full px-3 py-2 bg-[#111827] border border-slate-700 rounded text-white text-sm"
+                />
+              </label>
+
+              <label className="block space-y-1">
+                <span className="text-slate-300 font-mono">Full Essay Content *</span>
+                <textarea
+                  rows={6}
+                  required
+                  value={editingArticle.content || ''}
+                  onChange={(e) => setEditingArticle({ ...editingArticle, content: e.target.value })}
+                  className="w-full px-3 py-2 bg-[#111827] border border-slate-700 rounded text-white text-sm font-sans"
+                />
+              </label>
+
+              <div className="flex justify-end gap-3 pt-4 border-t border-slate-800">
+                <button type="button" onClick={() => setIsArticleModalOpen(false)} className="px-4 py-2 bg-slate-800 text-slate-300 font-mono text-xs rounded cursor-pointer">CANCEL</button>
+                <button type="submit" className="px-6 py-2 bg-[#06B6D4] text-[#070A10] font-mono text-xs font-bold uppercase rounded cursor-pointer">SAVE ARTICLE</button>
               </div>
             </form>
           </div>

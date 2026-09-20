@@ -1,12 +1,24 @@
-export type ProjectCategory = 'Full-Stack' | 'Web Apps' | 'Cyber/Tools' | 'Scripts' | 'Cloud & Systems' | 'web' | 'mobile' | 'fullstack' | 'other';
+export type ProjectCategory =
+  | 'Graphic Design'
+  | 'Branding'
+  | 'Social Media'
+  | 'Posters'
+  | 'Creative Projects'
+  | 'Web Projects'
+  | 'Writing'
+  | 'Full-Stack'
+  | 'Web Apps'
+  | 'Other';
 
 export interface Project {
   id: string;
+  slug?: string;
   title: string;
   description: string;
   longDescription?: string;
   detailedDescription?: string;
   image: string;
+  gallery?: string[];
   technologies?: string[];
   tags?: string[];
   liveUrl?: string;
@@ -14,8 +26,36 @@ export interface Project {
   featured?: boolean;
   category: ProjectCategory;
   order?: number;
+  client?: string;
+  year?: string;
+  tools?: string[];
   architectureNotes?: string[];
   createdAt?: Date | string;
+}
+
+export interface ServiceItem {
+  id: string;
+  title: string;
+  description: string;
+  category?: string;
+  tags?: string[];
+  featured?: boolean;
+  order?: number;
+}
+
+export interface WritingArticle {
+  id: string;
+  slug: string;
+  title: string;
+  summary: string;
+  content: string;
+  author: 'Writer Ash' | 'Writer Tizzy' | 'Tizzy';
+  authorRole?: string;
+  date: string;
+  category: string;
+  readTime: string;
+  published: boolean;
+  coverImage?: string;
 }
 
 export interface SkillCategory {
@@ -63,6 +103,8 @@ export interface SiteSettings {
   github: string;
   linkedin: string;
   telegram: string;
+  accentColor?: string;
+  themeMode?: 'dark' | 'light';
   skills: SkillItem[];
   timeline: TimelineItem[];
   metrics: {
@@ -90,6 +132,7 @@ export interface ContactMessage {
   email: string;
   subject: string;
   message: string;
+  service?: string;
   createdAt?: Date | string;
   read?: boolean;
   status?: 'unread' | 'read';

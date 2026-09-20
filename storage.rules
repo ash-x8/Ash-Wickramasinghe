@@ -1,9 +1,13 @@
+rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
-    function isAdmin() { return request.auth != null && request.auth.token.admin == true; }
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
     match /{allPaths=**} {
       allow read: if true;
-      allow write: if isAdmin() && request.resource.size < 10 * 1024 * 1024;
+      allow write, delete: if isAuthenticated() && request.resource.size < 15 * 1024 * 1024;
     }
   }
 }
