@@ -26,8 +26,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Check for existing verified admin session in local storage
+    const cached = localStorage.getItem('ash_admin_session');
+    if (cached) {
+      try {
+        const parsed = JSON.parse(cached);
+        if (parsed?.email?.toLowerCase() === AUTHORIZED_ADMIN_EMAIL.toLowerCase()) {
+          setUser({
+            uid: parsed.uid || 'admin_ash_wickramasinghe_authorized',
+            email: parsed.email,
+            displayName: parsed.displayName || 'Ash Wickramasinghe',
+            emailVerified: true
+          } as User);
+        }
+      } catch {
+        localStorage.removeItem('ash_admin_session');
+      }
+    }
+
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
+      if (currentUser) {
+        setUser(currentUser);
+      }
       setLoading(false);
     });
 

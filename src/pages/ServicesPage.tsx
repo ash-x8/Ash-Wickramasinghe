@@ -4,6 +4,7 @@ import { ArrowRight, Check, Layers, Sparkles } from 'lucide-react';
 import { getServices, subscribeToServices } from '../lib/firebase';
 import { ServiceItem } from '../types';
 import { defaultSiteSettings } from '../data/defaultContent';
+import { ContentSkeleton } from '../components/ContentSkeleton';
 
 export const ServicesPage: React.FC = () => {
   const [services, setServices] = useState<ServiceItem[]>(defaultSiteSettings.services || []);
@@ -44,8 +45,11 @@ export const ServicesPage: React.FC = () => {
       </div>
 
       {/* Services Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-24">
-        {services.map((service, index) => (
+      {loading ? (
+        <ContentSkeleton type="service" count={3} />
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-24">
+          {services.map((service, index) => (
           <div
             key={service.id}
             className="p-8 rounded-2xl border border-neutral-800/80 dark:border-neutral-800/80 light:border-neutral-200 bg-neutral-900/30 dark:bg-neutral-900/30 light:bg-white flex flex-col justify-between space-y-8 hover:border-neutral-700 dark:hover:border-neutral-700 light:hover:border-neutral-300 transition-colors"
@@ -118,8 +122,9 @@ export const ServicesPage: React.FC = () => {
               </div>
             </div>
           </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
 
       {/* Engagement Workflow Section */}
       <section className="py-16 border-t border-neutral-800/60 dark:border-neutral-800/60 light:border-neutral-200">

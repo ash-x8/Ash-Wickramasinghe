@@ -6,6 +6,7 @@ import { getArticles, subscribeToArticles, trackArticleView } from '../lib/fireb
 import { Article } from '../types';
 import { defaultArticles } from '../data/defaultContent';
 import { calculateReadingTime } from '../utils/readingTime';
+import { ContentSkeleton } from '../components/ContentSkeleton';
 
 export const WritingPage: React.FC = () => {
   const [articles, setArticles] = useState<Article[]>(defaultArticles);
@@ -88,8 +89,11 @@ export const WritingPage: React.FC = () => {
       )}
 
       {/* Articles List */}
-      <div className="space-y-8">
-        {filteredArticles.map((article, idx) => {
+      {loading ? (
+        <ContentSkeleton type="article" count={4} />
+      ) : (
+        <div className="space-y-8">
+          {filteredArticles.map((article, idx) => {
           const readingInfo = calculateReadingTime(article.content, article.excerpt);
           const displayReadTime = readingInfo.text;
 
@@ -159,7 +163,8 @@ export const WritingPage: React.FC = () => {
             </motion.article>
           );
         })}
-      </div>
+        </div>
+      )}
 
       {/* Reading Modal / Full View */}
       {selectedArticle && (

@@ -5,6 +5,7 @@ import { getProjects, subscribeToProjects, trackProjectClick } from '../lib/fire
 import { Project, ProjectCategory } from '../types';
 import { defaultProjects } from '../data/defaultContent';
 import { ProjectModal } from '../components/ProjectModal';
+import { ContentSkeleton } from '../components/ContentSkeleton';
 
 export const ProjectsPage: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>(defaultProjects);
@@ -103,7 +104,9 @@ export const ProjectsPage: React.FC = () => {
       </div>
 
       {/* Projects Grid */}
-      {filteredProjects.length === 0 ? (
+      {loading ? (
+        <ContentSkeleton type="project" count={6} />
+      ) : filteredProjects.length === 0 ? (
         <div className="text-center py-20 border border-neutral-800/60 dark:border-neutral-800/60 light:border-neutral-200 rounded-2xl bg-neutral-900/20">
           <p className="text-sm text-neutral-400">No projects found matching your criteria.</p>
           <button

@@ -6,6 +6,7 @@ import { getSiteSettings, subscribeToSiteSettings } from '../lib/firebase';
 import { SiteSettings } from '../types';
 import { defaultSiteSettings } from '../data/defaultContent';
 import { ImageWithLoading } from '../components/ImageWithLoading';
+import { ProfilePhotoFrame } from '../components/ProfilePhotoFrame';
 
 export const AboutPage: React.FC = () => {
   const [settings, setSettings] = useState<SiteSettings>(defaultSiteSettings);
@@ -53,14 +54,10 @@ export const AboutPage: React.FC = () => {
           transition={{ duration: 0.4 }}
           className="lg:col-span-5 space-y-8"
         >
-          <div className="relative aspect-[4/5] rounded-2xl overflow-hidden bg-neutral-900 border border-neutral-800 dark:border-neutral-800 light:border-neutral-200 shadow-2xl shadow-black/40">
-            <ImageWithLoading
-              src={settings.avatarUrl || '/ash_cyber_portrait.jpg'}
-              alt="Ash Wickramasinghe - Portrait"
-              className="w-full h-full object-cover grayscale contrast-110"
-              containerClassName="w-full h-full"
-            />
-          </div>
+          <ProfilePhotoFrame
+            src={settings.avatarUrl || '/ash_cyber_portrait.jpg'}
+            statusText={settings.statusText}
+          />
 
           <div className="p-6 rounded-xl border border-neutral-800/80 dark:border-neutral-800/80 light:border-neutral-200 bg-neutral-900/30 dark:bg-neutral-900/30 light:bg-white space-y-4 text-xs">
             <div className="flex justify-between py-2 border-b border-neutral-800 dark:border-neutral-800 light:border-neutral-100">

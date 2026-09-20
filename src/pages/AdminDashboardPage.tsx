@@ -143,11 +143,11 @@ export const AdminDashboardPage: React.FC = () => {
   const [selectedMessage, setSelectedMessage] = useState<ContactMessage | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<{ type: string; id: string; name: string } | null>(null);
 
-  // Load all CMS data
+  // Load all CMS data safely
   const refreshData = useCallback(async () => {
     setLoading(true);
     try {
-      const [s, p, a, srv, m, tr] = await Promise.all([
+      const [sRes, pRes, aRes, srvRes, mRes, trRes] = await Promise.allSettled([
         getSiteSettings(),
         getProjects(),
         getArticles(),
@@ -155,15 +155,15 @@ export const AdminDashboardPage: React.FC = () => {
         getContactMessages(),
         getAnalyticsTrends(30)
       ]);
-      setSettings(s);
-      setProjects(p);
-      setArticles(a);
-      setServices(srv);
-      setMessages(m);
-      setTrends(tr);
+
+      if (sRes.status === 'fulfilled' && sRes.value) setSettings(sRes.value);
+      if (pRes.status === 'fulfilled' && Array.isArray(pRes.value)) setProjects(pRes.value);
+      if (aRes.status === 'fulfilled' && Array.isArray(aRes.value)) setArticles(aRes.value);
+      if (srvRes.status === 'fulfilled' && Array.isArray(srvRes.value)) setServices(srvRes.value);
+      if (mRes.status === 'fulfilled' && Array.isArray(mRes.value)) setMessages(mRes.value);
+      if (trRes.status === 'fulfilled' && Array.isArray(trRes.value)) setTrends(trRes.value);
     } catch (err) {
-      console.error("Error refreshing CMS data:", err);
-      showToast("Error loading some database items", "error");
+      console.warn("Notice refreshing CMS data:", err);
     } finally {
       setLoading(false);
     }

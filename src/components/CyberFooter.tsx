@@ -153,6 +153,12 @@ export const CyberFooter: React.FC = () => {
           </div>
           <div className="flex items-center gap-4 text-slate-400">
             <span>Sri Lanka &bull; Remote &bull; Available Worldwide</span>
+            <Link
+              to="/admin/login"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-[#111622] hover:bg-[#C59B63]/20 text-slate-400 hover:text-[#C59B63] border border-slate-800 hover:border-[#C59B63]/40 transition-colors font-mono"
+            >
+              <span>Admin Terminal</span>
+            </Link>
           </div>
         </div>
       </div>
