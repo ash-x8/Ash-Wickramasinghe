@@ -10,6 +10,9 @@ import {
 } from 'firebase/auth';
 import { 
   getFirestore, 
+  initializeFirestore,
+  persistentLocalCache,
+  persistentMultipleTabManager,
   collection, 
   doc, 
   getDoc, 
@@ -46,7 +49,21 @@ import { defaultSiteSettings, defaultProjects, defaultArticles } from '../data/d
 // Initialize Firebase instances
 export const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 export const auth = getAuth(app);
-export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
+
+// Robust Firestore instance with persistent cache and cross-tab multi-manager
+export const db = (() => {
+  try {
+    return initializeFirestore(app, {
+      localCache: persistentLocalCache({
+        tabManager: persistentMultipleTabManager()
+      })
+    }, firebaseConfig.firestoreDatabaseId);
+  } catch {
+    // If already initialized, retrieve existing instance
+    return getFirestore(app, firebaseConfig.firestoreDatabaseId);
+  }
+})();
+
 export const storage = getStorage(app);
 
 // Safe Firebase Analytics initialization - only if a valid Google Analytics measurementId is configured
@@ -131,14 +148,20 @@ export function handleFirestoreError(error: unknown, operationType: OperationTyp
 // Validation connection test
 export async function testConnection(): Promise<void> {
   try {
-    await getDocFromServer(doc(db, 'site_settings', 'main_settings'));
+    const testPromise = getDocFromServer(doc(db, 'site_settings', 'main_settings'));
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Connection check timed out')), 5000)
+    );
+    await Promise.race([testPromise, timeoutPromise]);
   } catch (error) {
-    if (error instanceof Error && error.message.includes('the client is offline')) {
-      console.warn("Firestore client offline or connection unreachable.");
+    if (error instanceof Error && (error.message.includes('the client is offline') || error.message.includes('timed out'))) {
+      console.warn("Firestore operating with cached/offline fallback:", error.message);
     }
   }
 }
-testConnection();
+if (typeof window !== 'undefined') {
+  testConnection();
+}
 
 /* =========================================================================
    SITE SETTINGS (Profile, Bio, Theme, Accent, SEO)
