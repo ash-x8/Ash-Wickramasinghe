@@ -1,50 +1,89 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useLocation } from 'react-router-dom';
 
 export const SiteInitialLoader: React.FC = () => {
-  const [loading, setLoading] = useState(true);
-  const [progress, setProgress] = useState(15);
+  const location = useLocation();
+  const isAdminPath = location.pathname.startsWith('/admin') || location.pathname.startsWith('/dashboard');
+
+  const prefersReducedMotion = typeof window !== 'undefined' 
+    ? window.matchMedia('(prefers-reduced-motion: reduce)').matches 
+    : false;
+
+  const [loading, setLoading] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    if (isAdminPath) return false;
+    if (prefersReducedMotion) return false;
+    try {
+      return !sessionStorage.getItem('ash_site_loaded');
+    } catch {
+      return false;
+    }
+  });
+
+  const [progress, setProgress] = useState(30);
+  const isDismissing = useRef(false);
 
   useEffect(() => {
-    // Smooth, rapid cyber boot sequence
+    if (!loading || isAdminPath || prefersReducedMotion) return;
+
     const interval = setInterval(() => {
       setProgress((prev) => {
         if (prev >= 100) {
           clearInterval(interval);
           return 100;
         }
-        const step = Math.floor(Math.random() * 28) + 18;
-        return Math.min(prev + step, 100);
+        return Math.min(prev + 35, 100);
       });
-    }, 90);
+    }, 60);
 
+    // Guaranteed auto-dismiss within 500ms max so it can never hang
     const timer = setTimeout(() => {
-      setLoading(false);
-    }, 950);
+      dismissLoader();
+    }, 450);
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        dismissLoader();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
 
     return () => {
       clearInterval(interval);
       clearTimeout(timer);
+      window.removeEventListener('keydown', handleKeyDown);
     };
-  }, []);
+  }, [loading, isAdminPath, prefersReducedMotion]);
 
-  const handleSkip = () => {
+  const dismissLoader = () => {
+    if (isDismissing.current) return;
+    isDismissing.current = true;
+    try {
+      sessionStorage.setItem('ash_site_loaded', 'true');
+    } catch {
+      // ignore
+    }
     setLoading(false);
   };
 
+  if (isAdminPath || prefersReducedMotion || !loading) {
+    return null;
+  }
+
   return (
-    <AnimatePresence>
+    <AnimatePresence mode="wait">
       {loading && (
         <motion.div
-          key="site-loader"
+          key="site-initial-loader"
           initial={{ opacity: 1 }}
           exit={{ 
-            opacity: 0, 
-            scale: 1.02,
-            filter: 'blur(8px)',
-            transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1] } 
+            opacity: 0,
+            transition: { duration: 0.3, ease: 'easeInOut' }
           }}
-          className="fixed inset-0 z-[100] bg-[#0A0D14] flex flex-col items-center justify-center p-6 select-none overflow-hidden"
+          onClick={dismissLoader}
+          className="fixed inset-0 z-80 bg-[#0A0D14] flex flex-col items-center justify-center p-6 select-none overflow-hidden cursor-pointer pointer-events-auto"
         >
           {/* Subtle Cyber Grid Background */}
           <div 
@@ -62,8 +101,11 @@ export const SiteInitialLoader: React.FC = () => {
           <div className="absolute w-96 h-96 rounded-full bg-[#C59B63]/10 blur-[120px] pointer-events-none" />
 
           {/* Loader Center Frame */}
-          <div className="relative z-10 flex flex-col items-center max-w-sm w-full space-y-7">
-            {/* Animated Hexagonal Reticle Monogram */}
+          <div 
+            className="relative z-10 flex flex-col items-center max-w-sm w-full space-y-7"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Monogram Reticle */}
             <div className="relative flex items-center justify-center">
               <motion.div 
                 animate={{ rotate: 360 }}
@@ -96,7 +138,7 @@ export const SiteInitialLoader: React.FC = () => {
             <div className="w-full space-y-2">
               <div className="flex items-center justify-between text-[10px] font-mono uppercase tracking-wider text-slate-400">
                 <span className="flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#C59B63] animate-ping" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#C59B63] shadow-[0_0_6px_#C59B63]" />
                   <span>Loading Assets</span>
                 </span>
                 <span className="text-[#C59B63] font-semibold">{progress}%</span>
@@ -107,7 +149,7 @@ export const SiteInitialLoader: React.FC = () => {
                   className="h-full bg-gradient-to-r from-[#8C6230] via-[#C59B63] to-[#F3D7A4]"
                   initial={{ width: '0%' }}
                   animate={{ width: `${progress}%` }}
-                  transition={{ duration: 0.18, ease: 'easeOut' }}
+                  transition={{ duration: 0.15, ease: 'easeOut' }}
                 />
               </div>
             </div>
@@ -116,7 +158,8 @@ export const SiteInitialLoader: React.FC = () => {
             <div className="flex items-center justify-between w-full pt-1 text-[9px] font-mono uppercase tracking-wider text-slate-500">
               <span>DESIGN &bull; BRANDING &bull; EDITORIAL</span>
               <button 
-                onClick={handleSkip}
+                type="button"
+                onClick={dismissLoader}
                 className="text-slate-400 hover:text-[#C59B63] transition-colors cursor-pointer underline underline-offset-2"
               >
                 Skip Intro [Esc]

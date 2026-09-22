@@ -77,7 +77,7 @@ export const ContactPage: React.FC = () => {
     'Invitation Design',
     'Tute & Educational Material Design',
     'CV & Executive Resume Design',
-    'Photo Editing & Retouching',
+    'Content & Digital Media Editing',
     'Content Writing & Creative Direction',
     'Web Management & Digital Content',
     'General Inquiry'

@@ -29,7 +29,10 @@ import {
   Share2,
   FileCheck,
   Sun,
-  Moon
+  Moon,
+  Zap,
+  Clock,
+  MessageSquareQuote
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
@@ -54,11 +57,14 @@ import {
   getAnalyticsTrends
 } from '../lib/firebase';
 import { Project, SiteSettings, ContactMessage, Article, ServiceItem, MediaItem, PageViewTrend } from '../types';
-import { defaultSiteSettings, defaultProjects, defaultArticles } from '../data/defaultContent';
+import { defaultSiteSettings, defaultProjects, defaultArticles, defaultMessages } from '../data/defaultContent';
 import { ActivityTrendsVisualizer } from '../components/admin/ActivityTrendsVisualizer';
 import { SocialManagerTab } from '../components/admin/SocialManagerTab';
 import { CvManagerTab } from '../components/admin/CvManagerTab';
 import { SeoSettingsTab } from '../components/admin/SeoSettingsTab';
+import { SkillsManagerTab } from '../components/admin/SkillsManagerTab';
+import { TimelineManagerTab } from '../components/admin/TimelineManagerTab';
+import { TestimonialsManagerTab } from '../components/admin/TestimonialsManagerTab';
 
 type AdminTab = 
   | 'overview' 
@@ -68,6 +74,9 @@ type AdminTab =
   | 'writing' 
   | 'messages' 
   | 'profile' 
+  | 'skills'
+  | 'timeline'
+  | 'testimonials'
   | 'social'
   | 'cv'
   | 'theme' 
@@ -82,6 +91,9 @@ const VALID_TABS: AdminTab[] = [
   'writing', 
   'messages', 
   'profile', 
+  'skills',
+  'timeline',
+  'testimonials',
   'social',
   'cv',
   'theme', 
@@ -121,10 +133,10 @@ export const AdminDashboardPage: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>(defaultProjects);
   const [articles, setArticles] = useState<Article[]>(defaultArticles);
   const [services, setServices] = useState<ServiceItem[]>(defaultSiteSettings.services || []);
-  const [messages, setMessages] = useState<ContactMessage[]>([]);
+  const [messages, setMessages] = useState<ContactMessage[]>(defaultMessages);
   const [trends, setTrends] = useState<PageViewTrend[]>([]);
   const [mediaList, setMediaList] = useState<MediaItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   // Toast / notification
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
@@ -164,7 +176,7 @@ export const AdminDashboardPage: React.FC = () => {
       if (pRes.status === 'fulfilled' && Array.isArray(pRes.value)) setProjects(pRes.value);
       if (aRes.status === 'fulfilled' && Array.isArray(aRes.value)) setArticles(aRes.value);
       if (srvRes.status === 'fulfilled' && Array.isArray(srvRes.value)) setServices(srvRes.value);
-      if (mRes.status === 'fulfilled' && Array.isArray(mRes.value)) setMessages(mRes.value);
+      if (mRes.status === 'fulfilled' && Array.isArray(mRes.value) && mRes.value.length > 0) setMessages(mRes.value);
       if (trRes.status === 'fulfilled' && Array.isArray(trRes.value)) setTrends(trRes.value);
     } catch (err) {
       console.warn("Notice refreshing CMS data:", err);
@@ -176,6 +188,25 @@ export const AdminDashboardPage: React.FC = () => {
   useEffect(() => {
     refreshData();
   }, [refreshData]);
+
+  // Global Escape key listener to dismiss any open modals
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsNewProjectModalOpen(false);
+        setIsNewArticleModalOpen(false);
+        setIsNewServiceModalOpen(false);
+        setSelectedMessage(null);
+        setDeleteConfirm(null);
+        setEditingProject(null);
+        setEditingArticle(null);
+        setEditingService(null);
+        setMobileSidebarOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const unreadMessagesCount = messages.filter(m => m.status === 'unread').length;
 
@@ -360,7 +391,7 @@ export const AdminDashboardPage: React.FC = () => {
       {/* Toast Notification */}
       {toast && (
         <div 
-          className={`fixed bottom-6 right-6 z-50 px-5 py-3 rounded-xl text-xs font-medium tracking-wide shadow-2xl flex items-center gap-2 transition-all ${
+          className={`fixed bottom-6 right-6 z-70 px-5 py-3 rounded-xl text-xs font-medium tracking-wide shadow-2xl flex items-center gap-2 transition-all ${
             toast.type === 'success' 
               ? 'bg-emerald-500 text-black font-semibold' 
               : 'bg-rose-500 text-white'
@@ -373,7 +404,12 @@ export const AdminDashboardPage: React.FC = () => {
 
       {/* Confirmation Dialog Modal */}
       {deleteConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+        <div 
+          className="fixed inset-0 z-70 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setDeleteConfirm(null);
+          }}
+        >
           <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl max-w-md w-full space-y-4 shadow-2xl">
             <h3 className="text-base font-semibold text-white">Confirm Deletion</h3>
             <p className="text-xs text-slate-400">
@@ -425,6 +461,9 @@ export const AdminDashboardPage: React.FC = () => {
             { id: 'writing', label: 'Writing / Articles', icon: FileText, count: articles.length },
             { id: 'messages', label: 'Messages', icon: Mail, count: unreadMessagesCount, badgeColor: 'bg-amber-500 text-black' },
             { id: 'profile', label: 'Profile & Bio', icon: User },
+            { id: 'skills', label: 'Skills & Capabilities', icon: Zap, count: settings.skills?.length || 0 },
+            { id: 'timeline', label: 'Career Timeline', icon: Clock, count: settings.timeline?.length || 0 },
+            { id: 'testimonials', label: 'Client Testimonials', icon: MessageSquareQuote, count: settings.testimonials?.length || 0 },
             { id: 'social', label: 'Social Media', icon: Share2 },
             { id: 'cv', label: 'Curriculum Vitae', icon: FileCheck },
             { id: 'theme', label: 'Theme & Accent', icon: Palette },
@@ -500,6 +539,9 @@ export const AdminDashboardPage: React.FC = () => {
                 { id: 'writing', label: 'Writing / Articles', icon: FileText, count: articles.length },
                 { id: 'messages', label: 'Messages', icon: Mail, count: unreadMessagesCount, badgeColor: 'bg-amber-500 text-black' },
                 { id: 'profile', label: 'Profile & Bio', icon: User },
+                { id: 'skills', label: 'Skills & Capabilities', icon: Zap, count: settings.skills?.length || 0 },
+                { id: 'timeline', label: 'Career Timeline', icon: Clock, count: settings.timeline?.length || 0 },
+                { id: 'testimonials', label: 'Client Testimonials', icon: MessageSquareQuote, count: settings.testimonials?.length || 0 },
                 { id: 'social', label: 'Social Media', icon: Share2 },
                 { id: 'cv', label: 'Curriculum Vitae', icon: FileCheck },
                 { id: 'theme', label: 'Theme & Accent', icon: Palette },
@@ -1442,6 +1484,39 @@ export const AdminDashboardPage: React.FC = () => {
             </div>
           )}
 
+          {/* SKILLS & CAPABILITIES MANAGER */}
+          {activeTab === 'skills' && (
+            <SkillsManagerTab
+              skills={settings.skills || []}
+              onSave={async (newSkills) => {
+                await handleSaveSettings({ skills: newSkills });
+              }}
+              showToast={showToast}
+            />
+          )}
+
+          {/* CAREER TIMELINE MANAGER */}
+          {activeTab === 'timeline' && (
+            <TimelineManagerTab
+              timeline={settings.timeline || []}
+              onSave={async (newTimeline) => {
+                await handleSaveSettings({ timeline: newTimeline });
+              }}
+              showToast={showToast}
+            />
+          )}
+
+          {/* CLIENT TESTIMONIALS MANAGER */}
+          {activeTab === 'testimonials' && (
+            <TestimonialsManagerTab
+              testimonials={settings.testimonials || []}
+              onSave={async (newTestimonials) => {
+                await handleSaveSettings({ testimonials: newTestimonials });
+              }}
+              showToast={showToast}
+            />
+          )}
+
           {/* 8. SOCIAL MEDIA MANAGER */}
           {activeTab === 'social' && (
             <SocialManagerTab
@@ -1527,7 +1602,15 @@ export const AdminDashboardPage: React.FC = () => {
 
       {/* PROJECT CREATE/EDIT MODAL */}
       {isNewProjectModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm overflow-y-auto">
+        <div 
+          className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm overflow-y-auto"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setIsNewProjectModalOpen(false);
+              setEditingProject(null);
+            }
+          }}
+        >
           <div className="bg-slate-900 border border-slate-800 p-6 sm:p-8 rounded-2xl max-w-2xl w-full my-auto space-y-6 max-h-[90vh] overflow-y-auto text-xs">
             <div className="flex items-center justify-between pb-4 border-b border-slate-800">
               <h3 className="text-base font-semibold text-white">
@@ -1719,7 +1802,15 @@ export const AdminDashboardPage: React.FC = () => {
 
       {/* ARTICLE CREATE/EDIT MODAL */}
       {isNewArticleModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm overflow-y-auto">
+        <div 
+          className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm overflow-y-auto"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setIsNewArticleModalOpen(false);
+              setEditingArticle(null);
+            }
+          }}
+        >
           <div className="bg-slate-900 border border-slate-800 p-6 sm:p-8 rounded-2xl max-w-2xl w-full my-auto space-y-6 max-h-[90vh] overflow-y-auto text-xs">
             <div className="flex items-center justify-between pb-4 border-b border-slate-800">
               <h3 className="text-base font-semibold text-white">
@@ -1855,7 +1946,15 @@ export const AdminDashboardPage: React.FC = () => {
 
       {/* SERVICE CREATE/EDIT MODAL */}
       {isNewServiceModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm overflow-y-auto">
+        <div 
+          className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm overflow-y-auto"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setIsNewServiceModalOpen(false);
+              setEditingService(null);
+            }
+          }}
+        >
           <div className="bg-slate-900 border border-slate-800 p-6 sm:p-8 rounded-2xl max-w-lg w-full my-auto space-y-6 text-xs">
             <div className="flex items-center justify-between pb-4 border-b border-slate-800">
               <h3 className="text-base font-semibold text-white">

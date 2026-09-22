@@ -42,7 +42,7 @@ const SERVICE_COLORS: Record<string, string> = {
   'Tute Design': '#14B8A6',
   'CV Design': '#6366F1',
   'Content & Creative Writing': '#F97316',
-  'Photo Editing & Retouching': '#06B6D4',
+  'Content & Digital Media Editing': '#06B6D4',
   'Web & Digital Creative Work': '#84CC16',
   'General Inquiry': '#94A3B8'
 };

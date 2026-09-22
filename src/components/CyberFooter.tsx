@@ -23,7 +23,7 @@ export const CyberFooter: React.FC = () => {
   }, []);
 
   // The admin dashboard is completely separated from the public website
-  if (location.pathname.startsWith('/admin')) {
+  if (location.pathname.startsWith('/admin') || location.pathname.startsWith('/dashboard')) {
     return null;
   }
 
@@ -49,7 +49,7 @@ export const CyberFooter: React.FC = () => {
           {/* Col 1: System Ident */}
           <div className="space-y-3 md:col-span-2">
             <div className="flex items-center gap-2 text-white text-sm font-bold tracking-wider font-sans">
-              <span className="w-2 h-2 bg-[#C59B63] rounded-full animate-pulse" />
+              <span className="w-2 h-2 bg-[#C59B63] rounded-full shadow-[0_0_6px_#C59B63]" />
               Ash Wickramasinghe
             </div>
             <p className="text-slate-400 text-xs leading-relaxed max-w-md font-sans">

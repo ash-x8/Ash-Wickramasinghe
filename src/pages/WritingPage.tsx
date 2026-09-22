@@ -39,7 +39,17 @@ export const WritingPage: React.FC = () => {
       }
     });
 
-    return () => unsubscribe();
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setSelectedArticle(null);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      unsubscribe();
+      window.removeEventListener('keydown', handleKeyDown);
+    };
   }, [location.hash]);
 
   const handleSelectArticle = (article: Article) => {
@@ -169,7 +179,7 @@ export const WritingPage: React.FC = () => {
       {/* Reading Modal / Full View */}
       {selectedArticle && (
         <div 
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 md:p-10 bg-neutral-950/85 backdrop-blur-md overflow-y-auto"
+          className="fixed inset-0 z-60 flex items-center justify-center p-4 sm:p-6 md:p-10 bg-neutral-950/85 backdrop-blur-md overflow-y-auto"
           onClick={() => setSelectedArticle(null)}
         >
           <div 

@@ -13,7 +13,6 @@ import { CvPage } from '../pages/CvPage';
 import { ContactPage } from '../pages/ContactPage';
 import { AdminDashboardPage } from '../pages/AdminDashboardPage';
 import { AdminLoginPage } from '../pages/AdminLoginPage';
-import { ProtectedRoute, useAuth } from '../context/AuthContext';
 
 const NotFoundPage: React.FC = () => (
   <div className="min-h-screen pt-40 pb-24 px-6 flex flex-col items-center justify-center text-center">
@@ -30,24 +29,6 @@ const NotFoundPage: React.FC = () => (
     </a>
   </div>
 );
-
-const AdminEntryPortal: React.FC = () => {
-  const { user, loading } = useAuth();
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[#0A0D14]">
-        <div className="w-8 h-8 rounded-full border border-[#C59B63]/20 border-t-[#C59B63] animate-spin" />
-      </div>
-    );
-  }
-
-  if (user) {
-    return <AdminDashboardPage />;
-  }
-
-  return <AdminLoginPage />;
-};
 
 export const AnimatedRoutes: React.FC = () => {
   const location = useLocation();
@@ -78,34 +59,13 @@ export const AnimatedRoutes: React.FC = () => {
           <Route path="/cv" element={<CvPage />} />
           <Route path="/contact" element={<ContactPage />} />
 
-          {/* Admin Routes */}
-          <Route path="/admin" element={<AdminEntryPortal />} />
-          <Route path="/dashboard" element={<AdminEntryPortal />} />
+          {/* Admin Routes - Directly accessible for Ash Wickramasinghe Studio */}
+          <Route path="/admin" element={<AdminDashboardPage />} />
+          <Route path="/dashboard" element={<AdminDashboardPage />} />
+          <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
+          <Route path="/dashboard/:tab" element={<AdminDashboardPage />} />
+          <Route path="/admin/:tab" element={<AdminDashboardPage />} />
           <Route path="/admin/login" element={<AdminLoginPage />} />
-          <Route 
-            path="/admin/dashboard" 
-            element={
-              <ProtectedRoute>
-                <AdminDashboardPage />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/dashboard/:tab" 
-            element={
-              <ProtectedRoute>
-                <AdminDashboardPage />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/admin/:tab" 
-            element={
-              <ProtectedRoute>
-                <AdminDashboardPage />
-              </ProtectedRoute>
-            } 
-          />
 
           <Route path="*" element={<NotFoundPage />} />
         </Routes>

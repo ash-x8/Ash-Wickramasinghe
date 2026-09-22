@@ -7,7 +7,7 @@ export const defaultSiteSettings: SiteSettings = {
   creativeName: "Ash Wickramasinghe",
   title: "Graphic Designer • Social Media Manager • Author",
   bio: "Kushan A Wickramasinghe is a creative professional specializing in graphic design, social media management, digital content and creative writing. His work combines visual design, purposeful communication and creative storytelling to produce engaging content for personal, educational, organizational and digital projects.",
-  aboutBio: "Kushan A Wickramasinghe is a multidisciplinary creative professional working across graphic design, social media management, digital content, creative writing, and visual communication. His work focuses on creating clean, purposeful, modern and engaging visual content for individuals, schools, organizations, brands, social media platforms and creative projects. His creative areas include graphic design, social media content creation and management, branding, poster and promotional design, digital content, photo editing, content writing, creative writing and web-related creative projects.",
+  aboutBio: "Kushan A Wickramasinghe is a multidisciplinary creative professional working across graphic design, social media management, digital content, creative writing, and visual communication. His work focuses on creating clean, purposeful, modern and engaging visual content for individuals, schools, organizations, brands, social media platforms and creative projects. His creative areas include graphic design, social media content creation and management, branding, poster and promotional design, digital content, digital media editing, content writing, creative writing and web-related creative projects.",
   personalStatement: "Design with purpose. Create with intention. Write with meaning.",
   careerTrajectory: "Design with purpose. Create with intention. Write with meaning.",
   workAvailability: "Remote / Available for selected creative projects and collaborations",
@@ -54,7 +54,7 @@ export const defaultSiteSettings: SiteSettings = {
     { name: "Tute & Educational Material Design", level: 90, category: "Design & Branding" },
     { name: "CV & Resume Design", level: 91, category: "Design & Branding" },
     { name: "Digital Promotional Materials", level: 92, category: "Design & Branding" },
-    { name: "Photo Editing & Retouching", level: 90, category: "Content & Video" },
+    { name: "Digital Media Editing & Visual Assets", level: 90, category: "Content & Video" },
     { name: "Content Writing & Creative Writing", level: 94, category: "Content & Video" },
     { name: "Digital Content Creation & Visual Communication", level: 93, category: "Social & Growth" },
     { name: "Web & Digital Creative Work", level: 86, category: "Web & Digital" }
@@ -172,12 +172,12 @@ export const defaultSiteSettings: SiteSettings = {
       order: 10
     },
     {
-      id: "srv-photo-editing",
-      slug: "photo-editing-and-retouching",
-      title: "Photo Editing & Retouching",
+      id: "srv-content-editing",
+      slug: "content-and-digital-media-editing",
+      title: "Content & Digital Media Editing",
       badge: "VISUAL FINISH",
-      description: "High-grade image enhancement, portrait retouching, color grading, background cleanup, and visual asset preparation.",
-      deliverables: ["Color Correction & Grading", "Skin & Texture Retouching", "Background Cleanup"],
+      description: "High-grade digital media enhancement, asset optimization, visual asset preparation, and media post-production.",
+      deliverables: ["Asset Optimization & Preparation", "Visual Media Production", "Digital Asset Balancing"],
       techStack: ["Adobe Photoshop", "Lightroom"],
       featured: false,
       order: 11
@@ -395,3 +395,37 @@ Whether writing under the identity of Writer Ash or Writer Tizzy, the goal remai
     tags: ["Creative Writing", "Journaling", "Personal Reflections"]
   }
 ];
+
+export const defaultMessages: import('../types').ContactMessage[] = [
+  {
+    id: "msg-101",
+    name: "Nuwan Fernando",
+    email: "nuwan.fernando@pulsecolombo.lk",
+    service: "Brand Identity & Social Media Revamp",
+    subject: "Creative Branding & Carousel Retainer",
+    message: "Hi Ash, We loved your clean typography and visual identity designs. We are looking for a complete brand refresh for our creative studio in Colombo, along with 20 carousel post templates for Instagram and LinkedIn. Are you available for a project starting this month?",
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 4).toISOString(),
+    status: "unread"
+  },
+  {
+    id: "msg-102",
+    name: "Samantha Silva",
+    email: "samantha.s@sarasavi-press.com",
+    service: "Book Cover & Editorial Typography",
+    subject: "Cover Design for Sci-Fi Novel",
+    message: "Hello Ash Wickramasinghe, We are preparing the release of an upcoming sci-fi fiction collection and need a striking jacket illustration and interior layout. Given your background as an author and graphic artist, your style matches our vision.",
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
+    status: "unread"
+  },
+  {
+    id: "msg-103",
+    name: "Dr. K. Jayawardena",
+    email: "jayawardena.academic@gmail.com",
+    service: "Educational Material & Tute Layouts",
+    subject: "Secondary Education Handbook Typesetting",
+    message: "Greetings Kushan. We require professional layout design and diagram typesetting for our secondary educational biology handbook. Looking forward to your quote.",
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 72).toISOString(),
+    status: "read"
+  }
+];
+

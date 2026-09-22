@@ -329,7 +329,12 @@ export const SocialManagerTab: React.FC<SocialManagerTabProps> = ({
 
       {/* Add New Channel Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm">
+        <div 
+          className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowAddModal(false);
+          }}
+        >
           <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl space-y-4 font-sans text-xs">
             <h3 className="text-sm font-bold text-white flex items-center gap-2">
               <Plus size={16} className="text-[#C59B63]" />

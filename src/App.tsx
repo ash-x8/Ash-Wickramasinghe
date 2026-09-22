@@ -25,35 +25,51 @@ const RouteTracker: React.FC = () => {
   return null;
 };
 
-const AppContent: React.FC = () => {
+const MainLayout: React.FC = () => {
+  const location = useLocation();
   const { isLight } = useTheme();
+  const isAdminRoute = location.pathname.startsWith('/admin') || location.pathname.startsWith('/dashboard');
 
+  // Completely isolated Admin Layout: No public background, navbar, footer, or initial loader
+  if (isAdminRoute) {
+    return (
+      <div className="min-h-screen bg-[#0A0D14] text-slate-100 font-sans relative">
+        <AnimatedRoutes />
+      </div>
+    );
+  }
+
+  // Public Layout: With subtle background, sticky navbar, content, and footer
   return (
-    <Router>
-      {/* Full Site Initial Loading Animation */}
+    <div className={`min-h-screen ${isLight ? 'bg-[#F8FAFC] text-slate-900' : 'bg-[#0A0D14] text-slate-100'} flex flex-col selection:bg-[#C59B63] selection:text-[#0A0D14] relative overflow-x-hidden font-sans transition-colors duration-200`}>
+      {/* Non-blocking, reduced-motion aware site loader */}
       <SiteInitialLoader />
 
-      {/* Top Route Progress Bar */}
+      {/* Subtle Top Route Progress Bar */}
       <SiteLoadingBar />
 
-      {/* Route Tracking Analytics */}
+      {/* Cyber Background (Base level z-0) */}
+      <CyberBackground />
+
+      {/* Public Navigation Bar (Sticky z-30) */}
+      <CyberNavbar />
+
+      {/* Core Public Page Content (z-10) */}
+      <main className="flex-1 flex flex-col relative z-10">
+        <AnimatedRoutes />
+      </main>
+
+      {/* Public Footer */}
+      <CyberFooter />
+    </div>
+  );
+};
+
+const AppContent: React.FC = () => {
+  return (
+    <Router>
       <RouteTracker />
-
-      <div className={`min-h-screen ${isLight ? 'bg-[#F8FAFC] text-slate-900' : 'bg-[#0A0D14] text-slate-100'} flex flex-col selection:bg-[#C59B63] selection:text-[#0A0D14] relative overflow-x-hidden font-sans transition-colors duration-200`}>
-        {/* Cyber Ambiance Background */}
-        <CyberBackground />
-
-        {/* Public Navigation Bar (hidden on /admin) */}
-        <CyberNavbar />
-
-        {/* Core Route Body with Route Transition Animation */}
-        <main className="flex-1 flex flex-col">
-          <AnimatedRoutes />
-        </main>
-
-        {/* Public Footer (hidden on /admin) */}
-        <CyberFooter />
-      </div>
+      <MainLayout />
     </Router>
   );
 };

@@ -24,7 +24,7 @@ export const SiteLoadingBar: React.FC = () => {
           animate={{ scaleX: 1, opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
-          className="fixed top-0 left-0 right-0 h-[2.5px] bg-gradient-to-r from-[#C59B63] via-[#E5C392] to-[#C59B63] z-50 shadow-[0_0_12px_rgba(197,155,99,0.5)] pointer-events-none"
+          className="fixed top-0 left-0 right-0 h-[2.5px] bg-gradient-to-r from-[#C59B63] via-[#E5C392] to-[#C59B63] z-80 shadow-[0_0_12px_rgba(197,155,99,0.5)] pointer-events-none"
         />
       )}
     </AnimatePresence>

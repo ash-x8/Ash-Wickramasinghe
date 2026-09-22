@@ -70,7 +70,7 @@ export const WritingDetailPage: React.FC = () => {
     return (
       <div className="min-h-screen pt-32 pb-20 px-4 flex items-center justify-center font-mono text-slate-400">
         <div className="flex items-center gap-3">
-          <div className="w-2 h-2 rounded-full bg-[#C59B63] animate-ping" />
+          <div className="w-3 h-3 rounded-full border-2 border-[#C59B63] border-t-transparent animate-spin" />
           <span>LOADING ARTICLE DOSSIER...</span>
         </div>
       </div>

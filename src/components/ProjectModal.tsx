@@ -26,7 +26,7 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({ project, onClose }) 
 
   return (
     <div 
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 md:p-10 bg-neutral-950/80 dark:bg-neutral-950/80 light:bg-black/60 backdrop-blur-md overflow-y-auto"
+      className="fixed inset-0 z-60 flex items-center justify-center p-4 sm:p-6 md:p-10 bg-neutral-950/80 dark:bg-neutral-950/80 light:bg-black/60 backdrop-blur-md overflow-y-auto"
       onClick={onClose}
     >
       <div 

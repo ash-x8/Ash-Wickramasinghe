@@ -108,7 +108,7 @@ export const AdminLoginPage: React.FC = () => {
       <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10">
         <div className="flex justify-center mb-5">
           <div className="w-14 h-14 rounded-2xl bg-[#111622] border border-[#C59B63]/40 shadow-[0_0_20px_rgba(197,155,99,0.2)] flex items-center justify-center text-[#C59B63]">
-            <Shield size={26} className="animate-pulse" />
+            <Shield size={26} />
           </div>
         </div>
         <div className="text-center space-y-1">

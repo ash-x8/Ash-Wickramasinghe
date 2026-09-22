@@ -68,7 +68,7 @@ export const ProjectDetailPage: React.FC = () => {
     return (
       <div className="min-h-screen pt-32 pb-20 px-4 flex items-center justify-center font-mono text-slate-400">
         <div className="flex items-center gap-3">
-          <div className="w-2 h-2 rounded-full bg-[#C59B63] animate-ping" />
+          <div className="w-3 h-3 rounded-full border-2 border-[#C59B63] border-t-transparent animate-spin" />
           <span>LOADING CASE STUDY...</span>
         </div>
       </div>
@@ -255,7 +255,7 @@ export const ProjectDetailPage: React.FC = () => {
         <div>
           <div className="font-mono text-[10px] text-slate-500 uppercase tracking-wider mb-1">STATUS</div>
           <div className="font-sans text-sm font-semibold text-[#10B981] flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse" />
+            <span className="w-2 h-2 rounded-full bg-[#10B981] shadow-[0_0_6px_#10B981]" />
             <span>Delivered &amp; Active</span>
           </div>
         </div>

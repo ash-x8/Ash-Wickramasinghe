@@ -78,7 +78,7 @@ export const HomePage: React.FC = () => {
           <div className="lg:col-span-7 space-y-7">
             {/* Availability pill */}
             <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full border border-slate-800 bg-[#111622]/80 text-xs text-slate-300 shadow-sm font-mono">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
               <span>{settings.statusText || 'Available for freelance commissions & retainers'}</span>
             </div>
 
@@ -325,7 +325,7 @@ export const HomePage: React.FC = () => {
                 />
                 <div className="flex items-center justify-between border-b border-slate-800 pb-4">
                   <div className="flex items-center gap-2">
-                    <div className="w-2.5 h-2.5 rounded-full bg-[#C59B63] animate-pulse" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-[#C59B63] shadow-[0_0_8px_rgba(197,155,99,0.8)]" />
                     <span className="font-mono text-xs text-slate-300 uppercase tracking-widest font-semibold">
                       Core Philosophy
                     </span>

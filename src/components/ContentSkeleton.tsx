@@ -15,10 +15,9 @@ export const ContentSkeleton: React.FC<ContentSkeletonProps> = ({
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 w-full">
         {items.map((_, i) => (
-          <div key={i} className="space-y-4 animate-pulse">
+          <div key={i} className="space-y-4 opacity-80">
             {/* Image Placeholder */}
             <div className="relative aspect-[16/10] w-full rounded-xl bg-neutral-900/80 border border-neutral-800 overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.04] to-transparent animate-[shimmer_1.8s_infinite] -translate-x-full" />
               <div className="absolute top-4 left-4 h-6 w-24 bg-neutral-800 rounded-full" />
             </div>
 
@@ -47,7 +46,7 @@ export const ContentSkeleton: React.FC<ContentSkeletonProps> = ({
         {items.map((_, i) => (
           <div
             key={i}
-            className="p-6 rounded-xl border border-neutral-800/80 bg-neutral-900/40 space-y-4 animate-pulse"
+            className="p-6 rounded-xl border border-neutral-800/80 bg-neutral-900/40 space-y-4 opacity-80"
           >
             <div className="flex justify-between items-center">
               <div className="h-4 w-20 bg-[#C59B63]/20 rounded" />
@@ -75,7 +74,7 @@ export const ContentSkeleton: React.FC<ContentSkeletonProps> = ({
         {items.map((_, i) => (
           <div
             key={i}
-            className="p-8 rounded-2xl border border-neutral-800/80 bg-neutral-900/30 space-y-6 animate-pulse"
+            className="p-8 rounded-2xl border border-neutral-800/80 bg-neutral-900/30 space-y-6 opacity-80"
           >
             <div className="flex items-center justify-between">
               <div className="w-12 h-12 rounded-xl bg-neutral-800" />
@@ -98,7 +97,7 @@ export const ContentSkeleton: React.FC<ContentSkeletonProps> = ({
 
   // Detail Page Skeleton
   return (
-    <div className="max-w-4xl mx-auto space-y-8 animate-pulse">
+    <div className="max-w-4xl mx-auto space-y-8 opacity-80">
       <div className="h-5 w-32 bg-neutral-800 rounded-full" />
       <div className="h-10 w-3/4 bg-neutral-800 rounded-xl" />
       <div className="aspect-[16/9] w-full rounded-2xl bg-neutral-900 border border-neutral-800" />

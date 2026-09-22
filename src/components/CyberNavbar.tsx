@@ -6,8 +6,7 @@ import {
   ArrowRight,
   Clock,
   Sun,
-  Moon,
-  Shield
+  Moon
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 
@@ -53,7 +52,7 @@ export const CyberNavbar: React.FC = () => {
   }, [location.pathname]);
 
   // The admin dashboard is completely separated from the public website
-  if (location.pathname.startsWith('/admin')) {
+  if (location.pathname.startsWith('/admin') || location.pathname.startsWith('/dashboard')) {
     return null;
   }
 
@@ -69,7 +68,7 @@ export const CyberNavbar: React.FC = () => {
 
   return (
     <header 
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+      className={`fixed top-0 left-0 right-0 z-30 transition-all duration-300 ${
         isScrolled 
           ? 'bg-[#0A0D14]/95 backdrop-blur-md border-b border-slate-800/80 py-3 shadow-2xl' 
           : 'bg-gradient-to-b from-[#0A0D14]/95 via-[#0A0D14]/70 to-transparent py-4'
@@ -83,7 +82,7 @@ export const CyberNavbar: React.FC = () => {
         >
           <div className="relative w-9 h-9 flex items-center justify-center bg-[#111622] border border-[#C59B63]/40 rounded-lg group-hover:border-[#C59B63] transition-all shadow-[0_0_15px_rgba(197,155,99,0.15)]">
             <span className="text-[#EDEDED] font-bold text-xs tracking-tight group-hover:text-[#C59B63] transition-colors">AW</span>
-            <div className="absolute -top-1 -right-1 w-2 h-2 bg-[#10B981] rounded-full ring-2 ring-[#0A0D14] animate-pulse" />
+            <div className="absolute -top-1 -right-1 w-2 h-2 bg-[#10B981] rounded-full ring-2 ring-[#0A0D14] shadow-[0_0_6px_#10B981]" />
           </div>
           <div className="flex flex-col">
             <span className="font-bold text-[#EDEDED] group-hover:text-[#C59B63] transition-colors flex items-center gap-1.5 font-sans tracking-tight text-sm sm:text-base">
@@ -98,7 +97,7 @@ export const CyberNavbar: React.FC = () => {
         {/* Live Colombo Time & Status indicator */}
         <div className="hidden xl:flex items-center gap-3">
           <div className="flex items-center gap-2 px-3 py-1 bg-[#111622]/80 border border-slate-800 rounded-full font-mono text-[11px] text-slate-300">
-            <span className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse" />
+            <span className="w-2 h-2 rounded-full bg-[#10B981] shadow-[0_0_6px_#10B981]" />
             <span className="text-slate-400">Available for Retainers</span>
           </div>
           {currentTime && (
@@ -186,7 +185,7 @@ export const CyberNavbar: React.FC = () => {
           {currentTime && (
             <div className="flex items-center justify-between pb-3 border-b border-slate-800/80 text-xs text-slate-400">
               <span className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse" />
+                <span className="w-2 h-2 rounded-full bg-[#10B981] shadow-[0_0_6px_#10B981]" />
                 <span>Colombo, LK</span>
               </span>
               <span className="text-[#C59B63]">{currentTime}</span>
@@ -209,7 +208,6 @@ export const CyberNavbar: React.FC = () => {
                 </Link>
               );
             })}
-
           </div>
 
           <div className="pt-2">

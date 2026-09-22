@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface ProfilePhotoFrameProps {
@@ -15,7 +15,25 @@ export const ProfilePhotoFrame: React.FC<ProfilePhotoFrameProps> = ({
   className = ""
 }) => {
   const [isLoaded, setIsLoaded] = useState(false);
+  const [hasError, setHasError] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+
+  // Safety timeout: Never allow loading overlay to hang indefinitely
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoaded(true);
+    }, 2500);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const handleImageLoad = () => {
+    setIsLoaded(true);
+  };
+
+  const handleImageError = () => {
+    setHasError(true);
+    setIsLoaded(true);
+  };
 
   return (
     <div 
@@ -35,8 +53,8 @@ export const ProfilePhotoFrame: React.FC<ProfilePhotoFrameProps> = ({
             <motion.div
               initial={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.5 }}
-              className="absolute inset-0 z-20 bg-[#0E121B] flex flex-col items-center justify-center space-y-4"
+              transition={{ duration: 0.35 }}
+              className="absolute inset-0 z-10 bg-[#0E121B] flex flex-col items-center justify-center space-y-4 pointer-events-none"
             >
               {/* Shimmer Pulse */}
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.05] to-transparent animate-[shimmer_1.6s_infinite] -translate-x-full" />
@@ -53,21 +71,32 @@ export const ProfilePhotoFrame: React.FC<ProfilePhotoFrameProps> = ({
           )}
         </AnimatePresence>
 
-        {/* The Real Portrait Image */}
-        <motion.img
-          src={src}
-          alt={alt}
-          referrerPolicy="no-referrer"
-          onLoad={() => setIsLoaded(true)}
-          initial={{ opacity: 0, scale: 1.08, filter: 'blur(10px)' }}
-          animate={{
-            opacity: isLoaded ? 1 : 0,
-            scale: isHovered ? 1.03 : 1,
-            filter: isLoaded ? 'blur(0px)' : 'blur(10px)'
-          }}
-          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-          className="w-full h-full object-cover grayscale contrast-115 transition-all duration-700"
-        />
+        {/* Fallback avatar if image failed */}
+        {hasError ? (
+          <div className="w-full h-full flex flex-col items-center justify-center bg-[#111622] text-[#C59B63]">
+            <div className="w-24 h-24 rounded-full border-2 border-[#C59B63]/40 flex items-center justify-center font-serif text-3xl font-bold">
+              AW
+            </div>
+            <span className="mt-3 text-xs font-mono text-slate-400 uppercase tracking-widest">
+              Ash Wickramasinghe
+            </span>
+          </div>
+        ) : (
+          <motion.img
+            src={src}
+            alt={alt}
+            referrerPolicy="no-referrer"
+            onLoad={handleImageLoad}
+            onError={handleImageError}
+            initial={{ opacity: 0, scale: 1.05 }}
+            animate={{
+              opacity: isLoaded ? 1 : 0,
+              scale: isHovered ? 1.03 : 1
+            }}
+            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+            className="w-full h-full object-cover grayscale contrast-115 transition-all duration-700"
+          />
+        )}
 
         {/* Ambient Film Grain / Gradient Vignette */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20 pointer-events-none" />
@@ -93,8 +122,7 @@ export const ProfilePhotoFrame: React.FC<ProfilePhotoFrameProps> = ({
         <span className="text-neutral-400 text-[11px] font-mono uppercase tracking-wider">Availability</span>
         <div className="flex items-center gap-2">
           <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
           </span>
           <span className="font-medium text-emerald-400 text-xs tracking-tight">{statusText}</span>
         </div>

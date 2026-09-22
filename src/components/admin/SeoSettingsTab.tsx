@@ -50,7 +50,8 @@ export const SeoSettingsTab: React.FC<SeoSettingsTabProps> = ({
       await onSave({
         metaTitle: metaTitle.trim(),
         metaDescription: metaDescription.trim(),
-        keywords: keywords.trim()
+        keywords: keywords.trim(),
+        ogImage: ogImage.trim()
       });
       showToast('SEO & Metadata settings saved successfully');
     } catch (err: any) {
