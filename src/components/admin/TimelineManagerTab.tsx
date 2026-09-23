@@ -31,6 +31,12 @@ export const TimelineManagerTab: React.FC<TimelineManagerTabProps> = ({
   const [isAddingNew, setIsAddingNew] = useState(false);
   const [saving, setSaving] = useState(false);
 
+  React.useEffect(() => {
+    if (initialTimeline && initialTimeline.length > 0) {
+      setTimeline(initialTimeline);
+    }
+  }, [initialTimeline]);
+
   // Form state
   const [formData, setFormData] = useState<TimelineItem>({
     id: '',

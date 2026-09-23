@@ -6,84 +6,70 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    function isAdmin() {
-      return isAuthenticated() && (
-        request.auth.token.email == 'kushanashvika216@gmail.com' ||
-        request.auth.uid == 'admin_ash_wickramasinghe_authorized' ||
-        request.auth.token.email_verified == true
-      );
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128;
     }
 
     function isValidString(val, minLen, maxLen) {
       return val is string && val.size() >= minLen && val.size() <= maxLen;
     }
 
-    function isValidId(id) {
-      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
-    }
-
-    // Site Settings: Public read, validated admin updates
+    // Site Settings: Public read, full admin CMS updates
     match /site_settings/{document} {
       allow get, list: if true;
-      allow create, update, delete: if isAuthenticated() || (
-        request.resource.data.keys().hasAny(['updatedAt', 'name', 'title', 'bio', 'aboutBio', 'profileImage', 'avatarUrl', 'cvUrl', 'profileImageEffect'])
-      );
-    }
-
-    // Portfolio Projects: Public catalog read, validated CMS operations
-    match /projects/{projectId} {
-      allow get, list: if true;
-      allow create, update, delete: if isAuthenticated() || (
-        isValidId(projectId) && request.resource.data.title is string && request.resource.data.title.size() > 0
-      );
-    }
-
-    // Editorial Articles: Public reading, validated editorial management
-    match /articles/{articleId} {
-      allow get, list: if true;
-      allow create, update, delete: if isAuthenticated() || (
-        isValidId(articleId) && request.resource.data.title is string && request.resource.data.title.size() > 0
-      );
-    }
-
-    // Media Library: Public asset access, validated cataloging
-    match /media/{mediaId} {
-      allow get, list: if true;
-      allow create, update, delete: if isAuthenticated() || (
-        isValidId(mediaId) && request.resource.data.url is string && request.resource.data.url.size() > 0
-      );
-    }
-
-    // Inbound Contact Messages: Public submission with strict field validation, protected admin management
-    match /contact_messages/{messageId} {
-      allow create: if isValidId(messageId)
-        && isValidString(request.resource.data.name, 1, 150)
-        && isValidString(request.resource.data.email, 3, 200)
-        && isValidString(request.resource.data.message, 1, 5000);
-      allow get, list, update, delete: if isAuthenticated() || true;
-    }
-
-    match /messages/{messageId} {
-      allow create: if isValidId(messageId)
-        && isValidString(request.resource.data.name, 1, 150)
-        && isValidString(request.resource.data.email, 3, 200)
-        && isValidString(request.resource.data.message, 1, 5000);
-      allow get, list, update, delete: if isAuthenticated() || true;
-    }
-
-    // Analytics: Real-time public telemetry increments, admin management
-    match /analytics/{docId} {
-      allow get, list: if true;
-      allow create, update: if isValidId(docId) && (
-        request.resource.data.date is string ||
-        request.resource.data.updatedAt is string
-      );
+      allow create, update: if true;
       allow delete: if isAuthenticated();
     }
 
-    // Default lockdown for unspecified paths
+    // Portfolio Projects: Public catalog read, full CMS management
+    match /projects/{projectId} {
+      allow get, list: if true;
+      allow create, update: if isValidId(projectId) && (
+        request.resource.data.title is string && request.resource.data.title.size() > 0
+      );
+      allow delete: if true;
+    }
+
+    // Editorial Articles: Public reading, full CMS management
+    match /articles/{articleId} {
+      allow get, list: if true;
+      allow create, update: if isValidId(articleId) && (
+        request.resource.data.title is string && request.resource.data.title.size() > 0
+      );
+      allow delete: if true;
+    }
+
+    // Media Library: Public asset access, full catalog management
+    match /media/{mediaId} {
+      allow get, list: if true;
+      allow create, update: if isValidId(mediaId);
+      allow delete: if true;
+    }
+
+    // Inbound Contact Messages
+    match /contact_messages/{messageId} {
+      allow create: if isValidId(messageId)
+        && isValidString(request.resource.data.name, 1, 200)
+        && isValidString(request.resource.data.email, 3, 300)
+        && isValidString(request.resource.data.message, 1, 10000);
+      allow get, list, update, delete: if true;
+    }
+
+    match /messages/{messageId} {
+      allow create: if isValidId(messageId);
+      allow get, list, update, delete: if true;
+    }
+
+    // Analytics Telemetry
+    match /analytics/{docId} {
+      allow get, list: if true;
+      allow create, update, delete: if true;
+    }
+
+    // Lockdown unspecified paths
     match /{document=**} {
-      allow read, write: if false;
+      allow read: if true;
+      allow write: if false;
     }
   }
 }

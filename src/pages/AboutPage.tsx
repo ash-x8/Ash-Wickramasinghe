@@ -81,65 +81,112 @@ export const AboutPage: React.FC = () => {
           </div>
         </motion.div>
 
-        {/* Right: Narrative Story */}
-        <div className="lg:col-span-7 space-y-8">
+        {/* Right: Structured Editorial Story */}
+        <div className="lg:col-span-7 space-y-10">
           <ScrollReveal direction="up" distance={20}>
-            <div className="space-y-6 text-neutral-300 dark:text-neutral-300 light:text-neutral-700 leading-relaxed text-base sm:text-lg">
-              <p>
-                {settings.aboutBio}
-              </p>
-              <p>
-                {settings.careerTrajectory}
-              </p>
+            <div className="space-y-8">
+              
+              {/* Executive Overview Highlight */}
+              <div className="p-6 sm:p-7 rounded-2xl bg-neutral-950/60 border border-neutral-800/80 border-l-4 border-l-[#C59B63] shadow-lg shadow-black/40 space-y-3">
+                <div className="text-[11px] font-mono tracking-widest text-[#C59B63] uppercase font-bold flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#C59B63]" />
+                  <span>01 // Core Creative Thesis</span>
+                </div>
+                <p className="text-base sm:text-lg text-white font-serif leading-relaxed italic">
+                  "{settings.aboutBio}"
+                </p>
+              </div>
+
+              {/* Trajectory & Philosophy Section */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-3 text-xs font-mono uppercase tracking-widest text-neutral-400">
+                  <span className="text-[#C59B63] font-bold">02 //</span>
+                  <span>Evolution &amp; Strategic Trajectory</span>
+                  <span className="flex-1 h-px bg-neutral-800" />
+                </div>
+                <div className="text-sm sm:text-base text-neutral-300 leading-relaxed space-y-4 font-light">
+                  <p>
+                    {settings.careerTrajectory}
+                  </p>
+                </div>
+              </div>
+
+              {/* Focus Pillars Matrix */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2">
+                <div className="p-3.5 rounded-xl bg-neutral-900/40 border border-neutral-800/60">
+                  <div className="text-[10px] font-mono text-[#C59B63] uppercase">Focus 01</div>
+                  <div className="text-xs font-semibold text-white mt-0.5">Brand Identity</div>
+                  <div className="text-[11px] text-neutral-400 mt-1">Editorial systems &amp; visual guidelines</div>
+                </div>
+                <div className="p-3.5 rounded-xl bg-neutral-900/40 border border-neutral-800/60">
+                  <div className="text-[10px] font-mono text-[#C59B63] uppercase">Focus 02</div>
+                  <div className="text-xs font-semibold text-white mt-0.5">Social Strategy</div>
+                  <div className="text-[11px] text-neutral-400 mt-1">High-retention carousels &amp; growth</div>
+                </div>
+                <div className="p-3.5 rounded-xl bg-neutral-900/40 border border-neutral-800/60 col-span-2 sm:col-span-1">
+                  <div className="text-[10px] font-mono text-[#C59B63] uppercase">Focus 03</div>
+                  <div className="text-xs font-semibold text-white mt-0.5">Content Editorial</div>
+                  <div className="text-[11px] text-neutral-400 mt-1">Thumbnails &amp; publication layout</div>
+                </div>
+              </div>
+
             </div>
           </ScrollReveal>
 
           {/* Creative Principles */}
           <ScrollReveal direction="up" distance={20} delay={0.1}>
-            <div className="pt-6 border-t border-neutral-800 dark:border-neutral-800 light:border-neutral-200 space-y-6">
-              <h3 className="text-sm uppercase tracking-widest text-accent font-semibold">
-                Guiding Principles
-              </h3>
+            <div className="pt-8 border-t border-neutral-800 space-y-6">
+              <div className="flex items-center gap-3 text-xs font-mono uppercase tracking-widest text-[#C59B63]">
+                <span className="font-bold">03 //</span>
+                <span>Guiding Design Principles</span>
+                <span className="flex-1 h-px bg-neutral-800" />
+              </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div className="p-5 rounded-xl border border-neutral-800 dark:border-neutral-800 light:border-neutral-200 bg-neutral-900/20 dark:bg-neutral-900/20 light:bg-white space-y-2">
-                  <div className="text-xs uppercase tracking-wider text-neutral-400 font-semibold">
-                    01. Deliberate Restraint
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div className="p-5 rounded-2xl border border-neutral-800 bg-neutral-900/40 space-y-2">
+                  <div className="text-[10px] font-mono uppercase tracking-wider text-[#C59B63] font-bold">
+                    Principle 01
                   </div>
-                  <div className="text-sm font-medium text-neutral-100 dark:text-neutral-100 light:text-neutral-900">
+                  <div className="text-sm font-semibold text-white">
                     Subtractive Clarity
                   </div>
-                  <p className="text-xs text-neutral-400 dark:text-neutral-400 light:text-neutral-600 leading-relaxed">
+                  <p className="text-xs text-neutral-400 leading-relaxed">
                     Removing non-essential elements until only the core message and visual elegance remain.
                   </p>
                 </div>
 
-                <div className="p-5 rounded-xl border border-neutral-800 dark:border-neutral-800 light:border-neutral-200 bg-neutral-900/20 dark:bg-neutral-900/20 light:bg-white space-y-2">
-                  <div className="text-xs uppercase tracking-wider text-neutral-400 font-semibold">
-                    02. Typographic Gravity
+                <div className="p-5 rounded-2xl border border-neutral-800 bg-neutral-900/40 space-y-2">
+                  <div className="text-[10px] font-mono uppercase tracking-wider text-[#C59B63] font-bold">
+                    Principle 02
                   </div>
-                  <div className="text-sm font-medium text-neutral-100 dark:text-neutral-100 light:text-neutral-900">
+                  <div className="text-sm font-semibold text-white">
                     Mathematical Harmony
                   </div>
-                  <p className="text-xs text-neutral-400 dark:text-neutral-400 light:text-neutral-600 leading-relaxed">
-                    Relying on precise baseline grids and thoughtful hierarchy rather than loud ornamentation.
+                  <p className="text-xs text-neutral-400 leading-relaxed">
+                    Relying on precise baseline grids, typography hierarchy, and deliberate optical balance.
                   </p>
                 </div>
               </div>
             </div>
           </ScrollReveal>
 
-          <div className="pt-4 flex flex-wrap items-center gap-4">
+          <div className="pt-2 flex flex-wrap items-center gap-4">
             <Link
               to="/cv"
-              className="inline-flex items-center gap-2 px-6 py-3 text-xs uppercase tracking-widest font-medium rounded-full bg-neutral-100 text-neutral-950 hover:opacity-90 transition-opacity"
+              className="inline-flex items-center gap-2 px-6 py-3 text-xs font-mono uppercase tracking-widest font-semibold rounded-full bg-[#C59B63] text-black hover:bg-[#b08852] transition-colors shadow-lg"
             >
-              <span>View Curriculum Vitae</span>
+              <span>Review Curriculum Vitae</span>
               <ArrowUpRight size={14} />
             </Link>
             <Link
+              to="/projects"
+              className="inline-flex items-center gap-2 px-6 py-3 text-xs font-mono uppercase tracking-widest font-medium rounded-full border border-neutral-700 text-neutral-300 hover:text-white hover:border-neutral-500 transition-colors"
+            >
+              <span>Explore Selected Works</span>
+            </Link>
+            <Link
               to="/contact"
-              className="inline-flex items-center gap-2 px-6 py-3 text-xs uppercase tracking-widest font-medium rounded-full border border-neutral-700 text-neutral-300 hover:text-white transition-colors"
+              className="inline-flex items-center gap-2 px-6 py-3 text-xs font-mono uppercase tracking-widest font-medium rounded-full border border-neutral-700 text-neutral-300 hover:text-white transition-colors"
             >
               <span>Initiate Collaboration</span>
               <ArrowRight size={14} />

@@ -99,19 +99,42 @@ export const HomePage: React.FC = () => {
               </motion.h1>
             </div>
 
-            {/* Subtitle / Focus with entrance reveal */}
-            <motion.p 
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
-              className="text-lg sm:text-xl text-slate-300 font-light tracking-tight max-w-2xl leading-relaxed"
-            >
-              Graphic Designer, Social Media Strategist &amp; Creative Content Editor. 
-              Crafting minimal brand identities, high-conversion visual carousels, and editorial publications.
-            </motion.p>
+            {/* Subtitle / Focus with entrance reveal & visual anchors */}
+            <div className="space-y-4 max-w-2xl">
+              <motion.p 
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
+                className="text-lg sm:text-xl text-slate-200 font-light tracking-tight leading-relaxed"
+              >
+                <span className="font-normal text-white">Graphic Designer</span>, <span className="font-normal text-white">Social Media Strategist</span> &amp; <span className="font-normal text-white">Creative Content Editor</span>. 
+                Shaping refined visual identities, high-conversion social assets, and disciplined editorial narratives.
+              </motion.p>
+
+              {/* Editorial Anchor Tags */}
+              <motion.div 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.22 }}
+                className="flex flex-wrap gap-2 pt-1 font-mono text-[11px]"
+              >
+                <span className="px-3 py-1 rounded-full bg-slate-900/80 border border-slate-800 text-slate-300">
+                  <span className="text-[#C59B63] mr-1.5 font-bold">#</span>Brand Systems
+                </span>
+                <span className="px-3 py-1 rounded-full bg-slate-900/80 border border-slate-800 text-slate-300">
+                  <span className="text-[#C59B63] mr-1.5 font-bold">#</span>Viral Carousels
+                </span>
+                <span className="px-3 py-1 rounded-full bg-slate-900/80 border border-slate-800 text-slate-300">
+                  <span className="text-[#C59B63] mr-1.5 font-bold">#</span>Content Strategy
+                </span>
+                <span className="px-3 py-1 rounded-full bg-slate-900/80 border border-slate-800 text-slate-300">
+                  <span className="text-[#C59B63] mr-1.5 font-bold">#</span>Editorial Direction
+                </span>
+              </motion.div>
+            </div>
 
             {/* Action CTAs */}
-            <div className="pt-2 flex flex-wrap items-center gap-4">
+            <div className="pt-3 flex flex-wrap items-center gap-4">
               <Link
                 to="/projects"
                 className="inline-flex items-center gap-2 px-6 py-3.5 text-xs font-mono uppercase tracking-widest font-semibold rounded-full bg-gradient-to-r from-[#C59B63] to-[#E5C392] text-[#0A0D14] hover:opacity-95 transition-all shadow-[0_0_20px_rgba(197,155,99,0.3)] hover:shadow-[0_0_25px_rgba(197,155,99,0.5)]"
@@ -121,11 +144,18 @@ export const HomePage: React.FC = () => {
               </Link>
 
               <Link
-                to="/contact"
-                className="inline-flex items-center gap-2 px-6 py-3.5 text-xs font-mono uppercase tracking-widest font-medium rounded-full border border-slate-700/80 text-slate-200 hover:bg-slate-800/60 hover:border-[#C59B63]/60 transition-all"
+                to="/cv"
+                className="inline-flex items-center gap-2 px-6 py-3.5 text-xs font-mono uppercase tracking-widest font-semibold rounded-full border border-[#C59B63]/60 text-[#C59B63] hover:bg-[#C59B63]/10 transition-all"
               >
-                <span>Let's Work Together</span>
+                <span>Curriculum Vitae</span>
                 <ArrowUpRight size={14} />
+              </Link>
+
+              <Link
+                to="/contact"
+                className="inline-flex items-center gap-2 px-6 py-3.5 text-xs font-mono uppercase tracking-widest font-medium rounded-full border border-slate-700/80 text-slate-300 hover:bg-slate-800/60 hover:text-white transition-all"
+              >
+                <span>Let's Collaborate</span>
               </Link>
             </div>
           </div>

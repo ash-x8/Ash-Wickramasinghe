@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Upload, 
   FileText, 
@@ -9,13 +9,13 @@ import {
   Copy, 
   Calendar, 
   Eye, 
-  RefreshCw,
-  AlertCircle,
-  FileCode,
-  CheckCircle2,
-  FileCheck,
-  RotateCcw,
-  Sparkles
+  RefreshCw, 
+  AlertCircle, 
+  FileCode, 
+  CheckCircle2, 
+  FileCheck, 
+  RotateCcw, 
+  Image as ImageIcon
 } from 'lucide-react';
 import { SiteSettings } from '../../types';
 import { uploadMediaFile } from '../../lib/firebase';
@@ -36,15 +36,32 @@ export const CvManagerTab: React.FC<CvManagerTabProps> = ({
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Local form state
+  // Local form state initialized from props
   const [cvSource, setCvSource] = useState<'upload' | 'link'>(settings.cvSource || (settings.cvFileUrl ? 'upload' : 'link'));
   const [cvFileUrl, setCvFileUrl] = useState(settings.cvFileUrl || (settings.cvSource === 'upload' ? settings.cvUrl : ''));
   const [cvFileName, setCvFileName] = useState(settings.cvFileName || '');
   const [cvFileSize, setCvFileSize] = useState(settings.cvFileSize || '');
+  const [cvFileType, setCvFileType] = useState<'pdf' | 'image' | 'doc'>(
+    settings.cvFileType || (settings.cvFileUrl?.match(/\.(jpg|jpeg|png|webp)$/i) ? 'image' : 'pdf')
+  );
   const [cvExternalUrl, setCvExternalUrl] = useState(settings.cvExternalUrl || (settings.cvSource === 'link' ? settings.cvUrl : ''));
   const [cvPublished, setCvPublished] = useState(settings.cvPublished ?? true);
   const [cvLastUpdated, setCvLastUpdated] = useState(settings.cvLastUpdated || 'March 2026');
-  
+
+  // Synchronize when settings change from Firestore listener
+  useEffect(() => {
+    if (settings) {
+      setCvSource(settings.cvSource || (settings.cvFileUrl ? 'upload' : 'link'));
+      setCvFileUrl(settings.cvFileUrl || (settings.cvSource === 'upload' ? settings.cvUrl : ''));
+      setCvFileName(settings.cvFileName || '');
+      setCvFileSize(settings.cvFileSize || '');
+      setCvFileType(settings.cvFileType || (settings.cvFileUrl?.match(/\.(jpg|jpeg|png|webp)$/i) ? 'image' : 'pdf'));
+      setCvExternalUrl(settings.cvExternalUrl || (settings.cvSource === 'link' ? settings.cvUrl : ''));
+      setCvPublished(settings.cvPublished ?? true);
+      setCvLastUpdated(settings.cvLastUpdated || 'March 2026');
+    }
+  }, [settings]);
+
   // Upload and Save pipeline state
   const [uploadPhase, setUploadPhase] = useState<UploadPhase>('idle');
   const [uploadPercent, setUploadPercent] = useState<number>(0);
@@ -55,7 +72,7 @@ export const CvManagerTab: React.FC<CvManagerTabProps> = ({
   const [copied, setCopied] = useState(false);
   const [manualSaving, setManualSaving] = useState(false);
 
-  // Determine active effective URL
+  // Active effective URL
   const activeUrl = cvSource === 'upload' ? (cvFileUrl || cvExternalUrl) : (cvExternalUrl || cvFileUrl);
 
   const triggerFilePicker = () => {
@@ -66,84 +83,98 @@ export const CvManagerTab: React.FC<CvManagerTabProps> = ({
   };
 
   /**
-   * Complete, Atomic CV Upload Pipeline
-   * Step 1: Storage upload -> stream 0% to 100% progress
-   * Step 2: Obtain download URL
-   * Step 3: Atomically update Firestore CV configuration
-   * Step 4: Confirm Firestore write success -> update UI state
+   * Complete, Verified CV Upload Pipeline
+   * Supports BOTH PDF and Image files (.pdf, .jpg, .jpeg, .png, .webp)
    */
   const processCvFile = async (file: File) => {
-    // 15MB limit check
-    if (file.size > 15 * 1024 * 1024) {
-      showToast('File size exceeds 15MB limit. Please choose a smaller document.', 'error');
-      setErrorMessage('File size exceeds 15MB limit. Please choose a PDF, DOC, or DOCX document under 15MB.');
+    if (!file) return;
+
+    // Validate size (30MB max)
+    if (file.size > 30 * 1024 * 1024) {
+      const err = 'File size exceeds 30MB limit. Please choose a file under 30MB.';
+      showToast(err, 'error');
+      setErrorMessage(err);
       setUploadPhase('error');
       return;
     }
 
+    // Validate type: support PDF, DOC, DOCX, and images (JPG, PNG, WebP)
+    const nameLower = file.name.toLowerCase();
+    const mimeLower = (file.type || '').toLowerCase();
+    const isImage = mimeLower.startsWith('image/') || /\.(jpg|jpeg|png|webp)$/i.test(nameLower);
+    const isPdf = mimeLower.includes('pdf') || /\.pdf$/i.test(nameLower);
+    const isDoc = mimeLower.includes('word') || mimeLower.includes('officedocument') || /\.(doc|docx)$/i.test(nameLower);
+
+    if (!isImage && !isPdf && !isDoc) {
+      const err = 'Unsupported file type. Please choose a PDF document (.pdf) or an image (.jpg, .jpeg, .png, .webp).';
+      showToast(err, 'error');
+      setErrorMessage(err);
+      setUploadPhase('error');
+      return;
+    }
+
+    const detectedType: 'pdf' | 'image' | 'doc' = isImage ? 'image' : (isPdf ? 'pdf' : 'doc');
+
     setFailedFile(file);
     setUploadPhase('uploading');
-    setUploadPercent(5);
-    setStatusMessage('Initiating secure file transfer...');
+    setUploadPercent(10);
+    setStatusMessage(`Transferring ${detectedType === 'image' ? 'Image CV' : 'PDF CV'}...`);
     setErrorMessage('');
 
     let downloadUrl = '';
 
     try {
-      // Step 1 & 2: Upload to storage
+      // Step 1: Upload with true progress
       downloadUrl = await uploadMediaFile(file, 'cv', (info) => {
         setUploadPercent(info.percent);
-        setStatusMessage(info.message || `Uploading document... ${info.percent}%`);
+        setStatusMessage(info.message || `Uploading CV... ${info.percent}%`);
       });
 
       if (!downloadUrl) {
-        throw new Error('Storage service returned an empty URL');
+        throw new Error('Upload service returned an empty URL');
       }
 
       setPendingDownloadUrl(downloadUrl);
       setUploadPercent(100);
       setUploadPhase('saving');
-      setStatusMessage('Syncing configuration with database...');
+      setStatusMessage('Recording CV configuration in database...');
 
       const sizeStr = formatBytes(file.size);
       const currentDate = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
-      // Step 3 & 4: Atomic Firestore write
+      // Step 2: Atomic Firestore write
       await onSave({
         cvSource: 'upload',
         cvFileUrl: downloadUrl,
         cvFileName: file.name,
         cvFileSize: sizeStr,
+        cvFileType: detectedType,
         cvUrl: downloadUrl,
         cvLastUpdated: currentDate,
         cvPublished: true
       });
 
-      // Update local state upon confirmed Firestore write
+      // Step 3: Update local state
       setCvFileUrl(downloadUrl);
       setCvFileName(file.name);
       setCvFileSize(sizeStr);
+      setCvFileType(detectedType);
       setCvSource('upload');
       setCvLastUpdated(currentDate);
       setCvPublished(true);
 
       setUploadPhase('completed');
-      setStatusMessage('CV document successfully updated and published live!');
-      showToast(`CV document "${file.name}" uploaded and published!`, 'success');
+      setStatusMessage(`${detectedType === 'image' ? 'Image CV' : 'Document CV'} successfully uploaded and published live!`);
+      showToast(`CV "${file.name}" uploaded and published live!`, 'success');
       setFailedFile(null);
       setPendingDownloadUrl('');
 
-      // Auto-reset status after 4 seconds
       setTimeout(() => {
         setUploadPhase((prev) => prev === 'completed' ? 'idle' : prev);
       }, 4000);
     } catch (err: any) {
       console.error('CV upload pipeline error:', err);
-      const isFirestoreError = downloadUrl !== '';
-      const msg = isFirestoreError
-        ? 'File was uploaded to storage, but saving configuration to the database failed.'
-        : (err.message || 'Failed to upload CV document. Please check your network connection.');
-
+      const msg = err.message || 'Failed to upload CV. Please check your network and retry.';
       setErrorMessage(msg);
       setUploadPhase('error');
       showToast(msg, 'error');
@@ -159,9 +190,9 @@ export const CvManagerTab: React.FC<CvManagerTabProps> = ({
 
   const handleRetryUpload = () => {
     if (pendingDownloadUrl && failedFile) {
-      // Storage upload succeeded previously, retry Firestore write
       const sizeStr = formatBytes(failedFile.size);
       const currentDate = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+      const detectedType = failedFile.type.startsWith('image/') || /\.(jpg|jpeg|png|webp)$/i.test(failedFile.name) ? 'image' : 'pdf';
       setUploadPhase('saving');
       setStatusMessage('Retrying database configuration save...');
       onSave({
@@ -169,12 +200,14 @@ export const CvManagerTab: React.FC<CvManagerTabProps> = ({
         cvFileUrl: pendingDownloadUrl,
         cvFileName: failedFile.name,
         cvFileSize: sizeStr,
+        cvFileType: detectedType,
         cvUrl: pendingDownloadUrl,
         cvLastUpdated: currentDate
       }).then(() => {
         setCvFileUrl(pendingDownloadUrl);
         setCvFileName(failedFile.name);
         setCvFileSize(sizeStr);
+        setCvFileType(detectedType);
         setCvSource('upload');
         setCvLastUpdated(currentDate);
         setUploadPhase('completed');
@@ -185,7 +218,7 @@ export const CvManagerTab: React.FC<CvManagerTabProps> = ({
       }).catch((err: any) => {
         setErrorMessage(err.message || 'Database save failed again.');
         setUploadPhase('error');
-        showToast('Save failed again: ' + err.message, 'error');
+        showToast('Save failed: ' + err.message, 'error');
       });
     } else if (failedFile) {
       processCvFile(failedFile);
@@ -210,7 +243,7 @@ export const CvManagerTab: React.FC<CvManagerTabProps> = ({
         cvSource: newSource,
         cvUrl: cvExternalUrl || ''
       });
-      showToast('Uploaded CV document removed', 'info');
+      showToast('Uploaded CV removed', 'info');
     } catch (err: any) {
       showToast('Failed to remove CV: ' + err.message, 'error');
     }
@@ -219,28 +252,26 @@ export const CvManagerTab: React.FC<CvManagerTabProps> = ({
   const handleSetCurrentDate = () => {
     const dateStr = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
     setCvLastUpdated(dateStr);
-    showToast(`Updated timestamp to "${dateStr}"`);
   };
 
-  const handleCopyUrl = (urlToCopy: string) => {
-    if (!urlToCopy) return;
-    navigator.clipboard.writeText(urlToCopy);
+  const handleCopyUrl = (url: string) => {
+    navigator.clipboard.writeText(url);
     setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
     showToast('CV URL copied to clipboard');
+    setTimeout(() => setCopied(false), 2000);
   };
 
   const handleSwitchSource = async (newSource: 'upload' | 'link') => {
     setCvSource(newSource);
-    const targetUrl = newSource === 'upload' ? (cvFileUrl || cvExternalUrl) : (cvExternalUrl || cvFileUrl);
+    const newEffectiveUrl = newSource === 'upload' ? (cvFileUrl || cvExternalUrl) : (cvExternalUrl || cvFileUrl);
     try {
       await onSave({
         cvSource: newSource,
-        cvUrl: targetUrl
+        cvUrl: newEffectiveUrl
       });
-      showToast(`Active CV source switched to ${newSource === 'upload' ? 'Uploaded File' : 'External Link'}`, 'success');
+      showToast(`Switched active CV source to ${newSource === 'upload' ? 'Uploaded File' : 'External Link'}`);
     } catch (err: any) {
-      showToast('Failed to update CV source: ' + err.message, 'error');
+      showToast('Failed to update source: ' + err.message, 'error');
     }
   };
 
@@ -253,12 +284,13 @@ export const CvManagerTab: React.FC<CvManagerTabProps> = ({
         cvFileUrl,
         cvFileName,
         cvFileSize,
+        cvFileType,
         cvExternalUrl: cvExternalUrl.trim(),
         cvUrl: effectiveCvUrl.trim(),
         cvPublished,
         cvLastUpdated: cvLastUpdated.trim()
       });
-      showToast('CV document settings updated in Firestore!', 'success');
+      showToast('CV configuration saved and published live!', 'success');
     } catch (err: any) {
       console.error('Failed to save CV settings:', err);
       showToast(err.message || 'Failed to save CV settings', 'error');
@@ -269,11 +301,11 @@ export const CvManagerTab: React.FC<CvManagerTabProps> = ({
 
   return (
     <div className="space-y-6 font-sans">
-      {/* Hidden Native File Input supporting Mobile (Android, iOS) and Desktop */}
+      {/* Hidden Native File Input supporting Mobile (Android, iOS) and Desktop for both PDF & Images */}
       <input
         ref={fileInputRef}
         type="file"
-        accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        accept="application/pdf,image/jpeg,image/png,image/webp,.pdf,.jpg,.jpeg,.png,.webp,.doc,.docx"
         onChange={handleFileInputChange}
         className="hidden"
       />
@@ -286,7 +318,7 @@ export const CvManagerTab: React.FC<CvManagerTabProps> = ({
             Curriculum Vitae (CV) &amp; Dossier Manager
           </h2>
           <p className="text-xs text-slate-400 mt-1">
-            Configure your official CV document. Files are hosted on cloud storage and synchronized in real time with the public website.
+            Supports both PDF documents (.pdf) and high-resolution CV images (.jpg, .png, .webp). Uploaded files synchronize live with the public website.
           </p>
         </div>
 
@@ -303,7 +335,7 @@ export const CvManagerTab: React.FC<CvManagerTabProps> = ({
         </div>
       </div>
 
-      {/* Upload State Feedback Banner */}
+      {/* Upload State Feedback Banner with Retry */}
       {uploadPhase !== 'idle' && (
         <div className={`p-4 rounded-2xl border transition-all ${
           uploadPhase === 'uploading' || uploadPhase === 'saving'
@@ -323,7 +355,7 @@ export const CvManagerTab: React.FC<CvManagerTabProps> = ({
               )}
               <div>
                 <div className="text-xs font-semibold">
-                  {uploadPhase === 'uploading' && `Uploading Document (${uploadPercent}%)...`}
+                  {uploadPhase === 'uploading' && `Uploading CV File (${uploadPercent}%)...`}
                   {uploadPhase === 'saving' && 'Saving Configuration to Database...'}
                   {uploadPhase === 'completed' && 'CV Document Updated Successfully'}
                   {uploadPhase === 'error' && 'Upload Pipeline Failed'}
@@ -338,10 +370,10 @@ export const CvManagerTab: React.FC<CvManagerTabProps> = ({
               <button
                 type="button"
                 onClick={handleRetryUpload}
-                className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-rose-500 text-white hover:bg-rose-600 transition-colors shrink-0 flex items-center gap-1"
+                className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-rose-500 text-white hover:bg-rose-600 transition-colors shrink-0 flex items-center gap-1 cursor-pointer"
               >
                 <RotateCcw size={12} />
-                <span>Retry</span>
+                <span>Retry Upload</span>
               </button>
             )}
           </div>
@@ -366,7 +398,7 @@ export const CvManagerTab: React.FC<CvManagerTabProps> = ({
               <span>Select Active CV Source</span>
             </span>
             <p className="text-xs text-slate-400 mt-0.5">
-              Choose whether the public website serves your uploaded document file or an external link.
+              Choose whether the public website serves your uploaded document/image or an external link.
             </p>
           </div>
           <div className="inline-flex p-1 rounded-xl bg-slate-950 border border-slate-800 text-xs">
@@ -380,7 +412,7 @@ export const CvManagerTab: React.FC<CvManagerTabProps> = ({
               }`}
             >
               <Upload size={13} />
-              <span>Uploaded File</span>
+              <span>Uploaded File (PDF / Image)</span>
             </button>
             <button
               type="button"
@@ -409,7 +441,7 @@ export const CvManagerTab: React.FC<CvManagerTabProps> = ({
             <div className="flex items-center justify-between border-b border-slate-800/80 pb-3">
               <div className="flex items-center gap-2">
                 <span className="font-mono text-xs uppercase tracking-wider font-bold text-amber-400">
-                  Option A — Direct File Upload
+                  Option A — Direct File (PDF or Image)
                 </span>
                 {cvSource === 'upload' && (
                   <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-[#C59B63]/20 text-[#C59B63] font-bold">
@@ -417,22 +449,28 @@ export const CvManagerTab: React.FC<CvManagerTabProps> = ({
                   </span>
                 )}
               </div>
-              <span className="text-[10px] text-slate-500 font-mono">PDF, DOC, DOCX up to 15MB</span>
+              <span className="text-[10px] text-slate-500 font-mono">PDF, JPG, PNG, WebP up to 30MB</span>
             </div>
 
             {cvFileUrl ? (
               <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 space-y-3">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-10 h-10 rounded-lg bg-red-500/10 border border-red-500/30 flex items-center justify-center text-red-400 shrink-0">
-                      <FileCode size={20} />
+                    <div className={`w-12 h-12 rounded-lg flex items-center justify-center shrink-0 ${
+                      cvFileType === 'image' 
+                        ? 'bg-amber-500/10 border border-amber-500/30 text-amber-400' 
+                        : 'bg-red-500/10 border border-red-500/30 text-red-400'
+                    }`}>
+                      {cvFileType === 'image' ? <ImageIcon size={22} /> : <FileCode size={22} />}
                     </div>
                     <div className="min-w-0">
                       <div className="text-xs font-semibold text-white truncate">
-                        {cvFileName || 'Uploaded CV Document'}
+                        {cvFileName || 'Uploaded CV File'}
                       </div>
-                      <div className="text-[11px] text-slate-400 font-mono">
-                        {cvFileSize ? `${cvFileSize} • ` : ''}Verified &amp; Stored
+                      <div className="text-[11px] text-slate-400 font-mono flex items-center gap-1.5 mt-0.5">
+                        <span className="uppercase font-bold text-[#C59B63]">{cvFileType}</span>
+                        <span>•</span>
+                        <span>{cvFileSize || 'Stored'}</span>
                       </div>
                     </div>
                   </div>
@@ -443,14 +481,14 @@ export const CvManagerTab: React.FC<CvManagerTabProps> = ({
                       target="_blank"
                       rel="noreferrer"
                       className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors"
-                      title="Preview document in new tab"
+                      title="Preview file in new tab"
                     >
                       <ExternalLink size={14} />
                     </a>
                     <button
                       type="button"
                       onClick={() => handleCopyUrl(cvFileUrl)}
-                      className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors"
+                      className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors cursor-pointer"
                       title="Copy file URL"
                     >
                       {copied ? <Check size={14} className="text-emerald-400" /> : <Copy size={14} />}
@@ -458,7 +496,7 @@ export const CvManagerTab: React.FC<CvManagerTabProps> = ({
                     <button
                       type="button"
                       onClick={handleDeleteUploadedCv}
-                      className="p-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 transition-colors"
+                      className="p-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 transition-colors cursor-pointer"
                       title="Remove uploaded CV"
                     >
                       <Trash2 size={14} />
@@ -466,9 +504,23 @@ export const CvManagerTab: React.FC<CvManagerTabProps> = ({
                   </div>
                 </div>
 
+                {/* Preview snippet for images */}
+                {cvFileType === 'image' && (
+                  <div className="pt-2 border-t border-slate-800">
+                    <div className="text-[10px] text-slate-500 font-mono mb-1.5 uppercase">Image Preview:</div>
+                    <div className="relative rounded-lg overflow-hidden border border-slate-800 max-h-40 bg-black/40 flex items-center justify-center">
+                      <img 
+                        src={cvFileUrl} 
+                        alt="CV Preview" 
+                        className="max-h-40 w-auto object-contain"
+                      />
+                    </div>
+                  </div>
+                )}
+
                 <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px]">
                   <span className="text-emerald-400 font-mono flex items-center gap-1">
-                    <CheckCircle2 size={12} /> Document live on website
+                    <CheckCircle2 size={12} /> Active &amp; live on public site
                   </span>
                   <button
                     type="button"
@@ -476,7 +528,7 @@ export const CvManagerTab: React.FC<CvManagerTabProps> = ({
                     disabled={uploadPhase === 'uploading' || uploadPhase === 'saving'}
                     className="text-[#C59B63] hover:underline font-semibold cursor-pointer"
                   >
-                    Replace with new document
+                    Replace with new file
                   </button>
                 </div>
               </div>
@@ -490,10 +542,10 @@ export const CvManagerTab: React.FC<CvManagerTabProps> = ({
                 >
                   <Upload size={24} className="text-[#C59B63]" />
                   <div className="text-slate-200 font-medium text-xs">
-                    Choose CV from Android, iPhone, Tablet or Desktop
+                    Choose PDF or Image CV from Device
                   </div>
                   <div className="text-[11px] text-slate-500 font-mono">
-                    Tap or click to browse files (PDF, DOC, DOCX up to 15MB)
+                    Works on Android, iPhone, Tablet &amp; Desktop (PDF, JPG, PNG, WebP up to 30MB)
                   </div>
                 </button>
               </div>
@@ -517,7 +569,7 @@ export const CvManagerTab: React.FC<CvManagerTabProps> = ({
                   </span>
                 )}
               </div>
-              <span className="text-[10px] text-slate-500 font-mono">Hosted URL (Google Drive, GitHub, etc.)</span>
+              <span className="text-[10px] text-slate-500 font-mono">Hosted Link (Google Drive, GitHub, etc.)</span>
             </div>
 
             <div className="space-y-3">
@@ -569,7 +621,7 @@ export const CvManagerTab: React.FC<CvManagerTabProps> = ({
             <button
               type="button"
               onClick={handleSetCurrentDate}
-              className="px-3 py-2 rounded-xl text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors flex items-center gap-1.5 shrink-0"
+              className="px-3 py-2 rounded-xl text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors flex items-center gap-1.5 shrink-0 cursor-pointer"
               title="Set to current month and year"
             >
               <Calendar size={13} />

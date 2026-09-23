@@ -24,8 +24,13 @@ uploadDirs.forEach((dir) => {
 // Configure Multer storage
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const category = req.query.category as string || 'media';
-    const targetDir = path.join(process.cwd(), 'public', 'uploads', category === 'cv' ? 'cv' : category === 'profile' ? 'profile' : 'media');
+    const rawCategory = (req.query.category as string || 'media').toLowerCase();
+    const subfolder = (rawCategory === 'cv' || rawCategory === 'document') 
+      ? 'cv' 
+      : rawCategory === 'profile' 
+        ? 'profile' 
+        : 'media';
+    const targetDir = path.join(process.cwd(), 'public', 'uploads', subfolder);
     if (!fs.existsSync(targetDir)) {
       fs.mkdirSync(targetDir, { recursive: true });
     }
@@ -41,10 +46,9 @@ const storage = multer.diskStorage({
 const upload = multer({
   storage,
   limits: {
-    fileSize: 30 * 1024 * 1024 // 30MB limit
+    fileSize: 50 * 1024 * 1024 // 50MB limit
   },
   fileFilter: (req, file, cb) => {
-    // Allow PDFs, Word Docs, and Images
     const mime = (file.mimetype || '').toLowerCase();
     const name = (file.originalname || '').toLowerCase();
     const isDoc = mime.includes('pdf') || mime.includes('word') || mime.includes('officedocument') || mime.includes('msword') || /\.(pdf|doc|docx)$/i.test(name);
@@ -52,34 +56,45 @@ const upload = multer({
     if (isDoc || isImg) {
       cb(null, true);
     } else {
-      cb(new Error('Unsupported file type. Please upload a PDF, DOC, DOCX document or image.'));
+      cb(new Error('Unsupported file type. Please upload a PDF, DOC, DOCX document or an image (JPG, PNG, WebP).'));
     }
   }
 });
 
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // Serve uploads statically
 app.use('/uploads', express.static(path.join(process.cwd(), 'public', 'uploads')));
 
-// File Upload Endpoint with real-time feedback
-app.post('/api/upload', upload.single('file'), (req, res) => {
-  if (!req.file) {
-    return res.status(400).json({ error: 'No file uploaded' });
-  }
+// File Upload Endpoint with safe multer middleware error catching
+app.post('/api/upload', (req, res) => {
+  upload.single('file')(req, res, (err) => {
+    if (err) {
+      console.error('Server upload error:', err);
+      return res.status(400).json({ error: err.message || 'File upload failed' });
+    }
 
-  const category = (req.query.category as string) || 'media';
-  const subfolder = category === 'cv' ? 'cv' : category === 'profile' ? 'profile' : 'media';
-  const relativeUrl = `/uploads/${subfolder}/${req.file.filename}`;
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file was uploaded. Please select a file.' });
+    }
 
-  return res.json({
-    success: true,
-    url: relativeUrl,
-    filename: req.file.filename,
-    originalName: req.file.originalname,
-    size: req.file.size,
-    mimeType: req.file.mimetype
+    const rawCategory = (req.query.category as string || 'media').toLowerCase();
+    const subfolder = (rawCategory === 'cv' || rawCategory === 'document') 
+      ? 'cv' 
+      : rawCategory === 'profile' 
+        ? 'profile' 
+        : 'media';
+    const relativeUrl = `/uploads/${subfolder}/${req.file.filename}`;
+
+    return res.json({
+      success: true,
+      url: relativeUrl,
+      filename: req.file.filename,
+      originalName: req.file.originalname,
+      size: req.file.size,
+      mimeType: req.file.mimetype
+    });
   });
 });
 

@@ -37,6 +37,12 @@ export const SkillsManagerTab: React.FC<SkillsManagerTabProps> = ({
   const [isAddingNew, setIsAddingNew] = useState(false);
   const [saving, setSaving] = useState(false);
 
+  React.useEffect(() => {
+    if (initialSkills && initialSkills.length > 0) {
+      setSkills(initialSkills);
+    }
+  }, [initialSkills]);
+
   // Form state for add/edit
   const [formData, setFormData] = useState<SkillItem>({
     name: '',

@@ -118,6 +118,7 @@ export interface SiteSettings {
   cvFileUrl?: string;
   cvFileName?: string;
   cvFileSize?: string;
+  cvFileType?: 'pdf' | 'image' | 'doc';
   cvExternalUrl?: string;
   cvPublished?: boolean;
   cvLastUpdated?: string;

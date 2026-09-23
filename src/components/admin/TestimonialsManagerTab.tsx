@@ -30,6 +30,12 @@ export const TestimonialsManagerTab: React.FC<TestimonialsManagerTabProps> = ({
   const [isAddingNew, setIsAddingNew] = useState(false);
   const [saving, setSaving] = useState(false);
 
+  React.useEffect(() => {
+    if (initialTestimonials && initialTestimonials.length > 0) {
+      setTestimonials(initialTestimonials);
+    }
+  }, [initialTestimonials]);
+
   // Form state
   const [formData, setFormData] = useState<TestimonialItem>({
     id: '',

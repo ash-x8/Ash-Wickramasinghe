@@ -50,6 +50,12 @@ export const SocialManagerTab: React.FC<SocialManagerTabProps> = ({
   });
   const [saving, setSaving] = useState(false);
 
+  React.useEffect(() => {
+    if (settings.socialLinks && settings.socialLinks.length > 0) {
+      setLinks(settings.socialLinks);
+    }
+  }, [settings.socialLinks]);
+
   // New link form modal/state
   const [showAddModal, setShowAddModal] = useState(false);
   const [newPlatform, setNewPlatform] = useState('youtube');

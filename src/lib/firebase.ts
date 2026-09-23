@@ -762,11 +762,23 @@ async function uploadViaServerApi(
     const formData = new FormData();
     formData.append('file', blob, fileName);
 
+    let stallTimer: NodeJS.Timeout | null = null;
+    const resetStallTimer = () => {
+      if (stallTimer) clearTimeout(stallTimer);
+      stallTimer = setTimeout(() => {
+        try { xhr.abort(); } catch (_) {}
+        reject(new Error("Upload appears stalled. Network timed out after 25 seconds with no transfer progress. Please click retry."));
+      }, 25000);
+    };
+
+    resetStallTimer();
+
     xhr.upload.addEventListener('progress', (e) => {
-      if (e.lengthComputable) {
+      resetStallTimer();
+      if (e.lengthComputable && e.total > 0) {
         const percent = Math.round((e.loaded / e.total) * 100);
         onProgress?.({
-          percent: Math.min(Math.max(percent, 10), 98),
+          percent: Math.min(Math.max(percent, 5), 98),
           stage: 'uploading',
           message: `Uploading file... ${percent}%`
         });
@@ -774,28 +786,38 @@ async function uploadViaServerApi(
     });
 
     xhr.addEventListener('load', () => {
+      if (stallTimer) clearTimeout(stallTimer);
       if (xhr.status >= 200 && xhr.status < 300) {
         try {
           const res = JSON.parse(xhr.responseText);
           if (res.success && res.url) {
             resolve({ url: res.url, size: res.size });
           } else {
-            reject(new Error(res.error || 'Upload failed'));
+            console.error("Upload server response error:", res);
+            reject(new Error(res.error || 'Server rejected file upload'));
           }
         } catch {
-          reject(new Error('Invalid response from server'));
+          reject(new Error(`Server returned non-JSON response (status ${xhr.status})`));
         }
       } else {
-        reject(new Error(`Upload failed with server status ${xhr.status}`));
+        let errMsg = `Upload failed with HTTP ${xhr.status}`;
+        try {
+          const errRes = JSON.parse(xhr.responseText);
+          if (errRes.error) errMsg = errRes.error;
+        } catch (_) {}
+        reject(new Error(errMsg));
       }
     });
 
-    xhr.addEventListener('error', () => {
-      reject(new Error('Network error during file upload'));
+    xhr.addEventListener('error', (e) => {
+      if (stallTimer) clearTimeout(stallTimer);
+      console.error("XHR upload network error:", e);
+      reject(new Error('Network error during file upload. Please check connection and retry.'));
     });
 
     xhr.addEventListener('abort', () => {
-      reject(new Error('Upload was cancelled'));
+      if (stallTimer) clearTimeout(stallTimer);
+      reject(new Error('Upload operation was aborted or stalled. Please retry.'));
     });
 
     xhr.open('POST', `/api/upload?category=${encodeURIComponent(category)}`);
@@ -806,9 +828,9 @@ async function uploadViaServerApi(
 /**
  * Advanced Media Asset Uploader
  * 1. Validates file size & type
- * 2. Compresses & resizes on-the-fly via HTML5 Canvas (outputs optimized WebP)
- * 3. Generates lightweight thumbnail Blob
- * 4. Uploads to Firebase Storage with real-time progress callbacks
+ * 2. Compresses & resizes on-the-fly via HTML5 Canvas (outputs optimized WebP for images)
+ * 3. Preserves documents (PDF, DOC) verbatim
+ * 4. Uploads with real-time transfer progress and stall detection
  * 5. Saves rich metadata to Firestore 'media' collection
  */
 export async function uploadMediaAsset(
@@ -817,21 +839,21 @@ export async function uploadMediaAsset(
   onProgress?: (info: UploadProgressInfo) => void
 ): Promise<MediaItem> {
   // Step 1: Validation
-  onProgress?.({ percent: 5, stage: 'validating', message: 'Validating file...' });
+  onProgress?.({ percent: 5, stage: 'validating', message: 'Validating file format and size...' });
   const validation = validateMediaFile(file);
   if (!validation.valid) {
     onProgress?.({ percent: 0, stage: 'error', message: validation.error || 'Invalid file' });
     throw new Error(validation.error || 'Invalid file');
   }
 
-  // Step 2: Optimization
-  onProgress?.({ percent: 15, stage: 'optimizing', message: 'Optimizing and compressing image...' });
+  // Step 2: Optimization for images, pass-through for docs
+  onProgress?.({ percent: 15, stage: 'optimizing', message: 'Preparing asset for high-performance delivery...' });
   let optResult;
   try {
     optResult = await optimizeImageFile(file, {
       maxWidth: 2400,
       maxHeight: 2400,
-      quality: 0.85,
+      quality: 0.88,
       thumbSize: 380,
       thumbQuality: 0.80
     });
@@ -848,13 +870,13 @@ export async function uploadMediaAsset(
       optimizedSize: file.size,
       thumbnailSize: file.size,
       format: 'jpeg' as const,
-      mimeType: file.type || 'image/jpeg',
+      mimeType: file.type || (file.name.endsWith('.pdf') ? 'application/pdf' : 'image/jpeg'),
       sizeFormatted: formatBytes(file.size),
       savingsPercentage: 0
     };
   }
 
-  onProgress?.({ percent: 35, stage: 'uploading', message: 'Syncing asset with secure storage...' });
+  onProgress?.({ percent: 25, stage: 'uploading', message: 'Initiating transfer to persistent storage...' });
 
   const timestamp = Date.now();
   const cleanBaseName = file.name
@@ -863,84 +885,35 @@ export async function uploadMediaAsset(
     .slice(0, 50);
   const ext = optResult.format === 'webp' ? 'webp' : (file.name.split('.').pop()?.toLowerCase() || 'jpg');
   const mainStoragePath = `media/${category}/${timestamp}_${cleanBaseName}.${ext}`;
-  const thumbStoragePath = `media/thumbs/${timestamp}_thumb_${cleanBaseName}.${ext}`;
 
   let publicUrl = '';
   let thumbUrl = '';
 
+  // Execute upload through verified reliable server storage pipeline with true progress
   try {
-    // Attempt Firebase Cloud Storage with strict 2.5 second timeout to prevent indefinite hangs
-    const mainStorageRef = ref(storage, mainStoragePath);
-    const uploadTask = uploadBytesResumable(mainStorageRef, optResult.optimizedBlob, {
-      contentType: optResult.mimeType,
-      customMetadata: {
-        originalName: file.name,
-        category,
-        width: String(optResult.width),
-        height: String(optResult.height)
-      }
-    });
-
-    const uploadPromise = new Promise<void>((resolve, reject) => {
-      uploadTask.on(
-        'state_changed',
-        (snapshot) => {
-          const progress = Math.round((snapshot.bytesTransferred / (snapshot.totalBytes || 1)) * 40) + 35; // 35% -> 75%
-          onProgress?.({
-            percent: Math.min(progress, 78),
-            stage: 'uploading',
-            message: `Uploading... ${Math.round((snapshot.bytesTransferred / (snapshot.totalBytes || 1)) * 100)}%`
-          });
-        },
-        (error) => {
-          reject(error);
-        },
-        async () => {
-          publicUrl = await getDownloadURL(uploadTask.snapshot.ref);
-          resolve();
-        }
-      );
-    });
-
-    const timeoutPromise = new Promise<void>((_, reject) => {
-      setTimeout(() => {
-        try {
-          uploadTask.cancel();
-        } catch (_) {}
-        reject(new Error("Storage upload timed out; switching to instant high-performance Firestore storage"));
-      }, 2500);
-    });
-
-    await Promise.race([uploadPromise, timeoutPromise]);
-
-    // Fast thumbnail upload if main storage succeeded
-    try {
-      const thumbStorageRef = ref(storage, thumbStoragePath);
-      const thumbUpload = await uploadBytes(thumbStorageRef, optResult.thumbnailBlob, {
-        contentType: optResult.mimeType
+    const serverRes = await uploadViaServerApi(optResult.optimizedBlob, file.name, category, (info) => {
+      onProgress?.({
+        percent: Math.min(Math.max(info.percent, 25), 90),
+        stage: 'uploading',
+        message: info.message
       });
-      thumbUrl = await getDownloadURL(thumbUpload.ref);
-    } catch {
+    });
+    publicUrl = serverRes.url;
+    thumbUrl = publicUrl;
+  } catch (serverErr: any) {
+    console.error("Server API upload failed:", serverErr);
+    // If small image, fallback to data URL
+    if (category !== 'document' && file.size < 400 * 1024) {
+      publicUrl = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = (e) => reject(e);
+        reader.readAsDataURL(optResult.optimizedBlob);
+      });
       thumbUrl = publicUrl;
-    }
-  } catch (storageError: any) {
-    onProgress?.({ percent: 50, stage: 'uploading', message: 'Saving asset to verified high-performance storage...' });
-    try {
-      const serverRes = await uploadViaServerApi(optResult.optimizedBlob, file.name, category, onProgress);
-      publicUrl = serverRes.url;
-      thumbUrl = publicUrl;
-    } catch (serverErr: any) {
-      if (category !== 'document' && file.size < 400 * 1024) {
-        publicUrl = await new Promise<string>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(reader.result as string);
-          reader.onerror = (e) => reject(e);
-          reader.readAsDataURL(optResult.optimizedBlob);
-        });
-        thumbUrl = publicUrl;
-      } else {
-        throw new Error(serverErr.message || 'Storage upload failed');
-      }
+    } else {
+      onProgress?.({ percent: 0, stage: 'error', message: serverErr.message || 'Upload failed' });
+      throw serverErr;
     }
   }
 

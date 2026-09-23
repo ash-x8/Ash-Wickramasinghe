@@ -39,6 +39,7 @@ import { useTheme } from '../context/ThemeContext';
 import { 
   getSiteSettings, 
   updateSiteSettings, 
+  subscribeToSiteSettings,
   getProjects, 
   createProject, 
   updateProject, 
@@ -207,7 +208,13 @@ export const AdminDashboardPage: React.FC = () => {
     const unsubMedia = subscribeToMedia((items) => {
       setMediaList(items);
     });
-    return () => unsubMedia();
+    const unsubSettings = subscribeToSiteSettings((newSettings) => {
+      setSettings(newSettings);
+    });
+    return () => {
+      unsubMedia();
+      unsubSettings();
+    };
   }, [refreshData]);
 
   // Global Escape key listener to dismiss any open modals
@@ -374,9 +381,12 @@ export const AdminDashboardPage: React.FC = () => {
     try {
       await updateSiteSettings(updates);
       setSettings(prev => ({ ...prev, ...updates }));
-      showToast("Settings updated in Firestore");
+      showToast("Settings updated successfully", "success");
+      await refreshData();
     } catch (e: any) {
+      console.error("Save settings error:", e);
       showToast(e.message || "Failed to update settings", "error");
+      throw e;
     }
   };
 

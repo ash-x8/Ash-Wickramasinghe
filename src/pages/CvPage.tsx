@@ -7,9 +7,11 @@ import {
   Layout, 
   Download, 
   ExternalLink,
-  CheckCircle2,
-  Calendar,
-  Sparkles
+  Sparkles,
+  Maximize2,
+  ZoomIn,
+  ZoomOut,
+  Image as ImageIcon
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { getSiteSettings, subscribeToSiteSettings } from '../lib/firebase';
@@ -19,6 +21,7 @@ import { defaultSiteSettings } from '../data/defaultContent';
 export const CvPage: React.FC = () => {
   const [settings, setSettings] = useState<SiteSettings>(defaultSiteSettings);
   const [viewMode, setViewMode] = useState<'dossier' | 'embedded'>('dossier');
+  const [imageZoomFit, setImageZoomFit] = useState(true);
 
   useEffect(() => {
     getSiteSettings().then((loaded) => {
@@ -39,15 +42,21 @@ export const CvPage: React.FC = () => {
 
   const effectiveCvUrl = settings.cvUrl || (settings.cvSource === 'upload' ? settings.cvFileUrl : settings.cvExternalUrl);
 
+  // Detect whether active CV is an image or PDF
+  const isImageCv = Boolean(
+    settings.cvFileType === 'image' || 
+    (effectiveCvUrl && /\.(jpg|jpeg|png|webp|avif)($|\?)/i.test(effectiveCvUrl))
+  );
+
   // If unpublished by administrator
   if (settings.cvPublished === false) {
     return (
-      <div className="min-h-screen pt-24 sm:pt-32 pb-20 px-4 sm:px-6 lg:px-8 max-w-3xl mx-auto font-sans text-center">
+      <div className="min-h-screen pt-28 sm:pt-36 pb-20 px-4 sm:px-6 lg:px-8 max-w-3xl mx-auto font-sans text-center">
         <div className="p-6 sm:p-12 rounded-2xl border border-neutral-800 bg-neutral-900/60 backdrop-blur-md space-y-4">
-          <FileText size={40} className="mx-auto text-amber-400 opacity-80" />
+          <FileText size={40} className="mx-auto text-[#C59B63] opacity-80" />
           <h1 className="text-xl sm:text-2xl font-semibold text-white">Curriculum Vitae Updating</h1>
           <p className="text-xs sm:text-sm text-neutral-400 max-w-md mx-auto leading-relaxed">
-            The curriculum vitae of Ash Wickramasinghe is currently being refreshed with recent project achievements. Please connect directly via the contact page.
+            The curriculum vitae of Ash Wickramasinghe is currently being refreshed with recent project achievements. Please connect directly via the contact coordinates.
           </p>
           <div className="pt-4">
             <Link
@@ -99,8 +108,8 @@ export const CvPage: React.FC = () => {
                     : 'text-neutral-400 hover:text-white'
                 }`}
               >
-                <Eye size={12} />
-                <span>Document Viewer</span>
+                {isImageCv ? <ImageIcon size={12} /> : <Eye size={12} />}
+                <span>{isImageCv ? 'Visual CV Viewer' : 'Document Viewer'}</span>
               </button>
             </div>
           )}
@@ -108,13 +117,13 @@ export const CvPage: React.FC = () => {
           {effectiveCvUrl && (
             <a
               href={effectiveCvUrl}
-              download={settings.cvFileName || "Ash_Wickramasinghe_CV.pdf"}
+              download={settings.cvFileName || (isImageCv ? "Ash_Wickramasinghe_CV.png" : "Ash_Wickramasinghe_CV.pdf")}
               target="_blank"
               rel="noreferrer"
               className="inline-flex items-center gap-2 px-3.5 sm:px-4 py-2 text-xs uppercase tracking-wider font-semibold rounded-full bg-[#C59B63] text-black hover:bg-[#b08852] transition-colors cursor-pointer shadow-sm shrink-0"
             >
               <Download size={13} />
-              <span>Download CV</span>
+              <span>{isImageCv ? 'Download Image' : 'Download CV'}</span>
             </a>
           )}
 
@@ -128,30 +137,78 @@ export const CvPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Embedded Document Mode */}
+      {/* Embedded Document / Image Viewer Mode */}
       {viewMode === 'embedded' && effectiveCvUrl ? (
         <div className="rounded-2xl border border-neutral-800 bg-neutral-900/60 overflow-hidden shadow-2xl space-y-0">
+          
+          {/* Header Bar */}
           <div className="px-4 sm:px-6 py-3 border-b border-neutral-800 bg-neutral-950/80 flex flex-wrap items-center justify-between gap-2 text-xs text-neutral-400">
-            <span className="font-mono truncate max-w-full">
-              Document Viewer: {settings.cvFileName || 'Ash_Wickramasinghe_CV.pdf'}
+            <span className="font-mono truncate max-w-full flex items-center gap-2">
+              {isImageCv ? <ImageIcon size={14} className="text-[#C59B63]" /> : <FileText size={14} className="text-[#C59B63]" />}
+              <span>{settings.cvFileName || (isImageCv ? 'Ash_Wickramasinghe_CV.png' : 'Ash_Wickramasinghe_CV.pdf')}</span>
             </span>
+
             <div className="flex items-center gap-3">
+              {isImageCv && (
+                <button
+                  type="button"
+                  onClick={() => setImageZoomFit(!imageZoomFit)}
+                  className="text-xs text-neutral-400 hover:text-white flex items-center gap-1 font-mono cursor-pointer"
+                >
+                  {imageZoomFit ? <ZoomIn size={12} /> : <ZoomOut size={12} />}
+                  <span>{imageZoomFit ? 'Actual Size' : 'Fit Screen'}</span>
+                </button>
+              )}
               <a
                 href={effectiveCvUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="text-[#C59B63] hover:underline flex items-center gap-1 text-[11px] font-mono"
+                className="text-[#C59B63] hover:underline flex items-center gap-1 text-xs font-mono"
               >
-                <span>Open Fullscreen</span>
-                <ExternalLink size={11} />
+                <span>Fullscreen</span>
+                <ExternalLink size={12} />
               </a>
             </div>
           </div>
-          <iframe
-            src={effectiveCvUrl}
-            title="Curriculum Vitae Document Viewer"
-            className="w-full h-[65vh] sm:h-[800px] border-none bg-neutral-950"
-          />
+
+          {/* Visual Canvas */}
+          {isImageCv ? (
+            /* High-Res Responsive Image CV Viewer */
+            <div className="p-3 sm:p-6 bg-neutral-950 flex justify-center items-center overflow-x-auto min-h-[50vh]">
+              <img
+                src={effectiveCvUrl}
+                alt="Ash Wickramasinghe - Curriculum Vitae"
+                className={`rounded-xl shadow-2xl transition-all duration-300 ${
+                  imageZoomFit 
+                    ? 'max-w-full h-auto object-contain mx-auto' 
+                    : 'w-auto max-w-none'
+                }`}
+                style={{ maxHeight: imageZoomFit ? '85vh' : 'none' }}
+              />
+            </div>
+          ) : (
+            /* Responsive PDF Viewer with Mobile Helper */
+            <div className="space-y-0">
+              {/* Mobile Quick Action Banner */}
+              <div className="sm:hidden p-3 bg-[#C59B63]/10 border-b border-[#C59B63]/20 flex items-center justify-between text-xs text-[#C59B63]">
+                <span>Tap below to open or download full document:</span>
+                <a
+                  href={effectiveCvUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="font-bold underline flex items-center gap-1"
+                >
+                  <span>Open PDF</span>
+                  <ExternalLink size={11} />
+                </a>
+              </div>
+              <iframe
+                src={effectiveCvUrl}
+                title="Curriculum Vitae Document Viewer"
+                className="w-full h-[65vh] sm:h-[800px] border-none bg-neutral-950"
+              />
+            </div>
+          )}
         </div>
       ) : (
         /* Printable CV Dossier Canvas with High-Contrast Mobile Support */
@@ -200,7 +257,7 @@ export const CvPage: React.FC = () => {
             </h2>
 
             <div className="space-y-8">
-              {settings.timeline.filter(t => t.type === 'work').map((item) => (
+              {(settings.timeline || []).filter(t => t.type === 'work').map((item) => (
                 <div key={item.id} className="space-y-2">
                   <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1">
                     <h3 className="text-sm sm:text-base font-medium text-neutral-100 dark:text-neutral-100 light:text-neutral-900 print:text-black">
@@ -217,7 +274,7 @@ export const CvPage: React.FC = () => {
                     {item.description}
                   </p>
                   <div className="flex flex-wrap gap-1.5 pt-1">
-                    {item.skills.map((s, i) => (
+                    {(item.skills || []).map((s, i) => (
                       <span
                         key={i}
                         className="text-[10px] px-2 py-0.5 rounded bg-neutral-950/80 dark:bg-neutral-950/80 light:bg-neutral-100 print:bg-neutral-100 text-neutral-400 print:text-neutral-700 border border-neutral-800/60"
@@ -238,7 +295,7 @@ export const CvPage: React.FC = () => {
             </h2>
 
             <div className="space-y-6">
-              {settings.timeline.filter(t => t.type === 'education').map((item) => (
+              {(settings.timeline || []).filter(t => t.type === 'education').map((item) => (
                 <div key={item.id} className="space-y-1">
                   <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1">
                     <h3 className="text-sm sm:text-base font-medium text-neutral-100 dark:text-neutral-100 light:text-neutral-900 print:text-black">
@@ -266,7 +323,7 @@ export const CvPage: React.FC = () => {
             </h2>
 
             <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-3">
-              {settings.skills.map((skill, idx) => (
+              {(settings.skills || []).map((skill, idx) => (
                 <div
                   key={idx}
                   className="p-3 rounded-lg bg-neutral-950/40 dark:bg-neutral-950/40 light:bg-neutral-50 print:bg-neutral-50 border border-neutral-800/60 dark:border-neutral-800/60 light:border-neutral-200 print:border-neutral-300 text-xs"
