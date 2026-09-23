@@ -56,7 +56,7 @@ export const AboutPage: React.FC = () => {
           className="lg:col-span-5 space-y-8"
         >
           <ProfilePhotoFrame
-            src={settings.avatarUrl || ''}
+            src={settings.profileImage || settings.avatarUrl || ''}
             statusText={settings.statusText}
             effect={settings.profileImageEffect || 'grayscale'}
           />

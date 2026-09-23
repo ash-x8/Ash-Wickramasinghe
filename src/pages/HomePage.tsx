@@ -134,7 +134,7 @@ export const HomePage: React.FC = () => {
           <div className="lg:col-span-5 flex justify-center lg:justify-end">
             <div className="w-full max-w-sm">
               <ProfilePhotoFrame
-                src={settings.avatarUrl || ''}
+                src={settings.profileImage || settings.avatarUrl || ''}
                 statusText={settings.statusText}
                 effect={settings.profileImageEffect || 'grayscale'}
               />

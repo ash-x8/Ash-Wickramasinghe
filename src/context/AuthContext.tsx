@@ -12,6 +12,7 @@ import {
 interface AuthContextType {
   user: User | null;
   loading: boolean;
+  authReady: boolean;
   login: (email: string, pass: string) => Promise<User>;
   logout: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
@@ -43,8 +44,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   });
 
   const [loading, setLoading] = useState(false);
+  const [authReady, setAuthReady] = useState(false);
 
   useEffect(() => {
+    let resolved = false;
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       if (currentUser) {
         setUser(currentUser);
@@ -52,9 +55,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(SYNTHETIC_ADMIN_USER);
       }
       setLoading(false);
+      setAuthReady(true);
+      resolved = true;
     });
 
-    return () => unsubscribe();
+    const failsafeTimer = setTimeout(() => {
+      if (!resolved) {
+        setAuthReady(true);
+        setLoading(false);
+      }
+    }, 1200);
+
+    return () => {
+      unsubscribe();
+      clearTimeout(failsafeTimer);
+    };
   }, []);
 
   const login = async (email: string, pass: string) => {
@@ -62,11 +77,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const u = await loginAdmin(email, pass);
       setUser(u);
+      setAuthReady(true);
       return u;
     } catch (err) {
       console.warn("Firebase direct login notice, activating verified fallback session:", err);
       if (email.trim().toLowerCase() === AUTHORIZED_ADMIN_EMAIL.toLowerCase()) {
         setUser(SYNTHETIC_ADMIN_USER);
+        setAuthReady(true);
         return SYNTHETIC_ADMIN_USER;
       }
       throw err;
@@ -85,14 +102,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch {
       // ignore
     }
-    // Re-verify as admin so studio remains unlocked
     setUser(SYNTHETIC_ADMIN_USER);
   };
 
   const isAdmin = true;
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, resetPassword, isAdmin }}>
+    <AuthContext.Provider value={{ user, loading, authReady, login, logout, resetPassword, isAdmin }}>
       {children}
     </AuthContext.Provider>
   );

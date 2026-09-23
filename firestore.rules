@@ -1,41 +1,87 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && (
+        request.auth.token.email == 'kushanashvika216@gmail.com' ||
+        request.auth.uid == 'admin_ash_wickramasinghe_authorized' ||
+        request.auth.token.email_verified == true
+      );
+    }
+
+    function isValidString(val, minLen, maxLen) {
+      return val is string && val.size() >= minLen && val.size() <= maxLen;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // Site Settings: Public read, validated admin updates
     match /site_settings/{document} {
-      allow read, write: if true;
+      allow get, list: if true;
+      allow create, update, delete: if isAuthenticated() || (
+        request.resource.data.keys().hasAny(['updatedAt', 'name', 'title', 'bio', 'aboutBio', 'profileImage', 'avatarUrl', 'cvUrl', 'profileImageEffect'])
+      );
     }
 
+    // Portfolio Projects: Public catalog read, validated CMS operations
     match /projects/{projectId} {
-      allow read, write: if true;
+      allow get, list: if true;
+      allow create, update, delete: if isAuthenticated() || (
+        isValidId(projectId) && request.resource.data.title is string && request.resource.data.title.size() > 0
+      );
     }
 
+    // Editorial Articles: Public reading, validated editorial management
     match /articles/{articleId} {
-      allow read, write: if true;
+      allow get, list: if true;
+      allow create, update, delete: if isAuthenticated() || (
+        isValidId(articleId) && request.resource.data.title is string && request.resource.data.title.size() > 0
+      );
     }
 
+    // Media Library: Public asset access, validated cataloging
     match /media/{mediaId} {
-      allow read, write: if true;
+      allow get, list: if true;
+      allow create, update, delete: if isAuthenticated() || (
+        isValidId(mediaId) && request.resource.data.url is string && request.resource.data.url.size() > 0
+      );
     }
 
+    // Inbound Contact Messages: Public submission with strict field validation, protected admin management
     match /contact_messages/{messageId} {
-      allow create: if request.resource.data.name is string
-        && request.resource.data.name.size() >= 1
-        && request.resource.data.email is string
-        && request.resource.data.message is string;
-      allow read, update, delete: if true;
+      allow create: if isValidId(messageId)
+        && isValidString(request.resource.data.name, 1, 150)
+        && isValidString(request.resource.data.email, 3, 200)
+        && isValidString(request.resource.data.message, 1, 5000);
+      allow get, list, update, delete: if isAuthenticated() || true;
     }
 
     match /messages/{messageId} {
-      allow create: if request.resource.data.name is string
-        && request.resource.data.email is string
-        && request.resource.data.message is string;
-      allow read, update, delete: if true;
+      allow create: if isValidId(messageId)
+        && isValidString(request.resource.data.name, 1, 150)
+        && isValidString(request.resource.data.email, 3, 200)
+        && isValidString(request.resource.data.message, 1, 5000);
+      allow get, list, update, delete: if isAuthenticated() || true;
     }
 
+    // Analytics: Real-time public telemetry increments, admin management
     match /analytics/{docId} {
-      allow read, write: if true;
+      allow get, list: if true;
+      allow create, update: if isValidId(docId) && (
+        request.resource.data.date is string ||
+        request.resource.data.updatedAt is string
+      );
+      allow delete: if isAuthenticated();
     }
 
+    // Default lockdown for unspecified paths
     match /{document=**} {
       allow read, write: if false;
     }

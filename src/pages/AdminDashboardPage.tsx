@@ -1141,32 +1141,7 @@ export const AdminDashboardPage: React.FC = () => {
               <form 
                 onSubmit={(e) => {
                   e.preventDefault();
-                  handleSaveSettings({
-                    name: settings.name,
-                    fullName: settings.fullName,
-                    creativeName: settings.creativeName,
-                    title: settings.title,
-                    bio: settings.bio,
-                    aboutBio: settings.aboutBio,
-                    personalStatement: settings.personalStatement,
-                    authorNames: settings.authorNames,
-                    careerTrajectory: settings.careerTrajectory,
-                    statusText: settings.statusText,
-                    workAvailability: settings.workAvailability,
-                    location: settings.location,
-                    email: settings.email,
-                    emailSecondary: settings.emailSecondary,
-                    phone: settings.phone,
-                    phoneSecondary: settings.phoneSecondary,
-                    whatsapp: settings.whatsapp,
-                    youtube: settings.youtube,
-                    facebook: settings.facebook,
-                    tiktok: settings.tiktok,
-                    linkedin: settings.linkedin,
-                    telegram: settings.telegram,
-                    cvUrl: settings.cvUrl,
-                    avatarUrl: settings.avatarUrl
-                  });
+                  handleSaveSettings(settings);
                 }}
                 className="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-6 text-xs"
               >
