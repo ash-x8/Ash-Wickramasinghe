@@ -4,8 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite --host 0.0.0.0 --port 3000",
+    "dev": "tsx server.ts",
     "build": "vite build",
+    "start": "tsx server.ts",
     "preview": "vite preview --host 0.0.0.0 --port 3000",
     "lint": "eslint ."
   },
@@ -13,9 +14,11 @@
     "@hookform/resolvers": "^5.9.1",
     "@tailwindcss/vite": "^4.3.3",
     "@vitejs/plugin-react": "^4.3.4",
+    "express": "^5.2.1",
     "firebase": "^10.10.0",
     "framer-motion": "^11.0.0",
     "lucide-react": "^0.468.0",
+    "multer": "^2.4.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-hook-form": "^7.88.0",
@@ -23,11 +26,14 @@
     "react-router-dom": "^7.1.1",
     "recharts": "^3.10.1",
     "tailwindcss": "^4.3.3",
+    "tsx": "^4.23.15",
     "vite": "^6.0.7",
     "zod": "^4.6.5"
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",
+    "@types/express": "^5.0.6",
+    "@types/multer": "^2.2.0",
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",
     "eslint": "^9.17.0",

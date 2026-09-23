@@ -742,25 +742,6 @@ export const defaultMediaItems: MediaItem[] = [
     caption: 'Official brand signature with subtitle disciplines and gold divider flare',
     uploadedAt: '2025-01-10T10:05:00Z',
     inUseBy: ['Footer Signature Lockup', 'Identity Brand Kit']
-  },
-  {
-    id: 'media-cyber-portrait',
-    name: 'Ash Wickramasinghe — Creative Portrait',
-    originalName: 'ash_cyber_portrait.jpg',
-    storagePath: 'profile/ash_cyber_portrait.jpg',
-    url: '/ash_cyber_portrait.jpg',
-    thumbnailUrl: '/ash_cyber_portrait.jpg',
-    mimeType: 'image/jpeg',
-    size: 802080,
-    sizeFormatted: '784 KB',
-    width: 1200,
-    height: 1500,
-    format: 'jpeg',
-    category: 'profile',
-    altText: 'Ash Wickramasinghe Portrait',
-    caption: 'Official creative designer portrait for Hero and About sections',
-    uploadedAt: '2025-01-01T12:00:00Z',
-    inUseBy: ['Hero Section', 'About Story Frame']
   }
 ];
 
@@ -768,6 +749,58 @@ export interface UploadProgressInfo {
   percent: number;
   stage: 'validating' | 'optimizing' | 'uploading' | 'saving' | 'completed' | 'error';
   message: string;
+}
+
+async function uploadViaServerApi(
+  blob: Blob | File,
+  fileName: string,
+  category: string,
+  onProgress?: (info: UploadProgressInfo) => void
+): Promise<{ url: string; size: number }> {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    const formData = new FormData();
+    formData.append('file', blob, fileName);
+
+    xhr.upload.addEventListener('progress', (e) => {
+      if (e.lengthComputable) {
+        const percent = Math.round((e.loaded / e.total) * 100);
+        onProgress?.({
+          percent: Math.min(Math.max(percent, 10), 98),
+          stage: 'uploading',
+          message: `Uploading file... ${percent}%`
+        });
+      }
+    });
+
+    xhr.addEventListener('load', () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        try {
+          const res = JSON.parse(xhr.responseText);
+          if (res.success && res.url) {
+            resolve({ url: res.url, size: res.size });
+          } else {
+            reject(new Error(res.error || 'Upload failed'));
+          }
+        } catch {
+          reject(new Error('Invalid response from server'));
+        }
+      } else {
+        reject(new Error(`Upload failed with server status ${xhr.status}`));
+      }
+    });
+
+    xhr.addEventListener('error', () => {
+      reject(new Error('Network error during file upload'));
+    });
+
+    xhr.addEventListener('abort', () => {
+      reject(new Error('Upload was cancelled'));
+    });
+
+    xhr.open('POST', `/api/upload?category=${encodeURIComponent(category)}`);
+    xhr.send(formData);
+  });
 }
 
 /**
@@ -891,14 +924,24 @@ export async function uploadMediaAsset(
       thumbUrl = publicUrl;
     }
   } catch (storageError: any) {
-    onProgress?.({ percent: 70, stage: 'uploading', message: 'Encoding optimized asset for instant delivery...' });
-    publicUrl = await new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = (e) => reject(e);
-      reader.readAsDataURL(optResult.optimizedBlob);
-    });
-    thumbUrl = publicUrl;
+    onProgress?.({ percent: 50, stage: 'uploading', message: 'Saving asset to verified high-performance storage...' });
+    try {
+      const serverRes = await uploadViaServerApi(optResult.optimizedBlob, file.name, category, onProgress);
+      publicUrl = serverRes.url;
+      thumbUrl = publicUrl;
+    } catch (serverErr: any) {
+      if (category !== 'document' && file.size < 400 * 1024) {
+        publicUrl = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = (e) => reject(e);
+          reader.readAsDataURL(optResult.optimizedBlob);
+        });
+        thumbUrl = publicUrl;
+      } else {
+        throw new Error(serverErr.message || 'Storage upload failed');
+      }
+    }
   }
 
   // Step 5: Save metadata in Firestore

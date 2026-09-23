@@ -77,7 +77,7 @@ export const ProfilePhotoManager: React.FC<ProfilePhotoManagerProps> = ({
   const [isPickerOpen, setIsPickerOpen] = useState(false);
   const [pickerTarget, setPickerTarget] = useState<'profile' | 'monogram' | 'fullLogo'>('profile');
 
-  const currentPhoto = settings.avatarUrl || '/ash_cyber_portrait.jpg';
+  const currentPhoto = settings.avatarUrl || '';
   const currentEffect: ProfileEffectType = settings.profileImageEffect || 'cinematic';
 
   const handleSelectMedia = (url: string) => {
@@ -93,13 +93,13 @@ export const ProfilePhotoManager: React.FC<ProfilePhotoManagerProps> = ({
     }
   };
 
-  const handleResetToDefault = () => {
+  const handleClearPhoto = () => {
     onChange({
-      avatarUrl: '/ash_cyber_portrait.jpg',
-      profileImage: '/ash_cyber_portrait.jpg',
-      profileImageEffect: 'cinematic'
+      avatarUrl: '',
+      profileImage: '',
+      profileImageEffect: 'normal'
     });
-    showToast("Profile photo reset to official portrait", "info");
+    showToast("Profile photo removed. Showing neutral placeholder.", "info");
   };
 
   return (
@@ -130,15 +130,17 @@ export const ProfilePhotoManager: React.FC<ProfilePhotoManagerProps> = ({
               <ImageIcon size={14} />
               <span>Choose from Gallery / Upload</span>
             </button>
-            <button
-              type="button"
-              onClick={handleResetToDefault}
-              className="px-3 py-2 rounded-xl text-xs text-slate-400 hover:text-white hover:bg-slate-800 transition-colors flex items-center gap-1"
-              title="Reset to default portrait"
-            >
-              <RotateCcw size={13} />
-              <span>Reset</span>
-            </button>
+            {currentPhoto && (
+              <button
+                type="button"
+                onClick={handleClearPhoto}
+                className="px-3 py-2 rounded-xl text-xs text-rose-400 hover:text-white hover:bg-rose-900/40 transition-colors flex items-center gap-1"
+                title="Remove current portrait"
+              >
+                <RotateCcw size={13} />
+                <span>Remove Photo</span>
+              </button>
+            )}
           </div>
         </div>
 
