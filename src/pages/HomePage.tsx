@@ -136,6 +136,7 @@ export const HomePage: React.FC = () => {
               <ProfilePhotoFrame
                 src={settings.avatarUrl || '/ash_cyber_portrait.jpg'}
                 statusText={settings.statusText}
+                effect={settings.profileImageEffect || 'cinematic'}
               />
             </div>
           </div>

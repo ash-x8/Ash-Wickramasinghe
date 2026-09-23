@@ -33,9 +33,11 @@ import {
   getStorage, 
   ref, 
   uploadBytes, 
+  uploadBytesResumable,
   getDownloadURL,
   deleteObject
 } from 'firebase/storage';
+import { validateMediaFile, optimizeImageFile, formatBytes } from '../utils/imageOptimizer';
 import { 
   getAnalytics, 
   isSupported as isAnalyticsSupported, 
@@ -701,27 +703,353 @@ export async function getAnalyticsTrends(daysCount: number = 14): Promise<PageVi
    MEDIA STORAGE (Firebase Storage with reliable fallback)
    ========================================================================= */
 
-export async function uploadMediaFile(file: File, folder: string = 'media'): Promise<string> {
+// Default system assets seeded for initial view
+export const defaultMediaItems: MediaItem[] = [
+  {
+    id: 'media-monogram-emblem',
+    name: 'AW Monogram Metallic Emblem',
+    originalName: 'ash-logo-monogram.jpg',
+    storagePath: 'branding/ash-logo-monogram.jpg',
+    url: '/ash-logo-monogram.jpg',
+    thumbnailUrl: '/ash-logo-monogram.jpg',
+    mimeType: 'image/jpeg',
+    size: 486667,
+    sizeFormatted: '476 KB',
+    width: 1024,
+    height: 1024,
+    format: 'jpeg',
+    category: 'logo',
+    altText: 'Ash Wickramasinghe - AW Geometric Monogram Emblem',
+    caption: 'Official 3D brushed titanium and polished gold AW monogram logo mark',
+    uploadedAt: '2025-01-10T10:00:00Z',
+    inUseBy: ['Navbar Brand Monogram', 'Site Favicon']
+  },
+  {
+    id: 'media-full-logo',
+    name: 'Ash Wickramasinghe Official Full Logo Lockup',
+    originalName: 'ash-logo-full.jpg',
+    storagePath: 'branding/ash-logo-full.jpg',
+    url: '/ash-logo-full.jpg',
+    thumbnailUrl: '/ash-logo-full.jpg',
+    mimeType: 'image/jpeg',
+    size: 441312,
+    sizeFormatted: '431 KB',
+    width: 1024,
+    height: 1024,
+    format: 'jpeg',
+    category: 'logo',
+    altText: 'Ash Wickramasinghe - Full Official Brand Logo Lockup',
+    caption: 'Official brand signature with subtitle disciplines and gold divider flare',
+    uploadedAt: '2025-01-10T10:05:00Z',
+    inUseBy: ['Footer Signature Lockup', 'Identity Brand Kit']
+  },
+  {
+    id: 'media-cyber-portrait',
+    name: 'Ash Wickramasinghe — Creative Portrait',
+    originalName: 'ash_cyber_portrait.jpg',
+    storagePath: 'profile/ash_cyber_portrait.jpg',
+    url: '/ash_cyber_portrait.jpg',
+    thumbnailUrl: '/ash_cyber_portrait.jpg',
+    mimeType: 'image/jpeg',
+    size: 802080,
+    sizeFormatted: '784 KB',
+    width: 1200,
+    height: 1500,
+    format: 'jpeg',
+    category: 'profile',
+    altText: 'Ash Wickramasinghe Portrait',
+    caption: 'Official creative designer portrait for Hero and About sections',
+    uploadedAt: '2025-01-01T12:00:00Z',
+    inUseBy: ['Hero Section', 'About Story Frame']
+  }
+];
+
+export interface UploadProgressInfo {
+  percent: number;
+  stage: 'validating' | 'optimizing' | 'uploading' | 'saving' | 'completed' | 'error';
+  message: string;
+}
+
+/**
+ * Advanced Media Asset Uploader
+ * 1. Validates file size & type
+ * 2. Compresses & resizes on-the-fly via HTML5 Canvas (outputs optimized WebP)
+ * 3. Generates lightweight thumbnail Blob
+ * 4. Uploads to Firebase Storage with real-time progress callbacks
+ * 5. Saves rich metadata to Firestore 'media' collection
+ */
+export async function uploadMediaAsset(
+  file: File,
+  category: 'image' | 'logo' | 'profile' | 'project' | 'document' = 'image',
+  onProgress?: (info: UploadProgressInfo) => void
+): Promise<MediaItem> {
+  // Step 1: Validation
+  onProgress?.({ percent: 5, stage: 'validating', message: 'Validating file...' });
+  const validation = validateMediaFile(file);
+  if (!validation.valid) {
+    onProgress?.({ percent: 0, stage: 'error', message: validation.error || 'Invalid file' });
+    throw new Error(validation.error || 'Invalid file');
+  }
+
+  // Step 2: Optimization
+  onProgress?.({ percent: 15, stage: 'optimizing', message: 'Optimizing and compressing image...' });
+  let optResult;
   try {
-    const cleanFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
-    const storageRef = ref(storage, `${folder}/${Date.now()}_${cleanFileName}`);
-    const uploadResult = await uploadBytes(storageRef, file);
-    const downloadUrl = await getDownloadURL(uploadResult.ref);
-    return downloadUrl;
-  } catch (storageErr) {
-    console.warn("Storage upload fallback to DataURL:", storageErr);
-    return new Promise((resolve, reject) => {
+    optResult = await optimizeImageFile(file, {
+      maxWidth: 2400,
+      maxHeight: 2400,
+      quality: 0.85,
+      thumbSize: 380,
+      thumbQuality: 0.80
+    });
+  } catch (err: any) {
+    console.warn("Client optimization fallback:", err);
+    optResult = {
+      file,
+      originalName: file.name,
+      optimizedBlob: file,
+      thumbnailBlob: file,
+      width: 0,
+      height: 0,
+      originalSize: file.size,
+      optimizedSize: file.size,
+      thumbnailSize: file.size,
+      format: 'jpeg' as const,
+      mimeType: file.type || 'image/jpeg',
+      sizeFormatted: formatBytes(file.size),
+      savingsPercentage: 0
+    };
+  }
+
+  onProgress?.({ percent: 30, stage: 'uploading', message: 'Uploading to cloud storage...' });
+
+  const timestamp = Date.now();
+  const cleanBaseName = file.name
+    .replace(/\.[^/.]+$/, "")
+    .replace(/[^a-zA-Z0-9_-]/g, '_')
+    .slice(0, 50);
+  const ext = optResult.format === 'webp' ? 'webp' : (file.name.split('.').pop()?.toLowerCase() || 'jpg');
+  const mainStoragePath = `media/${category}/${timestamp}_${cleanBaseName}.${ext}`;
+  const thumbStoragePath = `media/thumbs/${timestamp}_thumb_${cleanBaseName}.${ext}`;
+
+  let publicUrl = '';
+  let thumbUrl = '';
+
+  try {
+    // 3. Upload main optimized file with progress tracking
+    const mainStorageRef = ref(storage, mainStoragePath);
+    const uploadTask = uploadBytesResumable(mainStorageRef, optResult.optimizedBlob, {
+      contentType: optResult.mimeType,
+      customMetadata: {
+        originalName: file.name,
+        category,
+        width: String(optResult.width),
+        height: String(optResult.height)
+      }
+    });
+
+    await new Promise<void>((resolve, reject) => {
+      uploadTask.on(
+        'state_changed',
+        (snapshot) => {
+          const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 60) + 30; // 30% -> 90%
+          onProgress?.({
+            percent: Math.min(progress, 88),
+            stage: 'uploading',
+            message: `Uploading... ${Math.round((snapshot.bytesTransferred / (snapshot.totalBytes || 1)) * 100)}%`
+          });
+        },
+        (error) => {
+          console.warn("Firebase Storage upload task error:", error);
+          reject(error);
+        },
+        async () => {
+          publicUrl = await getDownloadURL(uploadTask.snapshot.ref);
+          resolve();
+        }
+      );
+    });
+
+    // 4. Upload thumbnail (fast lightweight upload)
+    try {
+      const thumbStorageRef = ref(storage, thumbStoragePath);
+      const thumbUpload = await uploadBytes(thumbStorageRef, optResult.thumbnailBlob, {
+        contentType: optResult.mimeType
+      });
+      thumbUrl = await getDownloadURL(thumbUpload.ref);
+    } catch (thumbErr) {
+      console.warn("Thumbnail storage skipped:", thumbErr);
+      thumbUrl = publicUrl;
+    }
+
+  } catch (storageError: any) {
+    console.warn("Storage upload failed, falling back to base64 DataURL:", storageError);
+    publicUrl = await new Promise<string>((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => resolve(reader.result as string);
-      reader.onerror = (err) => reject(err);
-      reader.readAsDataURL(file);
+      reader.onerror = (e) => reject(e);
+      reader.readAsDataURL(optResult.optimizedBlob);
     });
+    thumbUrl = publicUrl;
   }
+
+  // Step 5: Save metadata in Firestore
+  onProgress?.({ percent: 92, stage: 'saving', message: 'Saving asset metadata...' });
+
+  const mediaDocId = `media_${timestamp}_${Math.random().toString(36).substring(2, 7)}`;
+  const cleanTitle = file.name
+    .replace(/\.[^/.]+$/, "")
+    .replace(/[_-]+/g, ' ')
+    .trim();
+
+  const mediaItemData: MediaItem = {
+    id: mediaDocId,
+    name: cleanTitle || 'Untitled Asset',
+    originalName: file.name,
+    storagePath: mainStoragePath,
+    url: publicUrl,
+    thumbnailUrl: thumbUrl || publicUrl,
+    mimeType: optResult.mimeType,
+    size: optResult.optimizedSize,
+    sizeFormatted: optResult.sizeFormatted,
+    width: optResult.width || undefined,
+    height: optResult.height || undefined,
+    format: optResult.format,
+    category,
+    altText: cleanTitle,
+    caption: '',
+    uploadedAt: new Date().toISOString(),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    inUseBy: []
+  };
+
+  try {
+    await setDoc(doc(db, 'media', mediaDocId), {
+      ...mediaItemData,
+      createdAtServer: serverTimestamp(),
+      updatedAtServer: serverTimestamp()
+    });
+  } catch (firestoreErr) {
+    handleFirestoreError(firestoreErr, OperationType.WRITE, `media/${mediaDocId}`);
+  }
+
+  onProgress?.({ percent: 100, stage: 'completed', message: 'Upload complete!' });
+  return mediaItemData;
+}
+
+/**
+ * Fetch all media items from Firestore
+ */
+export async function getMediaItems(): Promise<MediaItem[]> {
+  try {
+    const q = query(collection(db, 'media'), orderBy('uploadedAt', 'desc'));
+    const snapshot = await getDocs(q);
+    if (snapshot.empty) {
+      return defaultMediaItems;
+    }
+    const items: MediaItem[] = [];
+    snapshot.forEach(docSnap => {
+      const data = docSnap.data() as MediaItem;
+      items.push({ ...data, id: docSnap.id });
+    });
+    return items;
+  } catch (err) {
+    console.warn("Could not fetch media items, returning default items:", err);
+    return defaultMediaItems;
+  }
+}
+
+/**
+ * Real-time subscription to Media items
+ */
+export function subscribeToMedia(callback: (items: MediaItem[]) => void): () => void {
+  try {
+    const mediaRef = collection(db, 'media');
+    return onSnapshot(
+      mediaRef,
+      (snapshot) => {
+        if (snapshot.empty) {
+          callback(defaultMediaItems);
+          return;
+        }
+        const items: MediaItem[] = [];
+        snapshot.forEach(docSnap => {
+          items.push({ ...docSnap.data() as MediaItem, id: docSnap.id });
+        });
+        // Sort newest first
+        items.sort((a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime());
+        callback(items);
+      },
+      (error) => {
+        handleFirestoreError(error, OperationType.LIST, 'media');
+        callback(defaultMediaItems);
+      }
+    );
+  } catch (e) {
+    console.warn("subscribeToMedia fallback:", e);
+    callback(defaultMediaItems);
+    return () => {};
+  }
+}
+
+/**
+ * Delete media item from Firestore and Firebase Storage
+ */
+export async function deleteMediaItem(item: MediaItem): Promise<void> {
+  try {
+    // 1. Delete from Firebase Storage if applicable
+    if (item.storagePath && !item.url.startsWith('data:') && !item.url.startsWith('/')) {
+      try {
+        const storageRef = ref(storage, item.storagePath);
+        await deleteObject(storageRef);
+      } catch (err) {
+        console.warn("Could not delete main storage object:", err);
+      }
+
+      try {
+        const thumbRef = ref(storage, item.storagePath.replace('media/', 'media/thumbs/'));
+        await deleteObject(thumbRef);
+      } catch (err) {
+        // Thumbnail may not exist or had a different path
+      }
+    }
+
+    // 2. Delete Firestore document
+    const docRef = doc(db, 'media', item.id);
+    await deleteDoc(docRef);
+  } catch (err) {
+    handleFirestoreError(err, OperationType.DELETE, `media/${item.id}`);
+  }
+}
+
+/**
+ * Update media metadata (title, altText, caption, category)
+ */
+export async function updateMediaMetadata(id: string, updates: Partial<MediaItem>): Promise<void> {
+  try {
+    const docRef = doc(db, 'media', id);
+    await updateDoc(docRef, {
+      ...updates,
+      updatedAt: new Date().toISOString(),
+      updatedAtServer: serverTimestamp()
+    });
+  } catch (err) {
+    handleFirestoreError(err, OperationType.UPDATE, `media/${id}`);
+  }
+}
+
+/**
+ * Simple compatibility wrapper for legacy code
+ */
+export async function uploadMediaFile(file: File, folder: string = 'media'): Promise<string> {
+  const item = await uploadMediaAsset(file, (folder === 'profile' ? 'profile' : 'image'));
+  return item.url;
 }
 
 export async function deleteMediaFile(fileUrl: string): Promise<void> {
   try {
-    if (fileUrl.startsWith('data:')) return; // nothing to delete in storage
+    if (fileUrl.startsWith('data:') || fileUrl.startsWith('/')) return;
     const storageRef = ref(storage, fileUrl);
     await deleteObject(storageRef);
   } catch (err) {

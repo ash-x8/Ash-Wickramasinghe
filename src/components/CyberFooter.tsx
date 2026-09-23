@@ -46,19 +46,38 @@ export const CyberFooter: React.FC = () => {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
-          {/* Col 1: System Ident */}
-          <div className="space-y-3 md:col-span-2">
-            <div className="flex items-center gap-2 text-white text-sm font-bold tracking-wider font-sans">
-              <span className="w-2 h-2 bg-[#C59B63] rounded-full shadow-[0_0_6px_#C59B63]" />
-              Ash Wickramasinghe
+          {/* Col 1: System Ident & Official Logo Lockup */}
+          <div className="space-y-4 md:col-span-2">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-xl overflow-hidden bg-[#0D111A] border border-[#C59B63]/40 p-1 flex items-center justify-center shrink-0 shadow-lg shadow-black/50">
+                <img 
+                  src={settings.logoMonogramUrl || '/ash-logo-monogram.jpg'} 
+                  alt="AW Monogram" 
+                  className="w-full h-full object-cover rounded-lg"
+                />
+              </div>
+              <div>
+                <div className="flex items-center gap-2 text-white text-base font-bold tracking-tight font-sans">
+                  <span>{settings.creativeName || settings.name || "Ash Wickramasinghe"}</span>
+                  <span className="w-1.5 h-1.5 bg-[#C59B63] rounded-full shadow-[0_0_6px_#C59B63]" />
+                </div>
+                <div className="text-[11px] text-slate-400 font-mono tracking-wider">
+                  {settings.title || "Graphic Designer • Social Media Manager • Author"}
+                </div>
+              </div>
             </div>
+
             <p className="text-slate-400 text-xs leading-relaxed max-w-md font-sans">
-              Graphic Designer • Social Media Manager • Author. Creating purposeful visual designs, high-retention digital content, and meaningful creative writing.
+              {settings.bio || "Kushan A Wickramasinghe is a creative professional specializing in graphic design, social media management, digital content and creative writing."}
             </p>
-            <p className="text-[11px] text-[#C59B63] italic font-serif">
-              &ldquo;Design with purpose. Create with intention. Write with meaning.&rdquo;
-            </p>
-            <div className="flex flex-wrap items-center gap-2 pt-2 text-[11px] text-slate-300">
+
+            {settings.personalStatement && (
+              <p className="text-[11px] text-[#C59B63] italic font-serif">
+                &ldquo;{settings.personalStatement}&rdquo;
+              </p>
+            )}
+
+            <div className="flex flex-wrap items-center gap-2 pt-1 text-[11px] text-slate-300">
               <span className="px-2.5 py-1 bg-[#111622] border border-slate-800 rounded-md text-[#C59B63]">
                 Graphic Design
               </span>

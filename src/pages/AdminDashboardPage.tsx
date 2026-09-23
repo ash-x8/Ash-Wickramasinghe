@@ -54,7 +54,9 @@ import {
   deleteContactMessage,
   uploadMediaFile,
   deleteMediaFile,
-  getAnalyticsTrends
+  getAnalyticsTrends,
+  subscribeToMedia,
+  getMediaItems
 } from '../lib/firebase';
 import { Project, SiteSettings, ContactMessage, Article, ServiceItem, MediaItem, PageViewTrend } from '../types';
 import { defaultSiteSettings, defaultProjects, defaultArticles, defaultMessages } from '../data/defaultContent';
@@ -65,6 +67,9 @@ import { SeoSettingsTab } from '../components/admin/SeoSettingsTab';
 import { SkillsManagerTab } from '../components/admin/SkillsManagerTab';
 import { TimelineManagerTab } from '../components/admin/TimelineManagerTab';
 import { TestimonialsManagerTab } from '../components/admin/TestimonialsManagerTab';
+import { MediaGalleryTab } from '../components/admin/MediaGalleryTab';
+import { ProfilePhotoManager } from '../components/admin/ProfilePhotoManager';
+import { MediaPickerModal } from '../components/admin/MediaPickerModal';
 
 type AdminTab = 
   | 'overview' 
@@ -149,27 +154,38 @@ export const AdminDashboardPage: React.FC = () => {
   // Modals state
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [isNewProjectModalOpen, setIsNewProjectModalOpen] = useState(false);
+  const [projectImageUrl, setProjectImageUrl] = useState('');
 
   const [editingArticle, setEditingArticle] = useState<Article | null>(null);
   const [isNewArticleModalOpen, setIsNewArticleModalOpen] = useState(false);
+  const [articleCoverUrl, setArticleCoverUrl] = useState('');
 
   const [editingService, setEditingService] = useState<ServiceItem | null>(null);
   const [isNewServiceModalOpen, setIsNewServiceModalOpen] = useState(false);
 
   const [selectedMessage, setSelectedMessage] = useState<ContactMessage | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<{ type: string; id: string; name: string } | null>(null);
+  
+  // Media picker modal for forms
+  const [pickerForField, setPickerForField] = useState<{
+    fieldName: 'project' | 'article';
+    title: string;
+    category?: any;
+    currentValue?: string;
+  } | null>(null);
 
   // Load all CMS data safely
   const refreshData = useCallback(async () => {
     setLoading(true);
     try {
-      const [sRes, pRes, aRes, srvRes, mRes, trRes] = await Promise.allSettled([
+      const [sRes, pRes, aRes, srvRes, mRes, trRes, medRes] = await Promise.allSettled([
         getSiteSettings(),
         getProjects(),
         getArticles(),
         getServices(),
         getContactMessages(),
-        getAnalyticsTrends(30)
+        getAnalyticsTrends(30),
+        getMediaItems()
       ]);
 
       if (sRes.status === 'fulfilled' && sRes.value) setSettings(sRes.value);
@@ -178,6 +194,7 @@ export const AdminDashboardPage: React.FC = () => {
       if (srvRes.status === 'fulfilled' && Array.isArray(srvRes.value)) setServices(srvRes.value);
       if (mRes.status === 'fulfilled' && Array.isArray(mRes.value) && mRes.value.length > 0) setMessages(mRes.value);
       if (trRes.status === 'fulfilled' && Array.isArray(trRes.value)) setTrends(trRes.value);
+      if (medRes.status === 'fulfilled' && Array.isArray(medRes.value)) setMediaList(medRes.value);
     } catch (err) {
       console.warn("Notice refreshing CMS data:", err);
     } finally {
@@ -187,6 +204,10 @@ export const AdminDashboardPage: React.FC = () => {
 
   useEffect(() => {
     refreshData();
+    const unsubMedia = subscribeToMedia((items) => {
+      setMediaList(items);
+    });
+    return () => unsubMedia();
   }, [refreshData]);
 
   // Global Escape key listener to dismiss any open modals
@@ -775,7 +796,11 @@ export const AdminDashboardPage: React.FC = () => {
                   <p className="text-xs text-slate-400">Add, edit, reorder, or toggle featured projects in your portfolio.</p>
                 </div>
                 <button
-                  onClick={() => { setEditingProject(null); setIsNewProjectModalOpen(true); }}
+                  onClick={() => { 
+                    setEditingProject(null); 
+                    setProjectImageUrl(''); 
+                    setIsNewProjectModalOpen(true); 
+                  }}
                   className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold bg-white text-black hover:bg-slate-200 transition-colors cursor-pointer"
                 >
                   <Plus size={14} />
@@ -838,7 +863,11 @@ export const AdminDashboardPage: React.FC = () => {
                           </td>
                           <td className="p-4 text-right space-x-2">
                             <button
-                              onClick={() => { setEditingProject(proj); setIsNewProjectModalOpen(true); }}
+                              onClick={() => { 
+                                setEditingProject(proj); 
+                                setProjectImageUrl(proj.image || ''); 
+                                setIsNewProjectModalOpen(true); 
+                              }}
                               className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
                               title="Edit project"
                             >
@@ -933,7 +962,11 @@ export const AdminDashboardPage: React.FC = () => {
                   <p className="text-xs text-slate-400">Publish articles and essays authored by Ash Wickramasinghe.</p>
                 </div>
                 <button
-                  onClick={() => { setEditingArticle(null); setIsNewArticleModalOpen(true); }}
+                  onClick={() => { 
+                    setEditingArticle(null); 
+                    setArticleCoverUrl(''); 
+                    setIsNewArticleModalOpen(true); 
+                  }}
                   className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold bg-white text-black hover:bg-slate-200 transition-colors cursor-pointer"
                 >
                   <Plus size={14} />
@@ -958,7 +991,11 @@ export const AdminDashboardPage: React.FC = () => {
 
                     <div className="flex items-center gap-2 shrink-0">
                       <button
-                        onClick={() => { setEditingArticle(art); setIsNewArticleModalOpen(true); }}
+                        onClick={() => { 
+                          setEditingArticle(art); 
+                          setArticleCoverUrl(art.coverImage || ''); 
+                          setIsNewArticleModalOpen(true); 
+                        }}
                         className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800"
                         title="Edit article"
                       >
@@ -1084,11 +1121,22 @@ export const AdminDashboardPage: React.FC = () => {
 
           {/* 6. PROFILE & BIO */}
           {activeTab === 'profile' && (
-            <div className="space-y-6">
+            <div className="space-y-8">
               <div>
-                <h2 className="text-xl font-bold text-white">Profile, Biography &amp; CV</h2>
-                <p className="text-xs text-slate-400">Update your public identity, biographical narrative, and contact coordinates.</p>
+                <h2 className="text-xl font-bold text-white">Profile, Portrait &amp; Identity</h2>
+                <p className="text-xs text-slate-400">Manage your official portrait, visual effects, brand logos, narrative biography, and contact coordinates.</p>
               </div>
+
+              {/* Dedicated Profile Photo & Brand Logos Manager */}
+              <ProfilePhotoManager
+                settings={settings}
+                mediaList={mediaList}
+                onChange={(updates) => {
+                  setSettings(prev => ({ ...prev, ...updates }));
+                  handleSaveSettings(updates);
+                }}
+                showToast={showToast}
+              />
 
               <form 
                 onSubmit={(e) => {
@@ -1546,56 +1594,14 @@ export const AdminDashboardPage: React.FC = () => {
             />
           )}
 
-          {/* 9. MEDIA LIBRARY */}
+          {/* 9. ADVANCED MEDIA GALLERY */}
           {activeTab === 'media' && (
-            <div className="space-y-6">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                  <h2 className="text-xl font-bold text-white">Media Library</h2>
-                  <p className="text-xs text-slate-400">Upload portfolio assets, posters, or certificates to Firebase Storage.</p>
-                </div>
-                <label className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold bg-white text-black hover:bg-slate-200 transition-colors cursor-pointer">
-                  <Upload size={14} />
-                  <span>{uploadingMedia ? 'Uploading...' : 'Upload File'}</span>
-                  <input
-                    type="file"
-                    accept="image/*,.pdf"
-                    onChange={handleMediaUpload}
-                    disabled={uploadingMedia}
-                    className="hidden"
-                  />
-                </label>
-              </div>
-
-              {mediaList.length === 0 ? (
-                <div className="p-12 text-center rounded-2xl bg-slate-900 border border-slate-800 text-slate-500 text-xs">
-                  No files uploaded in this session yet. Upload images above to retrieve asset URLs.
-                </div>
-              ) : (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                  {mediaList.map((item) => (
-                    <div key={item.id} className="p-3 rounded-xl bg-slate-900 border border-slate-800 space-y-2 text-xs">
-                      <div className="aspect-video w-full rounded-lg overflow-hidden bg-slate-950 flex items-center justify-center">
-                        <img src={item.url} alt="" className="w-full h-full object-cover" />
-                      </div>
-                      <div className="font-medium text-white truncate text-[11px]">{item.name}</div>
-                      <div className="flex items-center justify-between pt-1 text-[10px]">
-                        <span className="text-slate-500">{item.size}</span>
-                        <button
-                          onClick={() => {
-                            navigator.clipboard.writeText(item.url);
-                            showToast("URL copied to clipboard");
-                          }}
-                          className="text-amber-400 hover:underline flex items-center gap-1"
-                        >
-                          <Copy size={11} /> Copy URL
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+            <MediaGalleryTab
+              mediaList={mediaList}
+              settings={settings}
+              onUpdateSettings={handleSaveSettings}
+              showToast={showToast}
+            />
           )}
         </main>
       </div>
@@ -1701,12 +1707,28 @@ export const AdminDashboardPage: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-slate-400 mb-1 font-semibold">Cover Image URL *</label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-slate-400 font-semibold">Cover Artwork / Image URL *</label>
+                  <button
+                    type="button"
+                    onClick={() => setPickerForField({
+                      fieldName: 'project',
+                      title: 'Choose Project Cover Artwork',
+                      category: 'project',
+                      currentValue: projectImageUrl
+                    })}
+                    className="text-amber-400 hover:text-amber-300 text-[11px] font-semibold flex items-center gap-1 cursor-pointer"
+                  >
+                    <ImageIcon size={12} /> Choose from Media Gallery
+                  </button>
+                </div>
                 <input
                   name="image"
                   required
-                  defaultValue={editingProject?.image || ''}
-                  className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white"
+                  value={projectImageUrl}
+                  onChange={(e) => setProjectImageUrl(e.target.value)}
+                  placeholder="https://... or choose from gallery"
+                  className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white font-mono text-xs"
                 />
               </div>
 
@@ -1885,11 +1907,27 @@ export const AdminDashboardPage: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-slate-400 mb-1 font-semibold">Cover Image URL</label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-slate-400 font-semibold">Cover Image URL</label>
+                  <button
+                    type="button"
+                    onClick={() => setPickerForField({
+                      fieldName: 'article',
+                      title: 'Choose Article Cover Image',
+                      category: 'general',
+                      currentValue: articleCoverUrl
+                    })}
+                    className="text-amber-400 hover:text-amber-300 text-[11px] font-semibold flex items-center gap-1 cursor-pointer"
+                  >
+                    <ImageIcon size={12} /> Choose from Media Gallery
+                  </button>
+                </div>
                 <input
                   name="coverImage"
-                  defaultValue={editingArticle?.coverImage || ''}
-                  className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white"
+                  value={articleCoverUrl}
+                  onChange={(e) => setArticleCoverUrl(e.target.value)}
+                  placeholder="https://... or choose from gallery"
+                  className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white font-mono text-xs"
                 />
               </div>
 
@@ -2051,6 +2089,25 @@ export const AdminDashboardPage: React.FC = () => {
             </form>
           </div>
         </div>
+      )}
+      {/* Reusable Media Picker Modal for Project and Article Forms */}
+      {pickerForField && (
+        <MediaPickerModal
+          isOpen={!!pickerForField}
+          onClose={() => setPickerForField(null)}
+          title={pickerForField.title}
+          categoryFilter={pickerForField.category}
+          currentValue={pickerForField.currentValue}
+          mediaList={mediaList}
+          onSelect={(url) => {
+            if (pickerForField.fieldName === 'project') {
+              setProjectImageUrl(url);
+            } else if (pickerForField.fieldName === 'article') {
+              setArticleCoverUrl(url);
+            }
+            setPickerForField(null);
+          }}
+        />
       )}
     </div>
   );

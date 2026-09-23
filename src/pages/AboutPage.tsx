@@ -58,6 +58,7 @@ export const AboutPage: React.FC = () => {
           <ProfilePhotoFrame
             src={settings.avatarUrl || '/ash_cyber_portrait.jpg'}
             statusText={settings.statusText}
+            effect={settings.profileImageEffect || 'cinematic'}
           />
 
           <div className="p-6 rounded-xl border border-neutral-800/80 dark:border-neutral-800/80 light:border-neutral-200 bg-neutral-900/30 dark:bg-neutral-900/30 light:bg-white space-y-4 text-xs">

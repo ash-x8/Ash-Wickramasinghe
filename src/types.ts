@@ -109,6 +109,10 @@ export interface SiteSettings {
   workAvailability?: string;
   statusText: string;
   avatarUrl: string;
+  profileImage?: string;
+  profileImageEffect?: 'normal' | 'bw' | 'blur' | 'cinematic' | 'grayscale' | 'contrast';
+  logoMonogramUrl?: string;
+  logoFullUrl?: string;
   cvUrl: string;
   cvPublished?: boolean;
   cvLastUpdated?: string;
@@ -171,8 +175,22 @@ export interface ContactMessage {
 export interface MediaItem {
   id: string;
   name: string;
+  originalName?: string;
+  storagePath?: string;
   url: string;
-  size?: string;
-  type?: string;
+  thumbnailUrl?: string;
+  mimeType?: string;
+  size?: number | string;
+  sizeFormatted?: string;
+  width?: number;
+  height?: number;
+  format?: string;
+  category?: 'image' | 'logo' | 'profile' | 'project' | 'document' | 'all';
+  altText?: string;
+  caption?: string;
   uploadedAt: string;
+  createdAt?: any;
+  updatedAt?: any;
+  inUseBy?: string[];
+  type?: string;
 }

@@ -9,13 +9,30 @@ import {
   Moon
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
+import { getSiteSettings, subscribeToSiteSettings } from '../lib/firebase';
+import { defaultSiteSettings } from '../data/defaultContent';
+import { SiteSettings } from '../types';
 
 export const CyberNavbar: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [currentTime, setCurrentTime] = useState('');
+  const [settings, setSettings] = useState<SiteSettings>(defaultSiteSettings);
+  const [logoLoaded, setLogoLoaded] = useState(true);
   const location = useLocation();
   const { theme, toggleTheme } = useTheme();
+
+  // Real-time site settings subscription
+  useEffect(() => {
+    getSiteSettings().then((loaded) => {
+      if (loaded) setSettings(loaded);
+    }).catch(console.warn);
+
+    const unsubscribe = subscribeToSiteSettings((newSettings) => {
+      setSettings(newSettings);
+    });
+    return () => unsubscribe();
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -80,16 +97,25 @@ export const CyberNavbar: React.FC = () => {
           to="/" 
           className="group flex items-center gap-3 font-mono text-sm tracking-wider"
         >
-          <div className="relative w-9 h-9 flex items-center justify-center bg-[#111622] border border-[#C59B63]/40 rounded-lg group-hover:border-[#C59B63] transition-all shadow-[0_0_15px_rgba(197,155,99,0.15)]">
-            <span className="text-[#EDEDED] font-bold text-xs tracking-tight group-hover:text-[#C59B63] transition-colors">AW</span>
-            <div className="absolute -top-1 -right-1 w-2 h-2 bg-[#10B981] rounded-full ring-2 ring-[#0A0D14] shadow-[0_0_6px_#10B981]" />
+          <div className="relative w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center bg-[#0D111A] border border-[#C59B63]/40 rounded-xl group-hover:border-[#C59B63] transition-all shadow-[0_0_15px_rgba(197,155,99,0.15)] overflow-hidden">
+            {logoLoaded ? (
+              <img
+                src={settings.logoMonogramUrl || '/ash-logo-monogram.jpg'}
+                alt="AW Monogram"
+                onError={() => setLogoLoaded(false)}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              />
+            ) : (
+              <span className="text-[#EDEDED] font-bold text-xs tracking-tight group-hover:text-[#C59B63] transition-colors">AW</span>
+            )}
+            <div className="absolute top-1 right-1 w-2 h-2 bg-[#10B981] rounded-full ring-2 ring-[#0A0D14] shadow-[0_0_6px_#10B981]" />
           </div>
           <div className="flex flex-col">
             <span className="font-bold text-[#EDEDED] group-hover:text-[#C59B63] transition-colors flex items-center gap-1.5 font-sans tracking-tight text-sm sm:text-base">
-              Ash Wickramasinghe
+              {settings.creativeName || settings.name || "Ash Wickramasinghe"}
             </span>
             <span className="text-[10px] text-slate-400 font-mono tracking-wider flex items-center gap-1.5">
-              <span>Graphic Designer &amp; Creative Digital</span>
+              <span>{settings.title ? settings.title.split('•')[0].trim() : "Graphic Designer"} &amp; Creative Digital</span>
             </span>
           </div>
         </Link>
