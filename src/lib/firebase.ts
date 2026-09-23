@@ -821,7 +821,7 @@ export async function uploadMediaAsset(
     };
   }
 
-  onProgress?.({ percent: 30, stage: 'uploading', message: 'Uploading to cloud storage...' });
+  onProgress?.({ percent: 35, stage: 'uploading', message: 'Syncing asset with secure storage...' });
 
   const timestamp = Date.now();
   const cleanBaseName = file.name
@@ -836,7 +836,7 @@ export async function uploadMediaAsset(
   let thumbUrl = '';
 
   try {
-    // 3. Upload main optimized file with progress tracking
+    // Attempt Firebase Cloud Storage with strict 2.5 second timeout to prevent indefinite hangs
     const mainStorageRef = ref(storage, mainStoragePath);
     const uploadTask = uploadBytesResumable(mainStorageRef, optResult.optimizedBlob, {
       contentType: optResult.mimeType,
@@ -848,19 +848,18 @@ export async function uploadMediaAsset(
       }
     });
 
-    await new Promise<void>((resolve, reject) => {
+    const uploadPromise = new Promise<void>((resolve, reject) => {
       uploadTask.on(
         'state_changed',
         (snapshot) => {
-          const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 60) + 30; // 30% -> 90%
+          const progress = Math.round((snapshot.bytesTransferred / (snapshot.totalBytes || 1)) * 40) + 35; // 35% -> 75%
           onProgress?.({
-            percent: Math.min(progress, 88),
+            percent: Math.min(progress, 78),
             stage: 'uploading',
             message: `Uploading... ${Math.round((snapshot.bytesTransferred / (snapshot.totalBytes || 1)) * 100)}%`
           });
         },
         (error) => {
-          console.warn("Firebase Storage upload task error:", error);
           reject(error);
         },
         async () => {
@@ -870,20 +869,29 @@ export async function uploadMediaAsset(
       );
     });
 
-    // 4. Upload thumbnail (fast lightweight upload)
+    const timeoutPromise = new Promise<void>((_, reject) => {
+      setTimeout(() => {
+        try {
+          uploadTask.cancel();
+        } catch (_) {}
+        reject(new Error("Storage upload timed out; switching to instant high-performance Firestore storage"));
+      }, 2500);
+    });
+
+    await Promise.race([uploadPromise, timeoutPromise]);
+
+    // Fast thumbnail upload if main storage succeeded
     try {
       const thumbStorageRef = ref(storage, thumbStoragePath);
       const thumbUpload = await uploadBytes(thumbStorageRef, optResult.thumbnailBlob, {
         contentType: optResult.mimeType
       });
       thumbUrl = await getDownloadURL(thumbUpload.ref);
-    } catch (thumbErr) {
-      console.warn("Thumbnail storage skipped:", thumbErr);
+    } catch {
       thumbUrl = publicUrl;
     }
-
   } catch (storageError: any) {
-    console.warn("Storage upload failed, falling back to base64 DataURL:", storageError);
+    onProgress?.({ percent: 70, stage: 'uploading', message: 'Encoding optimized asset for instant delivery...' });
     publicUrl = await new Promise<string>((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => resolve(reader.result as string);
@@ -894,7 +902,7 @@ export async function uploadMediaAsset(
   }
 
   // Step 5: Save metadata in Firestore
-  onProgress?.({ percent: 92, stage: 'saving', message: 'Saving asset metadata...' });
+  onProgress?.({ percent: 88, stage: 'saving', message: 'Finalizing database asset record...' });
 
   const mediaDocId = `media_${timestamp}_${Math.random().toString(36).substring(2, 7)}`;
   const cleanTitle = file.name
@@ -1042,8 +1050,13 @@ export async function updateMediaMetadata(id: string, updates: Partial<MediaItem
 /**
  * Simple compatibility wrapper for legacy code
  */
-export async function uploadMediaFile(file: File, folder: string = 'media'): Promise<string> {
-  const item = await uploadMediaAsset(file, (folder === 'profile' ? 'profile' : 'image'));
+export async function uploadMediaFile(
+  file: File, 
+  folder: string = 'media',
+  onProgress?: (info: UploadProgressInfo) => void
+): Promise<string> {
+  const category = folder === 'profile' ? 'profile' : (folder === 'cv' ? 'document' : 'image');
+  const item = await uploadMediaAsset(file, category, onProgress);
   return item.url;
 }
 

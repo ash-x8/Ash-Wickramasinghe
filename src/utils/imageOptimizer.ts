@@ -100,10 +100,13 @@ export async function optimizeImageFile(
   const originalSize = file.size;
   const originalName = file.name;
   const isSvg = file.type.includes('svg') || file.name.toLowerCase().endsWith('.svg');
-  const isPdf = file.type.includes('pdf') || file.name.toLowerCase().endsWith('.pdf');
+  const isDoc = file.type.includes('pdf') || 
+                file.type.includes('word') || 
+                file.type.includes('officedocument') ||
+                /\.(pdf|doc|docx)$/i.test(file.name);
 
-  // SVG and PDF documents are preserved as-is
-  if (isSvg || isPdf) {
+  // SVG and documents (PDF/DOC/DOCX) are preserved as-is
+  if (isSvg || isDoc) {
     return {
       file,
       originalName,
@@ -115,7 +118,7 @@ export async function optimizeImageFile(
       optimizedSize: originalSize,
       thumbnailSize: originalSize,
       format: isSvg ? 'png' : 'jpeg',
-      mimeType: file.type || (isSvg ? 'image/svg+xml' : 'application/pdf'),
+      mimeType: file.type || (isSvg ? 'image/svg+xml' : 'application/octet-stream'),
       sizeFormatted: formatBytes(originalSize),
       savingsPercentage: 0
     };

@@ -114,6 +114,11 @@ export interface SiteSettings {
   logoMonogramUrl?: string;
   logoFullUrl?: string;
   cvUrl: string;
+  cvSource?: 'upload' | 'link';
+  cvFileUrl?: string;
+  cvFileName?: string;
+  cvFileSize?: string;
+  cvExternalUrl?: string;
   cvPublished?: boolean;
   cvLastUpdated?: string;
   email: string;

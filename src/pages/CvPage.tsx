@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FileText, Printer, ArrowLeft, Eye, Layout } from 'lucide-react';
+import { FileText, Printer, ArrowLeft, Eye, Layout, Download, ExternalLink } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { getSiteSettings, subscribeToSiteSettings } from '../lib/firebase';
 import { SiteSettings } from '../types';
@@ -88,6 +88,19 @@ export const CvPage: React.FC = () => {
                 <span>Document Viewer</span>
               </button>
             </div>
+          )}
+
+          {settings.cvUrl && (
+            <a
+              href={settings.cvUrl}
+              download={settings.cvFileName || "Ash_Wickramasinghe_CV.pdf"}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-2 px-4 py-2 text-xs uppercase tracking-wider font-semibold rounded-full bg-[#C59B63] text-black hover:bg-[#b08852] transition-colors cursor-pointer shadow-sm"
+            >
+              <Download size={14} />
+              <span>Download CV</span>
+            </a>
           )}
 
           <button
