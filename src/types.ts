@@ -122,6 +122,7 @@ export interface SiteSettings {
   cvExternalUrl?: string;
   cvPublished?: boolean;
   cvLastUpdated?: string;
+  cvStoragePath?: string;
   email: string;
   emailSecondary?: string;
   phone?: string;
@@ -199,4 +200,18 @@ export interface MediaItem {
   updatedAt?: any;
   inUseBy?: string[];
   type?: string;
+}
+
+export interface ActiveCvConfig {
+  sourceType: 'uploaded' | 'external';
+  fileType: 'pdf' | 'image' | 'doc';
+  fileName: string;
+  storagePath: string;
+  downloadUrl: string;
+  mimeType: string;
+  fileSize: number;
+  fileSizeFormatted?: string;
+  published?: boolean;
+  lastUpdated?: string;
+  updatedAt?: string;
 }

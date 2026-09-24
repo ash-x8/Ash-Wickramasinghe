@@ -21,6 +21,13 @@ service cloud.firestore {
       allow delete: if isAuthenticated();
     }
 
+    // Settings (including settings/cv for active CV configuration): Public read, CMS updates
+    match /settings/{document} {
+      allow get, list: if true;
+      allow create, update: if true;
+      allow delete: if true;
+    }
+
     // Portfolio Projects: Public catalog read, full CMS management
     match /projects/{projectId} {
       allow get, list: if true;

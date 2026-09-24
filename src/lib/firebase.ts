@@ -45,7 +45,7 @@ import {
   Analytics 
 } from 'firebase/analytics';
 import firebaseConfig from '../../firebase-applet-config.json';
-import { Project, SiteSettings, ContactMessage, Article, ServiceItem, MediaItem, PageViewTrend } from '../types';
+import { Project, SiteSettings, ContactMessage, Article, ServiceItem, MediaItem, PageViewTrend, ActiveCvConfig } from '../types';
 import { defaultSiteSettings, defaultProjects, defaultArticles } from '../data/defaultContent';
 
 // Initialize Firebase instances
@@ -100,14 +100,16 @@ export const ADMIN_CREDENTIALS = {
    FIRESTORE ERROR HANDLER & CONNECTION TEST (Standardized)
    ========================================================================= */
 
-export enum OperationType {
-  CREATE = 'create',
-  UPDATE = 'update',
-  DELETE = 'delete',
-  LIST = 'list',
-  GET = 'get',
-  WRITE = 'write',
-}
+export const OperationType = {
+  CREATE: 'create',
+  UPDATE: 'update',
+  DELETE: 'delete',
+  LIST: 'list',
+  GET: 'get',
+  WRITE: 'write',
+} as const;
+
+export type OperationType = (typeof OperationType)[keyof typeof OperationType];
 
 export interface FirestoreErrorInfo {
   error: string;
@@ -209,6 +211,315 @@ export function subscribeToSiteSettings(callback: (settings: SiteSettings) => vo
       callback(defaultSiteSettings);
     }
   );
+}
+
+/* =========================================================================
+   CURRICULUM VITAE (CV) CONFIGURATION & STORAGE
+   Firestore Single Source of Truth: settings/cv (and site_settings/main_settings)
+   ========================================================================= */
+
+export const CV_DOC_PATH = 'settings/cv';
+
+export async function getActiveCvConfig(): Promise<ActiveCvConfig | null> {
+  try {
+    const cvDocRef = doc(db, 'settings', 'cv');
+    const snap = await getDoc(cvDocRef);
+    if (snap.exists()) {
+      const data = snap.data() as Partial<ActiveCvConfig>;
+      if (data.downloadUrl) {
+        return {
+          sourceType: data.sourceType || 'uploaded',
+          fileType: data.fileType || 'pdf',
+          fileName: data.fileName || 'Curriculum_Vitae',
+          storagePath: data.storagePath || '',
+          downloadUrl: data.downloadUrl,
+          mimeType: data.mimeType || 'application/pdf',
+          fileSize: data.fileSize || 0,
+          fileSizeFormatted: data.fileSizeFormatted || '',
+          published: data.published ?? true,
+          lastUpdated: data.lastUpdated || '',
+          updatedAt: data.updatedAt || ''
+        };
+      }
+    }
+  } catch (err) {
+    console.warn("Could not read settings/cv, falling back to site_settings:", err);
+  }
+
+  // Fallback to site_settings/main_settings
+  try {
+    const mainSettings = await getSiteSettings();
+    const effectiveUrl = mainSettings.cvUrl || (mainSettings.cvSource === 'upload' ? mainSettings.cvFileUrl : mainSettings.cvExternalUrl);
+    if (effectiveUrl) {
+      const isImg = Boolean(mainSettings.cvFileType === 'image' || /\.(jpg|jpeg|png|webp|avif)($|\?)/i.test(effectiveUrl));
+      return {
+        sourceType: mainSettings.cvSource === 'link' ? 'external' : 'uploaded',
+        fileType: isImg ? 'image' : 'pdf',
+        fileName: mainSettings.cvFileName || (isImg ? 'Ash_Wickramasinghe_CV.png' : 'Ash_Wickramasinghe_CV.pdf'),
+        storagePath: mainSettings.cvStoragePath || '',
+        downloadUrl: effectiveUrl,
+        mimeType: isImg ? 'image/jpeg' : 'application/pdf',
+        fileSize: 0,
+        fileSizeFormatted: mainSettings.cvFileSize || '',
+        published: mainSettings.cvPublished ?? true,
+        lastUpdated: mainSettings.cvLastUpdated || 'March 2026',
+        updatedAt: mainSettings.updatedAt || ''
+      };
+    }
+  } catch (fallbackErr) {
+    console.warn("Fallback read failed:", fallbackErr);
+  }
+
+  return null;
+}
+
+export async function saveActiveCvConfig(config: Partial<ActiveCvConfig>): Promise<ActiveCvConfig> {
+  const cvDocRef = doc(db, 'settings', 'cv');
+  const nowIso = new Date().toISOString();
+  
+  const updatePayload = {
+    ...config,
+    updatedAt: nowIso,
+    updatedAtServer: serverTimestamp()
+  };
+
+  // 1. Save to dedicated settings/cv document
+  try {
+    await setDoc(cvDocRef, updatePayload, { merge: true });
+  } catch (err) {
+    handleFirestoreError(err, OperationType.WRITE, 'settings/cv');
+    throw err;
+  }
+
+  // 2. Synchronize with site_settings/main_settings so all components update seamlessly
+  try {
+    const mainSettingsRef = doc(db, 'site_settings', SETTINGS_DOC_ID);
+    await setDoc(mainSettingsRef, {
+      cvSource: config.sourceType === 'external' ? 'link' : 'upload',
+      cvFileUrl: config.downloadUrl || '',
+      cvUrl: config.downloadUrl || '',
+      cvExternalUrl: config.sourceType === 'external' ? (config.downloadUrl || '') : '',
+      cvFileName: config.fileName || '',
+      cvFileSize: config.fileSizeFormatted || (config.fileSize ? formatBytes(config.fileSize) : ''),
+      cvFileType: config.fileType || 'pdf',
+      cvStoragePath: config.storagePath || '',
+      cvPublished: config.published ?? true,
+      cvLastUpdated: config.lastUpdated || new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
+      updatedAt: nowIso
+    }, { merge: true });
+  } catch (syncErr) {
+    console.warn("CV sync to main_settings note:", syncErr);
+  }
+
+  return {
+    sourceType: config.sourceType || 'uploaded',
+    fileType: config.fileType || 'pdf',
+    fileName: config.fileName || 'Curriculum_Vitae',
+    storagePath: config.storagePath || '',
+    downloadUrl: config.downloadUrl || '',
+    mimeType: config.mimeType || 'application/pdf',
+    fileSize: config.fileSize || 0,
+    fileSizeFormatted: config.fileSizeFormatted || '',
+    published: config.published ?? true,
+    lastUpdated: config.lastUpdated || '',
+    updatedAt: nowIso
+  };
+}
+
+export function subscribeToActiveCvConfig(callback: (config: ActiveCvConfig | null) => void): () => void {
+  const cvDocRef = doc(db, 'settings', 'cv');
+  
+  return onSnapshot(
+    cvDocRef,
+    (snap) => {
+      if (snap.exists() && snap.data()?.downloadUrl) {
+        const data = snap.data() as Partial<ActiveCvConfig>;
+        callback({
+          sourceType: data.sourceType || 'uploaded',
+          fileType: data.fileType || 'pdf',
+          fileName: data.fileName || 'Curriculum_Vitae',
+          storagePath: data.storagePath || '',
+          downloadUrl: data.downloadUrl || '',
+          mimeType: data.mimeType || 'application/pdf',
+          fileSize: data.fileSize || 0,
+          fileSizeFormatted: data.fileSizeFormatted || '',
+          published: data.published ?? true,
+          lastUpdated: data.lastUpdated || '',
+          updatedAt: data.updatedAt || ''
+        });
+      } else {
+        // Fallback to site_settings
+        getSiteSettings().then((settings) => {
+          const effectiveUrl = settings.cvUrl || (settings.cvSource === 'upload' ? settings.cvFileUrl : settings.cvExternalUrl);
+          if (effectiveUrl) {
+            const isImg = Boolean(settings.cvFileType === 'image' || /\.(jpg|jpeg|png|webp|avif)($|\?)/i.test(effectiveUrl));
+            callback({
+              sourceType: settings.cvSource === 'link' ? 'external' : 'uploaded',
+              fileType: isImg ? 'image' : 'pdf',
+              fileName: settings.cvFileName || (isImg ? 'Ash_Wickramasinghe_CV.png' : 'Ash_Wickramasinghe_CV.pdf'),
+              storagePath: settings.cvStoragePath || '',
+              downloadUrl: effectiveUrl,
+              mimeType: isImg ? 'image/jpeg' : 'application/pdf',
+              fileSize: 0,
+              fileSizeFormatted: settings.cvFileSize || '',
+              published: settings.cvPublished ?? true,
+              lastUpdated: settings.cvLastUpdated || 'March 2026',
+              updatedAt: settings.updatedAt || ''
+            });
+          } else {
+            callback(null);
+          }
+        }).catch(() => callback(null));
+      }
+    },
+    (err) => {
+      console.warn("subscribeToActiveCvConfig notice:", err);
+      // Fallback to site settings
+      getSiteSettings().then((settings) => {
+        const effectiveUrl = settings.cvUrl || (settings.cvSource === 'upload' ? settings.cvFileUrl : settings.cvExternalUrl);
+        if (effectiveUrl) {
+          const isImg = Boolean(settings.cvFileType === 'image' || /\.(jpg|jpeg|png|webp|avif)($|\?)/i.test(effectiveUrl));
+          callback({
+            sourceType: settings.cvSource === 'link' ? 'external' : 'uploaded',
+            fileType: isImg ? 'image' : 'pdf',
+            fileName: settings.cvFileName || (isImg ? 'Ash_Wickramasinghe_CV.png' : 'Ash_Wickramasinghe_CV.pdf'),
+            storagePath: settings.cvStoragePath || '',
+            downloadUrl: effectiveUrl,
+            mimeType: isImg ? 'image/jpeg' : 'application/pdf',
+            fileSize: 0,
+            fileSizeFormatted: settings.cvFileSize || '',
+            published: settings.cvPublished ?? true,
+            lastUpdated: settings.cvLastUpdated || 'March 2026',
+            updatedAt: settings.updatedAt || ''
+          });
+        } else {
+          callback(null);
+        }
+      }).catch(() => callback(null));
+    }
+  );
+}
+
+export async function uploadCvFile(
+  file: File,
+  onProgress?: (info: UploadProgressInfo) => void
+): Promise<{
+  downloadUrl: string;
+  storagePath: string;
+  fileName: string;
+  fileSize: number;
+  mimeType: string;
+  fileType: 'pdf' | 'image' | 'doc';
+}> {
+  // Step 1: Validation
+  onProgress?.({ percent: 5, stage: 'validating', message: 'Validating CV document format and size...' });
+  const nameLower = file.name.toLowerCase();
+  const mimeLower = (file.type || '').toLowerCase();
+  const isImage = mimeLower.startsWith('image/') || /\.(jpg|jpeg|png|webp)$/i.test(nameLower);
+  const isPdf = mimeLower.includes('pdf') || /\.pdf$/i.test(nameLower);
+  const isDoc = mimeLower.includes('word') || mimeLower.includes('officedocument') || /\.(doc|docx)$/i.test(nameLower);
+
+  if (!isImage && !isPdf && !isDoc) {
+    throw new Error('Unsupported format. Please choose a PDF document (.pdf) or image (.jpg, .jpeg, .png, .webp).');
+  }
+
+  if (file.size > 30 * 1024 * 1024) {
+    throw new Error('File exceeds 30MB size limit. Please select a file under 30MB.');
+  }
+
+  const detectedFileType: 'pdf' | 'image' | 'doc' = isImage ? 'image' : (isPdf ? 'pdf' : 'doc');
+  const cleanBaseName = file.name.replace(/\.[^/.]+$/, "").replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 50);
+  const ext = file.name.split('.').pop()?.toLowerCase() || (isPdf ? 'pdf' : 'jpg');
+  const timestamp = Date.now();
+  const storagePath = `cv/${timestamp}_${cleanBaseName}.${ext}`;
+
+  onProgress?.({ percent: 15, stage: 'uploading', message: 'Initiating storage transfer...' });
+
+  let downloadUrl = '';
+
+  // 1. Primary: Official Firebase Storage SDK Resumable Upload
+  try {
+    const storageRef = ref(storage, storagePath);
+    const contentType = file.type || (isPdf ? 'application/pdf' : (isImage ? 'image/jpeg' : 'application/octet-stream'));
+    
+    downloadUrl = await new Promise<string>((resolve, reject) => {
+      const uploadTask = uploadBytesResumable(storageRef, file, { contentType });
+
+      uploadTask.on(
+        'state_changed',
+        (snapshot) => {
+          if (snapshot.totalBytes > 0) {
+            const rawPercent = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+            const clamped = Math.min(Math.max(rawPercent, 15), 90);
+            onProgress?.({
+              percent: clamped,
+              stage: 'uploading',
+              message: `Uploading to storage... ${clamped}%`
+            });
+          }
+        },
+        (error) => {
+          console.warn("Firebase Storage upload note:", error.code || error.message);
+          reject(error);
+        },
+        async () => {
+          try {
+            const url = await getDownloadURL(uploadTask.snapshot.ref);
+            resolve(url);
+          } catch (urlErr) {
+            reject(urlErr);
+          }
+        }
+      );
+    });
+  } catch (storageErr: any) {
+    console.warn("Storage upload pipeline fallback:", storageErr?.message || storageErr);
+    
+    // 2. Resilient Server Storage Pipeline via /api/upload
+    onProgress?.({ percent: 25, stage: 'uploading', message: 'Routing transfer through media pipeline...' });
+    const serverRes = await uploadViaServerApi(file, file.name, 'cv', (info) => {
+      onProgress?.({
+        percent: Math.min(Math.max(info.percent, 25), 92),
+        stage: 'uploading',
+        message: info.message || `Transferring CV... ${info.percent}%`
+      });
+    });
+    downloadUrl = serverRes.url;
+  }
+
+  if (!downloadUrl) {
+    throw new Error('Upload completed but storage did not return a valid download URL.');
+  }
+
+  // Step 3: Write metadata directly to Firestore settings/cv and site_settings/main_settings
+  onProgress?.({ percent: 94, stage: 'saving', message: 'Saving CV metadata to Firestore...' });
+
+  const cvData: ActiveCvConfig = {
+    sourceType: 'uploaded',
+    fileType: detectedFileType,
+    fileName: file.name,
+    storagePath,
+    downloadUrl,
+    mimeType: file.type || (isPdf ? 'application/pdf' : 'image/jpeg'),
+    fileSize: file.size,
+    fileSizeFormatted: formatBytes(file.size),
+    published: true,
+    lastUpdated: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
+    updatedAt: new Date().toISOString()
+  };
+
+  await saveActiveCvConfig(cvData);
+
+  onProgress?.({ percent: 100, stage: 'completed', message: 'Upload and database synchronization successful!' });
+
+  return {
+    downloadUrl,
+    storagePath,
+    fileName: file.name,
+    fileSize: file.size,
+    mimeType: cvData.mimeType,
+    fileType: detectedFileType
+  };
 }
 
 /* =========================================================================
@@ -1071,7 +1382,11 @@ export async function uploadMediaFile(
   folder: string = 'media',
   onProgress?: (info: UploadProgressInfo) => void
 ): Promise<string> {
-  const category = folder === 'profile' ? 'profile' : (folder === 'cv' ? 'document' : 'image');
+  if (folder === 'cv') {
+    const res = await uploadCvFile(file, onProgress);
+    return res.downloadUrl;
+  }
+  const category = folder === 'profile' ? 'profile' : 'image';
   const item = await uploadMediaAsset(file, category, onProgress);
   return item.url;
 }
