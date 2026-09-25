@@ -51,7 +51,7 @@ export const SocialManagerTab: React.FC<SocialManagerTabProps> = ({
   const [saving, setSaving] = useState(false);
 
   React.useEffect(() => {
-    if (settings.socialLinks && settings.socialLinks.length > 0) {
+    if (Array.isArray(settings.socialLinks)) {
       setLinks(settings.socialLinks);
     }
   }, [settings.socialLinks]);

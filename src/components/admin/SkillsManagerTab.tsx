@@ -38,7 +38,7 @@ export const SkillsManagerTab: React.FC<SkillsManagerTabProps> = ({
   const [saving, setSaving] = useState(false);
 
   React.useEffect(() => {
-    if (initialSkills && initialSkills.length > 0) {
+    if (Array.isArray(initialSkills)) {
       setSkills(initialSkills);
     }
   }, [initialSkills]);

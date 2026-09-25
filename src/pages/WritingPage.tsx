@@ -1,12 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { useLocation, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Calendar, Clock, User, ArrowUpRight, X, ChevronRight, BookOpen } from 'lucide-react';
+import { Calendar, Clock, User, ArrowUpRight, X, ChevronRight, BookOpen, ExternalLink } from 'lucide-react';
 import { getArticles, subscribeToArticles, trackArticleView } from '../lib/firebase';
 import { Article } from '../types';
 import { defaultArticles } from '../data/defaultContent';
 import { calculateReadingTime } from '../utils/readingTime';
 import { ContentSkeleton } from '../components/ContentSkeleton';
+import { ReadingProgressBar } from '../components/ReadingProgressBar';
 
 export const WritingPage: React.FC = () => {
   const [articles, setArticles] = useState<Article[]>(defaultArticles);
@@ -14,6 +15,7 @@ export const WritingPage: React.FC = () => {
   const [activeCategory, setActiveCategory] = useState<string>('All');
   const [loading, setLoading] = useState(true);
   const location = useLocation();
+  const modalScrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     getArticles()
@@ -165,10 +167,14 @@ export const WritingPage: React.FC = () => {
                   ))}
                 </div>
 
-                <span className="inline-flex items-center gap-1 text-xs uppercase tracking-widest font-medium text-neutral-300 dark:text-neutral-300 light:text-neutral-800 group-hover:text-[#C59B63] group-hover:translate-x-1.5 transition-all">
+                <Link
+                  to={`/writing/${article.slug}`}
+                  onClick={(e) => e.stopPropagation()}
+                  className="inline-flex items-center gap-1 text-xs uppercase tracking-widest font-medium text-neutral-300 dark:text-neutral-300 light:text-neutral-800 group-hover:text-[#C59B63] group-hover:translate-x-1.5 transition-all"
+                >
                   <span>Read Full Essay</span>
                   <ChevronRight size={14} />
-                </span>
+                </Link>
               </div>
             </motion.article>
           );
@@ -200,17 +206,34 @@ export const WritingPage: React.FC = () => {
                   {calculateReadingTime(selectedArticle.content, selectedArticle.excerpt).wordCount} words
                 </span>
               </div>
-              <button
-                onClick={() => setSelectedArticle(null)}
-                className="p-1.5 rounded-full text-neutral-400 hover:text-white hover:bg-neutral-800 transition-colors"
-                aria-label="Close article"
-              >
-                <X size={20} />
-              </button>
+              <div className="flex items-center gap-3">
+                <Link
+                  to={`/writing/${selectedArticle.slug}`}
+                  className="hidden sm:inline-flex items-center gap-1 text-[11px] font-mono text-[#C59B63] hover:underline"
+                >
+                  <span>Open Full Page</span>
+                  <ExternalLink size={12} />
+                </Link>
+                <button
+                  onClick={() => setSelectedArticle(null)}
+                  className="p-1.5 rounded-full text-neutral-400 hover:text-white hover:bg-neutral-800 transition-colors"
+                  aria-label="Close article"
+                >
+                  <X size={20} />
+                </button>
+              </div>
             </div>
 
+            {/* Reading Progress Bar for Modal */}
+            <ReadingProgressBar 
+              containerRef={modalScrollRef} 
+              totalMinutes={calculateReadingTime(selectedArticle.content, selectedArticle.excerpt).minutes} 
+              title={selectedArticle.title}
+              showFloatingIndicator={false}
+            />
+
             {/* Modal Body */}
-            <div className="p-6 sm:p-10 overflow-y-auto space-y-8">
+            <div ref={modalScrollRef} className="p-6 sm:p-10 overflow-y-auto space-y-8">
               {selectedArticle.coverImage && (
                 <div className="relative aspect-video w-full rounded-xl overflow-hidden bg-neutral-950 border border-neutral-800">
                   <img

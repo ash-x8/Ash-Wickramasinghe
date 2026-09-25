@@ -31,7 +31,7 @@ export const TestimonialsManagerTab: React.FC<TestimonialsManagerTabProps> = ({
   const [saving, setSaving] = useState(false);
 
   React.useEffect(() => {
-    if (initialTestimonials && initialTestimonials.length > 0) {
+    if (Array.isArray(initialTestimonials)) {
       setTestimonials(initialTestimonials);
     }
   }, [initialTestimonials]);

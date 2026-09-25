@@ -523,16 +523,74 @@ export async function uploadCvFile(
 }
 
 /* =========================================================================
-   PROJECTS CMS (Full CRUD)
+   PROJECTS CMS (Full CRUD & Seed Control)
    ========================================================================= */
+
+let hasSeededInitialContent = false;
+
+export async function ensureInitialContentSeeded(): Promise<boolean> {
+  if (hasSeededInitialContent) return true;
+  try {
+    const initRef = doc(db, 'site_settings', 'content_init');
+    const snap = await getDoc(initRef);
+    if (!snap.exists()) {
+      // Check existing collections before seeding
+      const projectsCol = collection(db, 'projects');
+      const articlesCol = collection(db, 'articles');
+
+      const [projSnap, artSnap] = await Promise.all([
+        getDocs(projectsCol),
+        getDocs(articlesCol)
+      ]);
+
+      const seedPromises: Promise<any>[] = [];
+
+      if (projSnap.empty) {
+        defaultProjects.forEach(proj => {
+          seedPromises.push(setDoc(doc(db, 'projects', proj.id), {
+            ...proj,
+            createdAt: new Date().toISOString()
+          }));
+        });
+      }
+
+      if (artSnap.empty) {
+        defaultArticles.forEach(art => {
+          seedPromises.push(setDoc(doc(db, 'articles', art.id), {
+            ...art,
+            createdAt: new Date().toISOString()
+          }));
+        });
+      }
+
+      await Promise.all(seedPromises);
+      await setDoc(initRef, {
+        initialized: true,
+        seededAt: new Date().toISOString()
+      }, { merge: true });
+    }
+    hasSeededInitialContent = true;
+    return true;
+  } catch (err) {
+    console.debug("Content initialization check note:", err);
+    return false;
+  }
+}
+
+// Trigger once in background safely
+if (typeof window !== 'undefined') {
+  ensureInitialContentSeeded().catch(() => {});
+}
 
 export async function getProjects(): Promise<Project[]> {
   try {
+    await ensureInitialContentSeeded();
     const q = query(collection(db, 'projects'), orderBy('order', 'asc'));
     const snapshot = await getDocs(q);
     
     if (snapshot.empty) {
-      return defaultProjects;
+      // If content was initialized, empty means user explicitly deleted all projects
+      return hasSeededInitialContent ? [] : defaultProjects;
     }
 
     const list: Project[] = [];
@@ -598,7 +656,7 @@ export function subscribeToProjects(callback: (projects: Project[]) => void): ()
     q,
     (snapshot) => {
       if (snapshot.empty) {
-        callback(defaultProjects);
+        callback(hasSeededInitialContent ? [] : defaultProjects);
         return;
       }
       const list: Project[] = [];
@@ -636,15 +694,16 @@ export function subscribeToProjects(callback: (projects: Project[]) => void): ()
 }
 
 /* =========================================================================
-   WRITING / ARTICLES CMS (Full CRUD)
+   WRITING / ARTICLES CMS (Full CRUD & Seed Control)
    ========================================================================= */
 
 export async function getArticles(): Promise<Article[]> {
   try {
+    await ensureInitialContentSeeded();
     const q = query(collection(db, 'articles'), orderBy('publishedAt', 'desc'));
     const snapshot = await getDocs(q);
     if (snapshot.empty) {
-      return defaultArticles;
+      return hasSeededInitialContent ? [] : defaultArticles;
     }
     const list: Article[] = [];
     snapshot.forEach(docSnap => {
@@ -702,7 +761,7 @@ export function subscribeToArticles(callback: (articles: Article[]) => void): ()
     q,
     (snapshot) => {
       if (snapshot.empty) {
-        callback(defaultArticles);
+        callback(hasSeededInitialContent ? [] : defaultArticles);
         return;
       }
       const list: Article[] = [];
@@ -738,7 +797,7 @@ export function subscribeToArticles(callback: (articles: Article[]) => void): ()
 
 export async function getServices(): Promise<ServiceItem[]> {
   const settings = await getSiteSettings();
-  if (settings.services && settings.services.length > 0) {
+  if (Array.isArray(settings.services)) {
     return settings.services;
   }
   return defaultSiteSettings.services || [];

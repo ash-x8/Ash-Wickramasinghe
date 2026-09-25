@@ -32,7 +32,7 @@ export const TimelineManagerTab: React.FC<TimelineManagerTabProps> = ({
   const [saving, setSaving] = useState(false);
 
   React.useEffect(() => {
-    if (initialTimeline && initialTimeline.length > 0) {
+    if (Array.isArray(initialTimeline)) {
       setTimeline(initialTimeline);
     }
   }, [initialTimeline]);

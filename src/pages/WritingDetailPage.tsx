@@ -17,6 +17,7 @@ import { getArticleBySlug, getArticles, trackArticleView } from '../lib/firebase
 import { Article } from '../types';
 import { defaultArticles } from '../data/defaultContent';
 import { calculateReadingTime } from '../utils/readingTime';
+import { ReadingProgressBar } from '../components/ReadingProgressBar';
 
 export const WritingDetailPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -96,8 +97,19 @@ export const WritingDetailPage: React.FC = () => {
     );
   }
 
+  const readingTimeInfo = article ? calculateReadingTime(article.content, article.excerpt) : null;
+
   return (
     <div className="min-h-screen pt-28 pb-24 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto font-sans relative z-10">
+      {/* Scroll-based Reading Progress Bar */}
+      {article && (
+        <ReadingProgressBar
+          totalMinutes={readingTimeInfo?.minutes || 5}
+          title={article.title}
+          showFloatingIndicator={true}
+        />
+      )}
+
       {/* Back to archive */}
       <div className="flex items-center justify-between mb-8">
         <Link

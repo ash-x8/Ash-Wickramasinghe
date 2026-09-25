@@ -2094,6 +2094,65 @@ export const AdminDashboardPage: React.FC = () => {
           }}
         />
       )}
+
+      {/* DELETE CONFIRMATION MODAL */}
+      {deleteConfirm && (
+        <div 
+          className="fixed inset-0 z-70 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setDeleteConfirm(null);
+          }}
+        >
+          <div className="bg-slate-900 border border-slate-800 p-6 sm:p-7 rounded-2xl max-w-md w-full my-auto space-y-5 text-xs shadow-2xl">
+            <div className="flex items-center gap-3 text-rose-400">
+              <div className="w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center shrink-0">
+                <Trash2 size={20} />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-white">Confirm Deletion</h3>
+                <p className="text-slate-400 text-xs mt-0.5 capitalize">{deleteConfirm.type} Record</p>
+              </div>
+            </div>
+
+            <div className="p-3.5 bg-slate-950/70 border border-slate-800/80 rounded-xl space-y-1">
+              <p className="text-slate-300 text-xs">
+                Are you sure you want to delete <strong className="text-white font-semibold">"{deleteConfirm.name}"</strong>?
+              </p>
+              <p className="text-slate-500 text-[11px]">
+                This will remove the item from Firestore. This action cannot be undone.
+              </p>
+            </div>
+
+            <div className="pt-2 flex justify-end gap-3 border-t border-slate-800">
+              <button
+                type="button"
+                onClick={() => setDeleteConfirm(null)}
+                className="px-4 py-2 rounded-xl text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={async () => {
+                  const { type, id } = deleteConfirm;
+                  if (type === 'project') {
+                    await handleDeleteProject(id);
+                  } else if (type === 'article') {
+                    await handleDeleteArticle(id);
+                  } else if (type === 'service') {
+                    await handleDeleteService(id);
+                  } else if (type === 'message') {
+                    await handleDeleteMessage(id);
+                  }
+                }}
+                className="px-5 py-2 rounded-xl font-semibold bg-rose-600 hover:bg-rose-500 text-white transition-colors cursor-pointer shadow-lg shadow-rose-900/20"
+              >
+                Permanently Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
