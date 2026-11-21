@@ -1,8 +1,8 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { 
   getAuth, 
-  signInWithEmailAndPassword, 
-  createUserWithEmailAndPassword,
+  GoogleAuthProvider,
+  signInWithPopup,
   signOut, 
   sendPasswordResetEmail,
   onAuthStateChanged,
@@ -47,6 +47,7 @@ import {
 import firebaseConfig from '../../firebase-applet-config.json';
 import { Project, SiteSettings, ContactMessage, Article, ServiceItem, MediaItem, PageViewTrend, ActiveCvConfig } from '../types';
 import { defaultSiteSettings, defaultProjects, defaultArticles } from '../data/defaultContent';
+import { getSessionToken, isAnalyticsTrackingAllowed } from './apiClient';
 
 // Initialize Firebase instances
 export const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
@@ -91,10 +92,6 @@ if (
 }
 
 export const AUTHORIZED_ADMIN_EMAIL = 'kushanashvika216@gmail.com';
-export const ADMIN_CREDENTIALS = {
-  email: 'kushanashvika216@gmail.com',
-  password: 'Ashwickramasinghe@888',
-};
 
 /* =========================================================================
    FIRESTORE ERROR HANDLER & CONNECTION TEST (Standardized)
@@ -530,11 +527,13 @@ let hasSeededInitialContent = false;
 
 export async function ensureInitialContentSeeded(): Promise<boolean> {
   if (hasSeededInitialContent) return true;
+  if (!auth.currentUser || !auth.currentUser.emailVerified) {
+    return false;
+  }
   try {
     const initRef = doc(db, 'site_settings', 'content_init');
     const snap = await getDoc(initRef);
     if (!snap.exists()) {
-      // Check existing collections before seeding
       const projectsCol = collection(db, 'projects');
       const articlesCol = collection(db, 'articles');
 
@@ -575,11 +574,6 @@ export async function ensureInitialContentSeeded(): Promise<boolean> {
     console.debug("Content initialization check note:", err);
     return false;
   }
-}
-
-// Trigger once in background safely
-if (typeof window !== 'undefined') {
-  ensureInitialContentSeeded().catch(() => {});
 }
 
 export async function getProjects(): Promise<Project[]> {
@@ -901,9 +895,34 @@ export async function deleteContactMessage(id: string): Promise<void> {
    ANALYTICS & ACTIVITY TRENDS (Page Views, Events & User Engagement)
    ========================================================================= */
 
-export async function trackEvent(eventName: string, params: Record<string, any> = {}): Promise<void> {
+function sendPrivacyBeacon(payload: Record<string, unknown>) {
+  if (typeof window === 'undefined' || !isAnalyticsTrackingAllowed()) return;
   try {
-    // 1. Log to standard Firebase Analytics if supported
+    let referrerHost = 'Direct';
+    if (document.referrer) {
+      try {
+        const refUrl = new URL(document.referrer);
+        if (refUrl.host !== window.location.host) {
+          referrerHost = refUrl.hostname;
+        }
+      } catch {
+        // ignore invalid referrer
+      }
+    }
+    fetch('/api/analytics/collect', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...payload, referrerHost }),
+      keepalive: true,
+    }).catch(() => {});
+  } catch {
+    // non-blocking
+  }
+}
+
+export async function trackEvent(eventName: string, params: Record<string, any> = {}): Promise<void> {
+  if (!isAnalyticsTrackingAllowed()) return;
+  try {
     if (analyticsInstance) {
       try {
         logEvent(analyticsInstance, eventName, params);
@@ -912,31 +931,21 @@ export async function trackEvent(eventName: string, params: Record<string, any> 
       }
     }
 
-    // 2. Track real engagement in Firestore for admin dashboard insights
     const today = new Date().toISOString().slice(0, 10);
     const dayDocRef = doc(db, 'analytics', `day_${today}`);
-    const metricsDocRef = doc(db, 'analytics', 'engagement_metrics');
-
-    const updatePayload: Record<string, any> = {
-      updatedAt: new Date().toISOString(),
-      [`events.${eventName}`]: increment(1)
-    };
-
-    await Promise.allSettled([
-      setDoc(dayDocRef, {
-        date: today,
-        lastEvent: eventName,
-        [`events.${eventName}`]: increment(1),
-        updatedAt: new Date().toISOString()
-      }, { merge: true }),
-      setDoc(metricsDocRef, updatePayload, { merge: true })
-    ]);
+    await setDoc(dayDocRef, {
+      date: today,
+      lastEvent: eventName,
+      [`events.${eventName}`]: increment(1),
+      updatedAt: new Date().toISOString()
+    }, { merge: true }).catch(() => {});
   } catch (err) {
     console.debug('Telemetry event logging deferred:', err);
   }
 }
 
 export async function trackProjectClick(projectId: string, title: string, category: string): Promise<void> {
+  sendPrivacyBeacon({ eventType: 'project_click', itemId: projectId, itemTitle: title, category });
   await trackEvent('select_content', {
     content_type: 'project',
     item_id: projectId,
@@ -946,6 +955,7 @@ export async function trackProjectClick(projectId: string, title: string, catego
 }
 
 export async function trackArticleView(articleId: string, title: string, category: string, readTime?: string): Promise<void> {
+  sendPrivacyBeacon({ eventType: 'article_view', itemId: articleId, itemTitle: title, category });
   await trackEvent('view_item', {
     content_type: 'article',
     item_id: articleId,
@@ -956,6 +966,7 @@ export async function trackArticleView(articleId: string, title: string, categor
 }
 
 export async function trackContactSubmission(service: string): Promise<void> {
+  sendPrivacyBeacon({ eventType: 'contact_submit', category: service });
   await trackEvent('generate_lead', {
     service_type: service
   });
@@ -981,7 +992,9 @@ export async function trackServiceInquiry(serviceTitle: string): Promise<void> {
 }
 
 export async function trackPageView(path: string = '/'): Promise<void> {
+  if (!isAnalyticsTrackingAllowed()) return;
   try {
+    sendPrivacyBeacon({ eventType: 'page_view', path });
     if (analyticsInstance) {
       try {
         logEvent(analyticsInstance, 'page_view', { page_path: path });
@@ -996,9 +1009,8 @@ export async function trackPageView(path: string = '/'): Promise<void> {
       views: increment(1),
       lastPath: path,
       updatedAt: new Date().toISOString()
-    }, { merge: true });
+    }, { merge: true }).catch(() => {});
   } catch (err) {
-    // Non-blocking telemetry
     console.debug('Telemetry logging silently deferred:', err);
   }
 }
@@ -1191,6 +1203,12 @@ async function uploadViaServerApi(
     });
 
     xhr.open('POST', `/api/upload?category=${encodeURIComponent(category)}`);
+    xhr.withCredentials = true;
+    xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+    const bearer = getSessionToken();
+    if (bearer) {
+      xhr.setRequestHeader('Authorization', `Bearer ${bearer}`);
+    }
     xhr.send(formData);
   });
 }
@@ -1259,9 +1277,14 @@ export async function uploadMediaAsset(
   let publicUrl = '';
   let thumbUrl = '';
 
+  const uploadFilename =
+    optResult.format === 'webp' && !file.name.toLowerCase().endsWith('.webp')
+      ? `${cleanBaseName}.webp`
+      : file.name;
+
   // Execute upload through verified reliable server storage pipeline with true progress
   try {
-    const serverRes = await uploadViaServerApi(optResult.optimizedBlob, file.name, category, (info) => {
+    const serverRes = await uploadViaServerApi(optResult.optimizedBlob, uploadFilename, category, (info) => {
       onProgress?.({
         percent: Math.min(Math.max(info.percent, 25), 90),
         stage: 'uploading',
@@ -1461,91 +1484,15 @@ export async function deleteMediaFile(fileUrl: string): Promise<void> {
 }
 
 /* =========================================================================
-   ADMIN AUTHENTICATION (Real Firebase Auth)
+   ADMIN AUTHENTICATION (Real Firebase Google OAuth + Backend Session Verification)
    ========================================================================= */
 
-export async function loginAdmin(email: string, pass: string): Promise<User> {
-  const cleanEmail = email.trim().toLowerCase();
-
-  // 1. Attempt standard Firebase Authentication sign in
-  try {
-    const credential = await signInWithEmailAndPassword(auth, cleanEmail, pass);
-    if (credential.user) {
-      localStorage.setItem('ash_admin_session', JSON.stringify({
-        uid: credential.user.uid,
-        email: credential.user.email || cleanEmail,
-        displayName: credential.user.displayName || 'Ash Wickramasinghe',
-        authTime: Date.now()
-      }));
-      return credential.user;
-    }
-  } catch (err: any) {
-    console.warn("Primary Firebase signIn error:", err.code || err.message);
-
-    // If user account does not exist in Firebase Auth yet, automatically register it
-    if (
-      err.code === 'auth/user-not-found' || 
-      err.code === 'auth/invalid-credential' ||
-      err.code === 'auth/invalid-login-credentials'
-    ) {
-      try {
-        const created = await createUserWithEmailAndPassword(auth, cleanEmail, pass);
-        if (created.user) {
-          localStorage.setItem('ash_admin_session', JSON.stringify({
-            uid: created.user.uid,
-            email: created.user.email || cleanEmail,
-            displayName: 'Ash Wickramasinghe',
-            authTime: Date.now()
-          }));
-          return created.user;
-        }
-      } catch (createErr: any) {
-        console.warn("Firebase user auto-registration note:", createErr.code || createErr.message);
-      }
-    }
-
-    // Direct verified admin credentials fallback (guarantees access for Ash Wickramasinghe)
-    if (
-      cleanEmail === ADMIN_CREDENTIALS.email.toLowerCase() ||
-      cleanEmail === AUTHORIZED_ADMIN_EMAIL.toLowerCase()
-    ) {
-      if (
-        pass.trim() === ADMIN_CREDENTIALS.password ||
-        pass.trim().toLowerCase() === ADMIN_CREDENTIALS.password.toLowerCase() ||
-        pass.trim().length >= 4
-      ) {
-        const syntheticAdminUser = {
-          uid: 'admin_ash_wickramasinghe_authorized',
-          email: AUTHORIZED_ADMIN_EMAIL,
-          displayName: 'Ash Wickramasinghe',
-          emailVerified: true,
-          isAnonymous: false,
-          metadata: {},
-          providerData: [],
-          refreshToken: '',
-          tenantId: null,
-          delete: async () => {},
-          getIdToken: async () => 'admin-token',
-          getIdTokenResult: async () => ({} as any),
-          reload: async () => {},
-          toJSON: () => ({})
-        } as unknown as User;
-
-        localStorage.setItem('ash_admin_session', JSON.stringify({
-          uid: syntheticAdminUser.uid,
-          email: syntheticAdminUser.email,
-          displayName: syntheticAdminUser.displayName,
-          authTime: Date.now()
-        }));
-
-        return syntheticAdminUser;
-      }
-    }
-
-    throw err;
-  }
-
-  throw new Error("Unable to authenticate administrator.");
+export async function loginWithGooglePopup(): Promise<{ user: User; idToken: string }> {
+  const provider = new GoogleAuthProvider();
+  provider.setCustomParameters({ prompt: 'select_account' });
+  const result = await signInWithPopup(auth, provider);
+  const idToken = await result.user.getIdToken(true);
+  return { user: result.user, idToken };
 }
 
 export async function sendAdminPasswordReset(email: string): Promise<void> {
@@ -1553,7 +1500,6 @@ export async function sendAdminPasswordReset(email: string): Promise<void> {
 }
 
 export async function logoutAdmin(): Promise<void> {
-  localStorage.removeItem('ash_admin_session');
   try {
     await signOut(auth);
   } catch (err) {

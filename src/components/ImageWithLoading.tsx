@@ -55,7 +55,7 @@ export const ImageWithLoading: React.FC<ImageWithLoadingProps> = ({
         }}
         transition={{ duration: 0.5, ease: 'easeOut' }}
         className={`${className} ${hasError ? 'hidden' : ''}`}
-        {...props}
+        {...(props as Record<string, any>)}
       />
 
       {/* Fallback state if image fails */}

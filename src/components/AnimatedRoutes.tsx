@@ -1,7 +1,8 @@
 import React, { useEffect } from 'react';
-import { Routes, Route, useLocation } from 'react-router-dom';
+import { Routes, Route, useLocation, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
+import { ProtectedRoute } from '../context/AuthContext';
 import { HomePage } from '../pages/HomePage';
 import { AboutPage } from '../pages/AboutPage';
 import { ServicesPage } from '../pages/ServicesPage';
@@ -16,24 +17,23 @@ import { AdminLoginPage } from '../pages/AdminLoginPage';
 
 const NotFoundPage: React.FC = () => (
   <div className="min-h-screen pt-40 pb-24 px-6 flex flex-col items-center justify-center text-center">
-    <span className="text-xs font-mono uppercase tracking-widest text-[#C59B63] mb-2">Error 404</span>
-    <h1 className="text-4xl font-serif font-bold text-neutral-100 mb-4">Signal Lost</h1>
-    <p className="text-neutral-400 text-sm max-w-md mb-8">
-      The requested coordinates do not correspond to any active project or publication in the archive.
+    <span className="text-xs font-mono uppercase tracking-widest text-accent mb-2">Error 404</span>
+    <h1 className="text-4xl font-serif font-bold text-slate-900 dark:text-neutral-100 mb-4">Page Not Found</h1>
+    <p className="text-slate-600 dark:text-neutral-400 text-sm max-w-md mb-8">
+      The requested page does not correspond to an active project, article, or portfolio section.
     </p>
-    <a
-      href="/"
-      className="px-6 py-2.5 rounded-full bg-neutral-100 text-neutral-950 text-xs font-semibold uppercase tracking-wider hover:bg-neutral-200 transition-colors"
+    <Link
+      to="/"
+      className="px-6 py-2.5 rounded-full bg-slate-900 text-white dark:bg-neutral-100 dark:text-neutral-950 text-xs font-semibold uppercase tracking-wider hover:opacity-90 transition-opacity"
     >
-      Return to Headquarters
-    </a>
+      Return Home
+    </Link>
   </div>
 );
 
 export const AnimatedRoutes: React.FC = () => {
   const location = useLocation();
 
-  // Ensure scroll top on page transition
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [location.pathname]);
@@ -59,13 +59,13 @@ export const AnimatedRoutes: React.FC = () => {
           <Route path="/cv" element={<CvPage />} />
           <Route path="/contact" element={<ContactPage />} />
 
-          {/* Admin Routes - Directly accessible for Ash Wickramasinghe Studio */}
-          <Route path="/admin" element={<AdminDashboardPage />} />
-          <Route path="/dashboard" element={<AdminDashboardPage />} />
-          <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
-          <Route path="/dashboard/:tab" element={<AdminDashboardPage />} />
-          <Route path="/admin/:tab" element={<AdminDashboardPage />} />
+          {/* Authenticated & 2FA-Protected Admin Routes */}
           <Route path="/admin/login" element={<AdminLoginPage />} />
+          <Route path="/admin" element={<ProtectedRoute><AdminDashboardPage /></ProtectedRoute>} />
+          <Route path="/dashboard" element={<ProtectedRoute><AdminDashboardPage /></ProtectedRoute>} />
+          <Route path="/admin/dashboard" element={<ProtectedRoute><AdminDashboardPage /></ProtectedRoute>} />
+          <Route path="/dashboard/:tab" element={<ProtectedRoute><AdminDashboardPage /></ProtectedRoute>} />
+          <Route path="/admin/:tab" element={<ProtectedRoute><AdminDashboardPage /></ProtectedRoute>} />
 
           <Route path="*" element={<NotFoundPage />} />
         </Routes>

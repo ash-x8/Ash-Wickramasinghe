@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Calendar, Clock, User, ArrowUpRight, X, ChevronRight, BookOpen, ExternalLink } from 'lucide-react';
+import { Clock, User, X, ChevronRight, ExternalLink } from 'lucide-react';
 import { getArticles, subscribeToArticles, trackArticleView } from '../lib/firebase';
 import { Article } from '../types';
 import { defaultArticles } from '../data/defaultContent';
 import { calculateReadingTime } from '../utils/readingTime';
 import { ContentSkeleton } from '../components/ContentSkeleton';
 import { ReadingProgressBar } from '../components/ReadingProgressBar';
+import { useSeo } from '../utils/useSeo';
 
 export const WritingPage: React.FC = () => {
   const [articles, setArticles] = useState<Article[]>(defaultArticles);
@@ -17,26 +18,32 @@ export const WritingPage: React.FC = () => {
   const location = useLocation();
   const modalScrollRef = useRef<HTMLDivElement>(null);
 
+  useSeo({
+    title: 'Writing & Articles — Ash Wickramasinghe',
+    description: 'Essays, creative reflections, and articles on visual design, social media content, and storytelling by Writer Ash & Writer Tizzy.',
+    canonicalPath: '/writing',
+  });
+
   useEffect(() => {
     getArticles()
       .then((loaded) => {
-        const published = loaded.filter(a => a.published);
+        const published = loaded.filter((a) => a.published);
         setArticles(published);
         if (location.hash) {
           const slug = location.hash.replace('#', '');
-          const match = published.find(a => a.slug === slug || a.id === slug);
+          const match = published.find((a) => a.slug === slug || a.id === slug);
           if (match) setSelectedArticle(match);
         }
       })
-      .catch((err) => console.warn("Using default articles:", err))
+      .catch((err) => console.warn('Using default articles:', err))
       .finally(() => setLoading(false));
 
     const unsubscribe = subscribeToArticles((newArticles) => {
-      const published = newArticles.filter(a => a.published);
+      const published = newArticles.filter((a) => a.published);
       setArticles(published);
       if (location.hash) {
         const slug = location.hash.replace('#', '');
-        const match = published.find(a => a.slug === slug || a.id === slug);
+        const match = published.find((a) => a.slug === slug || a.id === slug);
         if (match) setSelectedArticle(match);
       }
     });
@@ -60,38 +67,37 @@ export const WritingPage: React.FC = () => {
     trackArticleView(article.id, article.title, article.category, rt.text);
   };
 
-  const categories = ['All', ...Array.from(new Set(articles.map(a => a.category)))];
+  const categories = ['All', ...Array.from(new Set(articles.map((a) => a.category)))];
 
   const filteredArticles = activeCategory === 'All'
     ? articles
-    : articles.filter(a => a.category === activeCategory);
+    : articles.filter((a) => a.category === activeCategory);
 
   return (
     <div className="min-h-screen pt-36 pb-24 px-6 sm:px-8 lg:px-12 max-w-7xl mx-auto font-sans">
-      {/* Header */}
       <div className="max-w-3xl space-y-4 mb-16">
-        <span className="text-xs uppercase tracking-widest text-accent font-semibold">
+        <span className="text-xs uppercase tracking-widest text-[#9E6B24] dark:text-[#C59B63] font-semibold">
           Publications &amp; Notes
         </span>
-        <h1 className="editorial-section-title font-semibold tracking-tight text-neutral-100 dark:text-neutral-100 light:text-neutral-900">
+        <h1 className="editorial-section-title font-semibold tracking-tight text-slate-900 dark:text-neutral-100">
           Writing &amp; Perspectives
         </h1>
-        <p className="text-base sm:text-lg text-neutral-400 dark:text-neutral-400 light:text-neutral-600 leading-relaxed font-light">
-          Observations on editorial design, typographic restraint, high-retention social content, and visual communication.
+        <p className="text-base sm:text-lg text-slate-600 dark:text-neutral-400 leading-relaxed font-light">
+          Observations on editorial design, creative writing, high-retention social content, and deliberate visual communication.
         </p>
       </div>
 
-      {/* Category filters */}
       {categories.length > 1 && (
-        <div className="flex flex-wrap gap-2 mb-12 pb-6 border-b border-neutral-800/80 dark:border-neutral-800/80 light:border-neutral-200">
+        <div className="flex flex-wrap gap-2 mb-12 pb-6 border-b border-slate-200 dark:border-neutral-800/80">
           {categories.map((cat) => (
             <button
               key={cat}
+              type="button"
               onClick={() => setActiveCategory(cat)}
-              className={`px-4 py-1.5 rounded-full text-xs font-medium uppercase tracking-wider transition-all cursor-pointer ${
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
                 activeCategory === cat
-                  ? 'bg-neutral-100 text-neutral-950 font-semibold'
-                  : 'bg-neutral-900 dark:bg-neutral-900 light:bg-neutral-100 text-neutral-400 hover:text-white dark:hover:text-white light:hover:text-neutral-950 border border-neutral-800 dark:border-neutral-800 light:border-neutral-200'
+                  ? 'bg-slate-900 dark:bg-white text-white dark:text-[#0A0D14] font-semibold'
+                  : 'text-slate-600 dark:text-neutral-400 hover:text-slate-950 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-neutral-900'
               }`}
             >
               {cat}
@@ -100,123 +106,112 @@ export const WritingPage: React.FC = () => {
         </div>
       )}
 
-      {/* Articles List */}
       {loading ? (
         <ContentSkeleton type="article" count={4} />
       ) : (
         <div className="space-y-8">
           {filteredArticles.map((article, idx) => {
-          const readingInfo = calculateReadingTime(article.content, article.excerpt);
-          const displayReadTime = readingInfo.text;
+            const readingInfo = calculateReadingTime(article.content, article.excerpt);
+            const displayReadTime = readingInfo.text;
 
-          return (
-            <motion.article
-              key={article.id}
-              id={article.slug}
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.35, delay: Math.min(idx * 0.08, 0.4) }}
-              whileHover={{ 
-                y: -5, 
-                transition: { duration: 0.22, ease: "easeOut" } 
-              }}
-              whileTap={{ scale: 0.995 }}
-              onClick={() => handleSelectArticle(article)}
-              className="group cursor-pointer p-8 rounded-2xl border border-neutral-800/80 dark:border-neutral-800/80 light:border-neutral-200 bg-neutral-900/30 dark:bg-neutral-900/30 light:bg-white hover:border-[#C59B63]/60 dark:hover:border-[#C59B63]/60 light:hover:border-[#C59B63]/60 hover:shadow-xl hover:shadow-[#C59B63]/5 transition-all space-y-6"
-            >
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-neutral-500">
-                <div className="flex items-center gap-3">
-                  <span className="text-accent uppercase tracking-wider font-semibold text-[11px]">
-                    {article.category}
-                  </span>
-                  <span>&bull;</span>
-                  <span className="flex items-center gap-1">
-                    <User size={12} />
-                    By {article.author}
-                  </span>
-                </div>
-                <div className="flex items-center gap-3 text-neutral-400 font-mono text-[11px]">
-                  <span>{article.publishedAt}</span>
-                  <span>&bull;</span>
-                  <span className="inline-flex items-center gap-1 text-[#C59B63]">
-                    <Clock size={12} />
-                    <span>{displayReadTime}</span>
-                  </span>
-                  <span className="hidden sm:inline text-neutral-600">({readingInfo.wordCount} words)</span>
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                <h2 className="text-xl sm:text-2xl font-medium tracking-tight text-neutral-100 dark:text-neutral-100 light:text-neutral-900 group-hover:text-accent transition-colors">
-                  {article.title}
-                </h2>
-                <p className="text-sm sm:text-base text-neutral-400 dark:text-neutral-400 light:text-neutral-600 leading-relaxed">
-                  {article.excerpt}
-                </p>
-              </div>
-
-              <div className="flex items-center justify-between pt-4 border-t border-neutral-800/60 dark:border-neutral-800/60 light:border-neutral-200 text-xs">
-                <div className="flex flex-wrap gap-1.5">
-                  {article.tags.map((tag, tIdx) => (
-                    <span
-                      key={tIdx}
-                      className="text-[10px] px-2 py-0.5 rounded bg-neutral-900 dark:bg-neutral-900 light:bg-neutral-100 text-neutral-400"
-                    >
-                      #{tag}
+            return (
+              <motion.article
+                key={article.id}
+                id={article.slug}
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.35, delay: Math.min(idx * 0.08, 0.4) }}
+                whileHover={{ y: -5, transition: { duration: 0.22, ease: 'easeOut' } }}
+                onClick={() => handleSelectArticle(article)}
+                className="group cursor-pointer p-8 rounded-2xl border border-slate-200 dark:border-neutral-800/80 bg-white dark:bg-[#111622]/70 hover:border-[#C59B63]/60 shadow-sm dark:shadow-none transition-all space-y-6"
+              >
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-slate-500">
+                  <div className="flex items-center gap-3">
+                    <span className="text-[#9E6B24] dark:text-[#C59B63] uppercase tracking-wider font-semibold text-[11px]">
+                      {article.category}
                     </span>
-                  ))}
+                    <span>&middot;</span>
+                    <span className="flex items-center gap-1 text-slate-600 dark:text-neutral-400">
+                      <User size={12} />
+                      By {article.author}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-3 text-slate-500 dark:text-neutral-400 font-mono text-[11px]">
+                    <span>{article.publishedAt}</span>
+                    <span>&middot;</span>
+                    <span className="inline-flex items-center gap-1 text-[#9E6B24] dark:text-[#C59B63]">
+                      <Clock size={12} />
+                      <span>{displayReadTime}</span>
+                    </span>
+                    <span className="hidden sm:inline text-slate-400 dark:text-neutral-500">
+                      ({readingInfo.wordCount} words)
+                    </span>
+                  </div>
                 </div>
 
-                <Link
-                  to={`/writing/${article.slug}`}
-                  onClick={(e) => e.stopPropagation()}
-                  className="inline-flex items-center gap-1 text-xs uppercase tracking-widest font-medium text-neutral-300 dark:text-neutral-300 light:text-neutral-800 group-hover:text-[#C59B63] group-hover:translate-x-1.5 transition-all"
-                >
-                  <span>Read Full Essay</span>
-                  <ChevronRight size={14} />
-                </Link>
-              </div>
-            </motion.article>
-          );
-        })}
+                <div className="space-y-3">
+                  <h2 className="text-xl sm:text-2xl font-semibold tracking-tight text-slate-900 dark:text-neutral-100 group-hover:text-[#9E6B24] dark:group-hover:text-[#C59B63] transition-colors">
+                    {article.title}
+                  </h2>
+                  <p className="text-sm sm:text-base text-slate-600 dark:text-neutral-400 leading-relaxed">
+                    {article.excerpt}
+                  </p>
+                </div>
+
+                <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-neutral-800/60 text-xs">
+                  <p className="text-[11px] font-mono text-slate-500 dark:text-neutral-400">
+                    {article.tags.join(' · ')}
+                  </p>
+
+                  <Link
+                    to={`/writing/${article.slug}`}
+                    onClick={(e) => e.stopPropagation()}
+                    className="inline-flex items-center gap-1 text-xs uppercase tracking-widest font-semibold text-slate-700 dark:text-neutral-300 group-hover:text-[#9E6B24] dark:group-hover:text-[#C59B63] group-hover:translate-x-1 transition-all shrink-0 ml-4"
+                  >
+                    <span>Read Full Essay</span>
+                    <ChevronRight size={14} />
+                  </Link>
+                </div>
+              </motion.article>
+            );
+          })}
         </div>
       )}
 
-      {/* Reading Modal / Full View */}
       {selectedArticle && (
-        <div 
-          className="fixed inset-0 z-60 flex items-center justify-center p-4 sm:p-6 md:p-10 bg-neutral-950/85 backdrop-blur-md overflow-y-auto"
+        <div
+          className="fixed inset-0 z-60 flex items-center justify-center p-4 sm:p-6 md:p-10 bg-black/65 dark:bg-neutral-950/85 backdrop-blur-md overflow-y-auto"
           onClick={() => setSelectedArticle(null)}
         >
-          <div 
-            className="relative w-full max-w-3xl bg-neutral-900 dark:bg-neutral-900 light:bg-white border border-neutral-800 dark:border-neutral-800 light:border-neutral-200 rounded-2xl shadow-2xl my-auto max-h-[90vh] flex flex-col overflow-hidden"
+          <div
+            className="relative w-full max-w-3xl bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 rounded-2xl shadow-2xl my-auto max-h-[90vh] flex flex-col overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Modal Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-800 dark:border-neutral-800 light:border-neutral-200 bg-neutral-950/50">
-              <div className="flex items-center gap-2 text-xs text-neutral-400 font-mono">
-                <span className="text-accent uppercase tracking-widest font-semibold">{selectedArticle.category}</span>
-                <span>&bull;</span>
-                <span className="inline-flex items-center gap-1 text-[#C59B63]">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-neutral-800 bg-slate-50 dark:bg-neutral-950/60">
+              <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-neutral-400 font-mono">
+                <span className="text-[#9E6B24] dark:text-[#C59B63] uppercase tracking-widest font-semibold">
+                  {selectedArticle.category}
+                </span>
+                <span>&middot;</span>
+                <span className="inline-flex items-center gap-1 text-[#9E6B24] dark:text-[#C59B63]">
                   <Clock size={12} />
                   <span>{calculateReadingTime(selectedArticle.content, selectedArticle.excerpt).text}</span>
                 </span>
-                <span>&bull;</span>
-                <span className="text-neutral-500">
-                  {calculateReadingTime(selectedArticle.content, selectedArticle.excerpt).wordCount} words
-                </span>
+                <span>&middot;</span>
+                <span>{calculateReadingTime(selectedArticle.content, selectedArticle.excerpt).wordCount} words</span>
               </div>
               <div className="flex items-center gap-3">
                 <Link
                   to={`/writing/${selectedArticle.slug}`}
-                  className="hidden sm:inline-flex items-center gap-1 text-[11px] font-mono text-[#C59B63] hover:underline"
+                  className="hidden sm:inline-flex items-center gap-1 text-[11px] font-mono text-[#9E6B24] dark:text-[#C59B63] hover:underline"
                 >
                   <span>Open Full Page</span>
                   <ExternalLink size={12} />
                 </Link>
                 <button
+                  type="button"
                   onClick={() => setSelectedArticle(null)}
-                  className="p-1.5 rounded-full text-neutral-400 hover:text-white hover:bg-neutral-800 transition-colors"
+                  className="p-1.5 rounded-full text-slate-500 dark:text-neutral-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
                   aria-label="Close article"
                 >
                   <X size={20} />
@@ -224,18 +219,16 @@ export const WritingPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Reading Progress Bar for Modal */}
-            <ReadingProgressBar 
-              containerRef={modalScrollRef} 
-              totalMinutes={calculateReadingTime(selectedArticle.content, selectedArticle.excerpt).minutes} 
+            <ReadingProgressBar
+              containerRef={modalScrollRef}
+              totalMinutes={calculateReadingTime(selectedArticle.content, selectedArticle.excerpt).minutes}
               title={selectedArticle.title}
               showFloatingIndicator={false}
             />
 
-            {/* Modal Body */}
             <div ref={modalScrollRef} className="p-6 sm:p-10 overflow-y-auto space-y-8">
               {selectedArticle.coverImage && (
-                <div className="relative aspect-video w-full rounded-xl overflow-hidden bg-neutral-950 border border-neutral-800">
+                <div className="relative aspect-video w-full rounded-xl overflow-hidden bg-slate-100 dark:bg-neutral-950 border border-slate-200 dark:border-neutral-800">
                   <img
                     src={selectedArticle.coverImage}
                     alt={selectedArticle.title}
@@ -245,32 +238,25 @@ export const WritingPage: React.FC = () => {
               )}
 
               <div className="space-y-4">
-                <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-neutral-100 dark:text-neutral-100 light:text-neutral-900">
+                <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-slate-900 dark:text-neutral-100">
                   {selectedArticle.title}
                 </h1>
 
-                <div className="flex flex-wrap items-center gap-4 text-xs text-neutral-400 pb-4 border-b border-neutral-800 dark:border-neutral-800 light:border-neutral-200">
-                  <span>Author: <strong className="text-neutral-200 dark:text-neutral-200 light:text-neutral-800">{selectedArticle.author}</strong></span>
-                  <span>&bull;</span>
+                <div className="flex flex-wrap items-center gap-4 text-xs text-slate-500 dark:text-neutral-400 pb-4 border-b border-slate-200 dark:border-neutral-800">
+                  <span>Author: <strong className="text-slate-900 dark:text-neutral-200">{selectedArticle.author}</strong></span>
+                  <span>&middot;</span>
                   <span>Date: {selectedArticle.publishedAt}</span>
                 </div>
               </div>
 
-              {/* Article Content */}
-              <div className="text-neutral-300 dark:text-neutral-300 light:text-neutral-700 leading-relaxed space-y-6 text-sm sm:text-base whitespace-pre-line font-serif sm:font-sans">
+              <div className="text-slate-700 dark:text-neutral-300 leading-relaxed space-y-6 text-sm sm:text-base whitespace-pre-line font-sans">
                 {selectedArticle.content}
               </div>
 
-              {/* Footer Tags */}
-              <div className="pt-6 border-t border-neutral-800 flex flex-wrap gap-2">
-                {selectedArticle.tags.map((tag, idx) => (
-                  <span
-                    key={idx}
-                    className="text-xs px-3 py-1 rounded-full bg-neutral-800 text-neutral-300"
-                  >
-                    #{tag}
-                  </span>
-                ))}
+              <div className="pt-6 border-t border-slate-200 dark:border-neutral-800">
+                <p className="text-xs font-mono text-slate-500 dark:text-neutral-400">
+                  {selectedArticle.tags.join(' · ')}
+                </p>
               </div>
             </div>
           </div>

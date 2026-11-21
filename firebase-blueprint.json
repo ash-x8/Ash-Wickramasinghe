@@ -6,18 +6,35 @@
       "type": "object",
       "properties": {
         "name": { "type": "string" },
+        "fullName": { "type": "string" },
+        "creativeName": { "type": "string" },
         "title": { "type": "string" },
         "bio": { "type": "string" },
         "aboutBio": { "type": "string" },
-        "status": { "type": "string" },
+        "statusText": { "type": "string" },
         "avatarUrl": { "type": "string" },
+        "profileImage": { "type": "string" },
         "cvUrl": { "type": "string" },
         "email": { "type": "string" },
         "location": { "type": "string" },
-        "github": { "type": "string" },
-        "linkedin": { "type": "string" },
-        "telegram": { "type": "string" },
         "skills": { "type": "array" },
+        "timeline": { "type": "array" },
+        "services": { "type": "array" },
+        "testimonials": { "type": "array" },
+        "socialLinks": { "type": "array" },
+        "updatedAt": { "type": "string" }
+      }
+    },
+    "settings": {
+      "title": "CV & Structured Settings",
+      "description": "Dedicated CV document configuration",
+      "type": "object",
+      "properties": {
+        "sourceType": { "type": "string" },
+        "fileType": { "type": "string" },
+        "fileName": { "type": "string" },
+        "downloadUrl": { "type": "string" },
+        "published": { "type": "boolean" },
         "updatedAt": { "type": "string" }
       }
     },
@@ -27,6 +44,7 @@
       "type": "object",
       "properties": {
         "title": { "type": "string" },
+        "slug": { "type": "string" },
         "category": { "type": "string" },
         "description": { "type": "string" },
         "detailedDescription": { "type": "string" },
@@ -35,18 +53,20 @@
         "githubUrl": { "type": "string" },
         "liveUrl": { "type": "string" },
         "featured": { "type": "boolean" },
+        "visibility": { "type": "string" },
         "order": { "type": "number" },
         "createdAt": { "type": "string" }
       },
       "required": ["title", "category", "description"]
     },
-    "messages": {
+    "contact_messages": {
       "title": "Contact Messages",
-      "description": "Inbound contact submissions from the cyber portal",
+      "description": "Inbound contact submissions from the portfolio portal",
       "type": "object",
       "properties": {
         "name": { "type": "string" },
         "email": { "type": "string" },
+        "service": { "type": "string" },
         "subject": { "type": "string" },
         "message": { "type": "string" },
         "createdAt": { "type": "string" },
@@ -92,17 +112,31 @@
       "type": "object",
       "properties": {
         "date": { "type": "string" },
-        "path": { "type": "string" },
         "views": { "type": "number" },
         "inquiries": { "type": "number" },
         "updatedAt": { "type": "string" }
       }
+    },
+    "admins": {
+      "title": "Authorized Administrators",
+      "description": "Role-based access records for verified administrators",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string" },
+        "role": { "type": "string", "enum": ["super_admin", "admin", "editor"] },
+        "status": { "type": "string", "enum": ["active", "revoked"] }
+      },
+      "required": ["email", "role", "status"]
     }
   },
   "firestore": {
     "/site_settings/{document}": {
       "schema": "site_settings",
       "description": "Global portfolio configuration, profile details, CV link, and biography"
+    },
+    "/settings/{document}": {
+      "schema": "settings",
+      "description": "Structured CV configuration document"
     },
     "/projects/{projectId}": {
       "schema": "projects",
@@ -116,13 +150,17 @@
       "schema": "media",
       "description": "Uploaded media assets catalogue"
     },
-    "/messages/{messageId}": {
-      "schema": "messages",
-      "description": "Inbound contact form messages"
+    "/contact_messages/{messageId}": {
+      "schema": "contact_messages",
+      "description": "Inbound contact form messages (PII restricted to admins)"
     },
     "/analytics/{docId}": {
       "schema": "analytics",
       "description": "Page view statistics and contact form activity trends"
+    },
+    "/admins/{uid}": {
+      "schema": "admins",
+      "description": "Authorized admin roles allowlist"
     }
   }
 }

@@ -1,16 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowUpRight, ArrowRight, Sparkles, CheckCircle2, ChevronRight, Clock } from 'lucide-react';
-import { 
-  getProjects, 
-  getSiteSettings, 
-  getArticles, 
+import { ArrowUpRight, ArrowRight, ChevronRight, Clock } from 'lucide-react';
+import {
+  getProjects,
+  getSiteSettings,
+  getArticles,
   getServices,
   subscribeToSiteSettings,
   subscribeToProjects,
   subscribeToArticles,
-  subscribeToServices,
   trackProjectClick,
   trackArticleView
 } from '../lib/firebase';
@@ -22,6 +21,7 @@ import { ProfilePhotoFrame } from '../components/ProfilePhotoFrame';
 import { ContentSkeleton } from '../components/ContentSkeleton';
 import { calculateReadingTime } from '../utils/readingTime';
 import { ScrollReveal } from '../components/ScrollReveal';
+import { useSeo } from '../utils/useSeo';
 
 export const HomePage: React.FC = () => {
   const [settings, setSettings] = useState<SiteSettings>(defaultSiteSettings);
@@ -31,19 +31,23 @@ export const HomePage: React.FC = () => {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
 
+  useSeo({
+    title: settings.metaTitle || 'Ash Wickramasinghe — Graphic Designer, Social Media Manager & Author',
+    description: settings.metaDescription || defaultSiteSettings.metaDescription,
+    canonicalPath: '/',
+  });
+
   useEffect(() => {
-    // Initial fetch to ensure instant display
     Promise.all([getSiteSettings(), getProjects(), getArticles(), getServices()])
       .then(([loadedSettings, loadedProjects, loadedArticles, loadedServices]) => {
         setSettings(loadedSettings);
-        setProjects(loadedProjects.filter(p => p.visibility !== 'draft'));
-        setArticles(loadedArticles.filter(a => a.published));
+        setProjects(loadedProjects.filter((p) => p.visibility !== 'draft'));
+        setArticles(loadedArticles.filter((a) => a.published));
         setServices(loadedServices);
       })
-      .catch((err) => console.warn("Initial homepage data fetch:", err))
+      .catch((err) => console.warn('Initial homepage data fetch:', err))
       .finally(() => setLoading(false));
 
-    // Real-time synchronization
     const unsubSettings = subscribeToSiteSettings((newSettings) => {
       setSettings(newSettings);
       if (newSettings.services && newSettings.services.length > 0) {
@@ -52,11 +56,11 @@ export const HomePage: React.FC = () => {
     });
 
     const unsubProjects = subscribeToProjects((newProjects) => {
-      setProjects(newProjects.filter(p => p.visibility !== 'draft'));
+      setProjects(newProjects.filter((p) => p.visibility !== 'draft'));
     });
 
     const unsubArticles = subscribeToArticles((newArticles) => {
-      setArticles(newArticles.filter(a => a.published));
+      setArticles(newArticles.filter((a) => a.published));
     });
 
     return () => {
@@ -66,78 +70,55 @@ export const HomePage: React.FC = () => {
     };
   }, []);
 
-  const featuredProjects = projects.filter(p => p.featured).slice(0, 4);
+  const featuredProjects = projects.filter((p) => p.featured).slice(0, 4);
   const recentArticles = articles.slice(0, 3);
   const coreServices = services.slice(0, 4);
 
   return (
     <div className="min-h-screen font-sans">
-      {/* 1. EDITORIAL HERO SECTION */}
+      {/* Hero Section */}
       <section className="relative pt-32 pb-20 sm:pt-40 sm:pb-28 px-6 sm:px-8 lg:px-12 max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
           <div className="lg:col-span-7 space-y-7">
-            {/* Availability pill */}
-            <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full border border-slate-800 bg-[#111622]/80 text-xs text-slate-300 shadow-sm font-mono">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
-              <span>{settings.statusText || 'Available for freelance commissions & retainers'}</span>
-            </div>
+            <p className="text-xs font-mono uppercase tracking-[0.22em] text-[#9E6B24] dark:text-[#C59B63] font-semibold">
+              {settings.location || 'Sri Lanka'} &middot; {settings.statusText || 'Available for commissions & retainers'}
+            </p>
 
-            {/* Large Headline with staggered text reveal animation */}
-            <div className="space-y-3">
-              <span className="text-xs uppercase tracking-[0.25em] text-[#C59B63] font-mono font-semibold block">
-                DIGITAL ARCHIVE &bull; VOL. 2026
-              </span>
-              <motion.h1 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-                className="editorial-hero-title font-bold tracking-tight text-white font-sans"
-              >
-                <span className="inline-block bg-gradient-to-r from-white via-slate-100 to-[#C59B63] bg-clip-text text-transparent">
-                  Ash Wickramasinghe
-                </span>
-              </motion.h1>
-            </div>
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+              className="editorial-hero-title font-bold tracking-tight text-slate-900 dark:text-white font-sans"
+            >
+              {settings.creativeName || 'Ash Wickramasinghe'}
+            </motion.h1>
 
-            {/* Subtitle / Focus with entrance reveal & visual anchors */}
             <div className="space-y-4 max-w-2xl">
-              <motion.p 
+              <motion.p
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
-                className="text-lg sm:text-xl text-slate-200 font-light tracking-tight leading-relaxed"
+                transition={{ duration: 0.6, delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
+                className="text-lg sm:text-xl text-slate-600 dark:text-slate-300 font-light tracking-tight leading-relaxed"
               >
-                <span className="font-normal text-white">Graphic Designer</span>, <span className="font-normal text-white">Social Media Strategist</span> &amp; <span className="font-normal text-white">Creative Content Editor</span>. 
-                Shaping refined visual identities, high-conversion social assets, and disciplined editorial narratives.
+                <span className="font-semibold text-slate-900 dark:text-white">Graphic Designer</span>,{' '}
+                <span className="font-semibold text-slate-900 dark:text-white">Social Media Strategist</span> &amp;{' '}
+                <span className="font-semibold text-slate-900 dark:text-white">Author</span>. Shaping refined visual identities, high-retention social assets, and deliberate editorial narratives.
               </motion.p>
 
-              {/* Editorial Anchor Tags */}
-              <motion.div 
+              <motion.p
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.22 }}
-                className="flex flex-wrap gap-2 pt-1 font-mono text-[11px]"
+                transition={{ duration: 0.6, delay: 0.2 }}
+                className="text-xs font-mono text-slate-500 dark:text-slate-400 tracking-wide"
               >
-                <span className="px-3 py-1 rounded-full bg-slate-900/80 border border-slate-800 text-slate-300">
-                  <span className="text-[#C59B63] mr-1.5 font-bold">#</span>Brand Systems
-                </span>
-                <span className="px-3 py-1 rounded-full bg-slate-900/80 border border-slate-800 text-slate-300">
-                  <span className="text-[#C59B63] mr-1.5 font-bold">#</span>Viral Carousels
-                </span>
-                <span className="px-3 py-1 rounded-full bg-slate-900/80 border border-slate-800 text-slate-300">
-                  <span className="text-[#C59B63] mr-1.5 font-bold">#</span>Content Strategy
-                </span>
-                <span className="px-3 py-1 rounded-full bg-slate-900/80 border border-slate-800 text-slate-300">
-                  <span className="text-[#C59B63] mr-1.5 font-bold">#</span>Editorial Direction
-                </span>
-              </motion.div>
+                Brand Systems &middot; Carousel Design &middot; Content Strategy &middot; Editorial Direction
+              </motion.p>
             </div>
 
-            {/* Action CTAs */}
             <div className="pt-3 flex flex-wrap items-center gap-4">
               <Link
                 to="/projects"
-                className="inline-flex items-center gap-2 px-6 py-3.5 text-xs font-mono uppercase tracking-widest font-semibold rounded-full bg-gradient-to-r from-[#C59B63] to-[#E5C392] text-[#0A0D14] hover:opacity-95 transition-all shadow-[0_0_20px_rgba(197,155,99,0.3)] hover:shadow-[0_0_25px_rgba(197,155,99,0.5)]"
+                className="inline-flex items-center gap-2 px-6 py-3.5 text-xs font-semibold uppercase tracking-widest rounded-full bg-[#C59B63] hover:bg-[#D4AF37] text-[#0A0D14] transition-all shadow-md"
               >
                 <span>Explore Selected Works</span>
                 <ArrowRight size={14} />
@@ -145,7 +126,7 @@ export const HomePage: React.FC = () => {
 
               <Link
                 to="/cv"
-                className="inline-flex items-center gap-2 px-6 py-3.5 text-xs font-mono uppercase tracking-widest font-semibold rounded-full border border-[#C59B63]/60 text-[#C59B63] hover:bg-[#C59B63]/10 transition-all"
+                className="inline-flex items-center gap-2 px-6 py-3.5 text-xs font-semibold uppercase tracking-widest rounded-full border border-[#9E6B24]/50 dark:border-[#C59B63]/60 text-[#9E6B24] dark:text-[#C59B63] hover:bg-[#C59B63]/10 transition-all"
               >
                 <span>Curriculum Vitae</span>
                 <ArrowUpRight size={14} />
@@ -153,14 +134,13 @@ export const HomePage: React.FC = () => {
 
               <Link
                 to="/contact"
-                className="inline-flex items-center gap-2 px-6 py-3.5 text-xs font-mono uppercase tracking-widest font-medium rounded-full border border-slate-700/80 text-slate-300 hover:bg-slate-800/60 hover:text-white transition-all"
+                className="inline-flex items-center gap-2 px-6 py-3.5 text-xs font-medium uppercase tracking-widest rounded-full border border-slate-300 dark:border-slate-700/80 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60 hover:text-slate-950 dark:hover:text-white transition-all"
               >
-                <span>Let's Collaborate</span>
+                <span>Let&apos;s Collaborate</span>
               </Link>
             </div>
           </div>
 
-          {/* Prominent Cyber Portrait in Hero */}
           <div className="lg:col-span-5 flex justify-center lg:justify-end">
             <div className="w-full max-w-sm">
               <ProfilePhotoFrame
@@ -172,18 +152,17 @@ export const HomePage: React.FC = () => {
           </div>
         </div>
 
-        {/* Subtle metrics counter strip */}
         {settings.metrics && settings.metrics.length > 0 && (
-          <div className="mt-20 pt-10 border-t border-neutral-800/80 dark:border-neutral-800/80 light:border-neutral-200 grid grid-cols-2 md:grid-cols-4 gap-8">
+          <div className="mt-20 pt-10 border-t border-slate-200 dark:border-neutral-800/80 grid grid-cols-2 md:grid-cols-4 gap-8">
             {settings.metrics.map((metric, idx) => (
               <div key={idx} className="space-y-1">
-                <div className="text-2xl sm:text-3xl font-semibold tracking-tight text-neutral-100 dark:text-neutral-100 light:text-neutral-900 font-sans">
+                <div className="text-2xl sm:text-3xl font-semibold tracking-tight text-slate-900 dark:text-neutral-100 font-sans">
                   {metric.value}
                 </div>
-                <div className="text-xs uppercase tracking-wider text-neutral-400 font-medium">
+                <div className="text-xs uppercase tracking-wider text-slate-500 dark:text-neutral-400 font-medium">
                   {metric.label}
                 </div>
-                <div className="text-[11px] text-neutral-500">
+                <div className="text-[11px] text-slate-400 dark:text-neutral-500">
                   {metric.subtext}
                 </div>
               </div>
@@ -192,21 +171,21 @@ export const HomePage: React.FC = () => {
         )}
       </section>
 
-      {/* 2. FEATURED PROJECTS SHOWCASE */}
-      <section className="py-20 border-t border-neutral-800/60 dark:border-neutral-800/60 light:border-neutral-200 px-6 sm:px-8 lg:px-12 max-w-7xl mx-auto">
+      {/* Featured Projects */}
+      <section className="py-20 border-t border-slate-200 dark:border-neutral-800/60 px-6 sm:px-8 lg:px-12 max-w-7xl mx-auto">
         <ScrollReveal direction="up" distance={20}>
           <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-12 gap-4">
             <div className="space-y-2">
-              <span className="text-xs uppercase tracking-widest text-accent font-semibold">
+              <span className="text-xs uppercase tracking-widest text-[#9E6B24] dark:text-[#C59B63] font-semibold">
                 Selected Portfolio
               </span>
-              <h2 className="editorial-section-title font-semibold tracking-tight text-neutral-100 dark:text-neutral-100 light:text-neutral-900">
+              <h2 className="editorial-section-title font-semibold tracking-tight text-slate-900 dark:text-neutral-100">
                 Featured Works
               </h2>
             </div>
             <Link
               to="/projects"
-              className="inline-flex items-center gap-1 text-xs uppercase tracking-widest font-medium text-neutral-400 hover:text-white dark:hover:text-white light:hover:text-neutral-950 transition-colors"
+              className="inline-flex items-center gap-1.5 text-xs uppercase tracking-widest font-medium text-slate-600 dark:text-neutral-400 hover:text-slate-950 dark:hover:text-white transition-colors"
             >
               <span>View All Projects ({projects.length})</span>
               <ArrowRight size={14} />
@@ -214,7 +193,6 @@ export const HomePage: React.FC = () => {
           </div>
         </ScrollReveal>
 
-        {/* Projects Grid */}
         {loading ? (
           <ContentSkeleton type="project" count={2} />
         ) : (
@@ -230,46 +208,36 @@ export const HomePage: React.FC = () => {
                   }}
                   className="group cursor-pointer space-y-4"
                 >
-                  {/* Image Canvas with smooth loading */}
-                  <div className="relative aspect-[16/10] w-full rounded-xl overflow-hidden bg-neutral-900 border border-neutral-800 dark:border-neutral-800 light:border-neutral-200">
+                  <div className="relative aspect-[16/10] w-full rounded-xl overflow-hidden bg-slate-100 dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800">
                     <ImageWithLoading
                       src={project.image}
                       alt={project.title}
                       className="w-full h-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
                       containerClassName="w-full h-full"
                     />
-                    <div className="absolute inset-0 bg-neutral-950/20 group-hover:bg-transparent transition-colors pointer-events-none" />
-                    <div className="absolute top-4 left-4 px-3 py-1 rounded-full bg-neutral-950/80 backdrop-blur-sm text-[11px] font-medium tracking-wider uppercase text-neutral-200 z-20 pointer-events-none">
+                    <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors pointer-events-none" />
+                    <div className="absolute top-4 left-4 px-3 py-1 rounded-md bg-white/90 dark:bg-neutral-950/85 backdrop-blur-sm text-[11px] font-medium tracking-wider uppercase text-slate-900 dark:text-neutral-200 z-20 pointer-events-none">
                       {project.category}
                     </div>
                   </div>
 
-                  {/* Title & Metadata */}
                   <div className="flex items-start justify-between gap-4 pt-1">
                     <div>
-                      <h3 className="text-lg sm:text-xl font-medium tracking-tight text-neutral-100 dark:text-neutral-100 light:text-neutral-900 group-hover:text-accent transition-colors">
+                      <h3 className="text-lg sm:text-xl font-semibold tracking-tight text-slate-900 dark:text-neutral-100 group-hover:text-[#9E6B24] dark:group-hover:text-[#C59B63] transition-colors">
                         {project.title}
                       </h3>
-                      <p className="text-xs sm:text-sm text-neutral-400 dark:text-neutral-400 light:text-neutral-600 line-clamp-2 mt-1">
+                      <p className="text-xs sm:text-sm text-slate-600 dark:text-neutral-400 line-clamp-2 mt-1">
                         {project.description}
                       </p>
                     </div>
-                    <div className="w-8 h-8 rounded-full border border-neutral-700 dark:border-neutral-700 light:border-neutral-300 flex items-center justify-center shrink-0 text-neutral-400 group-hover:text-white group-hover:border-neutral-400 transition-colors">
+                    <div className="w-8 h-8 rounded-full border border-slate-300 dark:border-neutral-700 flex items-center justify-center shrink-0 text-slate-500 dark:text-neutral-400 group-hover:text-slate-950 dark:group-hover:text-white group-hover:border-[#C59B63] transition-colors">
                       <ArrowUpRight size={14} />
                     </div>
                   </div>
 
-                  {/* Tags */}
-                  <div className="flex flex-wrap gap-2 pt-1">
-                    {project.tags.slice(0, 3).map((tag, idx) => (
-                      <span
-                        key={idx}
-                        className="text-[11px] px-2.5 py-0.5 rounded-full bg-neutral-900 dark:bg-neutral-900 light:bg-neutral-100 text-neutral-400 border border-neutral-800 dark:border-neutral-800 light:border-neutral-200"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
+                  <p className="text-xs font-mono text-slate-500 dark:text-neutral-400">
+                    {project.tags.slice(0, 3).join(' · ')}
+                  </p>
                 </motion.div>
               </ScrollReveal>
             ))}
@@ -277,21 +245,21 @@ export const HomePage: React.FC = () => {
         )}
       </section>
 
-      {/* 3. CORE SERVICES & DISCIPLINES */}
-      <section className="py-20 border-t border-neutral-800/60 dark:border-neutral-800/60 light:border-neutral-200 px-6 sm:px-8 lg:px-12 max-w-7xl mx-auto">
+      {/* Core Services & Disciplines */}
+      <section className="py-20 border-t border-slate-200 dark:border-neutral-800/60 px-6 sm:px-8 lg:px-12 max-w-7xl mx-auto">
         <ScrollReveal direction="up" distance={20}>
           <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-12 gap-4">
             <div className="space-y-2">
-              <span className="text-xs uppercase tracking-widest text-accent font-semibold">
+              <span className="text-xs uppercase tracking-widest text-[#9E6B24] dark:text-[#C59B63] font-semibold">
                 Capabilities
               </span>
-              <h2 className="editorial-section-title font-semibold tracking-tight text-neutral-100 dark:text-neutral-100 light:text-neutral-900">
+              <h2 className="editorial-section-title font-semibold tracking-tight text-slate-900 dark:text-neutral-100">
                 Services &amp; Disciplines
               </h2>
             </div>
             <Link
               to="/services"
-              className="inline-flex items-center gap-1 text-xs uppercase tracking-widest font-medium text-neutral-400 hover:text-white dark:hover:text-white light:hover:text-neutral-950 transition-colors"
+              className="inline-flex items-center gap-1.5 text-xs uppercase tracking-widest font-medium text-slate-600 dark:text-neutral-400 hover:text-slate-950 dark:hover:text-white transition-colors"
             >
               <span>Explore All Services</span>
               <ArrowRight size={14} />
@@ -302,31 +270,29 @@ export const HomePage: React.FC = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {coreServices.map((service, index) => (
             <ScrollReveal key={service.id} delay={index * 0.08} direction="up" distance={24}>
-              <div
-                className="p-6 rounded-xl border border-neutral-800/80 dark:border-neutral-800/80 light:border-neutral-200 bg-neutral-900/40 dark:bg-neutral-900/40 light:bg-white flex flex-col justify-between space-y-6 hover:border-neutral-700 transition-colors h-full"
-              >
+              <div className="p-6 rounded-xl border border-slate-200 dark:border-neutral-800/80 bg-white dark:bg-[#111622]/70 flex flex-col justify-between space-y-6 hover:border-[#C59B63]/50 transition-colors h-full shadow-sm dark:shadow-none">
                 <div className="space-y-3">
                   {service.badge && (
-                    <span className="text-[10px] tracking-widest font-mono uppercase text-accent font-semibold">
+                    <span className="text-[10px] tracking-widest font-mono uppercase text-[#9E6B24] dark:text-[#C59B63] font-semibold">
                       {service.badge}
                     </span>
                   )}
-                  <h3 className="text-lg font-medium tracking-tight text-neutral-100 dark:text-neutral-100 light:text-neutral-900">
+                  <h3 className="text-lg font-semibold tracking-tight text-slate-900 dark:text-neutral-100">
                     {service.title}
                   </h3>
-                  <p className="text-xs leading-relaxed text-neutral-400 dark:text-neutral-400 light:text-neutral-600">
+                  <p className="text-xs leading-relaxed text-slate-600 dark:text-neutral-400">
                     {service.description}
                   </p>
                 </div>
 
-                <div className="space-y-2 pt-4 border-t border-neutral-800/60 dark:border-neutral-800/60 light:border-neutral-200">
-                  <div className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500">
+                <div className="space-y-2 pt-4 border-t border-slate-100 dark:border-neutral-800/60">
+                  <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
                     Key Deliverables
                   </div>
-                  <ul className="space-y-1.5 text-xs text-neutral-300 dark:text-neutral-300 light:text-neutral-700">
+                  <ul className="space-y-1.5 text-xs text-slate-700 dark:text-neutral-300">
                     {service.deliverables.slice(0, 3).map((item, idx) => (
-                      <li key={idx} className="flex items-center gap-2">
-                        <span className="w-1 h-1 rounded-full bg-accent" />
+                      <li key={idx} className="flex items-start gap-2">
+                        <span className="text-[#9E6B24] dark:text-[#C59B63]">&bull;</span>
                         <span>{item}</span>
                       </li>
                     ))}
@@ -338,53 +304,52 @@ export const HomePage: React.FC = () => {
         </div>
       </section>
 
-      {/* 4. EDITORIAL BIOGRAPHY & PHILOSOPHY */}
-      <section className="py-20 border-t border-slate-800/60 px-6 sm:px-8 lg:px-12 max-w-7xl mx-auto">
+      {/* Biography & Philosophy */}
+      <section className="py-20 border-t border-slate-200 dark:border-slate-800/60 px-6 sm:px-8 lg:px-12 max-w-7xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-12 items-center">
           <div className="md:col-span-5">
             <ScrollReveal direction="left" distance={30}>
-              {/* Cyber Philosophy Telemetry Card */}
-              <div className="p-8 rounded-2xl bg-[#111622]/90 border border-slate-800 relative overflow-hidden space-y-6 shadow-2xl">
-                <div 
-                  className="absolute inset-0 opacity-10 pointer-events-none"
-                  style={{
-                    backgroundImage: `
-                      radial-gradient(circle, rgba(197, 155, 99, 0.4) 1px, transparent 1px)
-                    `,
-                    backgroundSize: '20px 20px'
-                  }}
-                />
-                <div className="flex items-center justify-between border-b border-slate-800 pb-4">
-                  <div className="flex items-center gap-2">
-                    <div className="w-2.5 h-2.5 rounded-full bg-[#C59B63] shadow-[0_0_8px_rgba(197,155,99,0.8)]" />
-                    <span className="font-mono text-xs text-slate-300 uppercase tracking-widest font-semibold">
-                      Core Philosophy
-                    </span>
-                  </div>
-                  <span className="font-mono text-[10px] text-[#C59B63] bg-[#C59B63]/10 px-2 py-0.5 rounded border border-[#C59B63]/30">
-                    SYSTEM ACTIVE
+              <div className="p-8 rounded-2xl bg-white dark:bg-[#111622]/90 border border-slate-200 dark:border-slate-800 space-y-6 shadow-sm dark:shadow-2xl">
+                <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
+                  <span className="font-mono text-xs text-slate-700 dark:text-slate-300 uppercase tracking-widest font-semibold">
+                    Core Philosophy
+                  </span>
+                  <span className="font-mono text-[11px] text-[#9E6B24] dark:text-[#C59B63] font-medium">
+                    Design Ethos
                   </span>
                 </div>
 
-                <div className="space-y-4 font-mono text-xs text-slate-300">
-                  <div className="p-3.5 rounded-xl bg-[#0A0D14]/70 border border-slate-800/80 space-y-1">
-                    <div className="text-[10px] uppercase text-[#C59B63] tracking-wider font-bold">01 / Visual Restraint</div>
-                    <div className="text-slate-400 text-xs">Eliminate extraneous decorative noise. Every pixel and margin serves purpose and intent.</div>
+                <div className="space-y-4 text-xs">
+                  <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-[#0A0D14]/70 border border-slate-200 dark:border-slate-800/80 space-y-1">
+                    <div className="text-[11px] font-mono uppercase text-[#9E6B24] dark:text-[#C59B63] tracking-wider font-bold">
+                      01 &middot; Visual Restraint
+                    </div>
+                    <div className="text-slate-600 dark:text-slate-400 leading-relaxed">
+                      Eliminate extraneous decorative noise. Every pixel and margin serves purpose and intent.
+                    </div>
                   </div>
 
-                  <div className="p-3.5 rounded-xl bg-[#0A0D14]/70 border border-slate-800/80 space-y-1">
-                    <div className="text-[10px] uppercase text-[#C59B63] tracking-wider font-bold">02 / Mathematical Rhythm</div>
-                    <div className="text-slate-400 text-xs">Strict typographic hierarchies, harmonic scales, and precise grid constraints.</div>
+                  <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-[#0A0D14]/70 border border-slate-200 dark:border-slate-800/80 space-y-1">
+                    <div className="text-[11px] font-mono uppercase text-[#9E6B24] dark:text-[#C59B63] tracking-wider font-bold">
+                      02 &middot; Typographic Rhythm
+                    </div>
+                    <div className="text-slate-600 dark:text-slate-400 leading-relaxed">
+                      Clear hierarchy, harmonic proportions, and structured visual clarity across screens and print.
+                    </div>
                   </div>
 
-                  <div className="p-3.5 rounded-xl bg-[#0A0D14]/70 border border-slate-800/80 space-y-1">
-                    <div className="text-[10px] uppercase text-[#C59B63] tracking-wider font-bold">03 / Archival Permanence</div>
-                    <div className="text-slate-400 text-xs">Designs structured to endure beyond transient seasonal fads.</div>
+                  <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-[#0A0D14]/70 border border-slate-200 dark:border-slate-800/80 space-y-1">
+                    <div className="text-[11px] font-mono uppercase text-[#9E6B24] dark:text-[#C59B63] tracking-wider font-bold">
+                      03 &middot; Archival Permanence
+                    </div>
+                    <div className="text-slate-600 dark:text-slate-400 leading-relaxed">
+                      Visual systems and written works structured to endure beyond short-lived trends.
+                    </div>
                   </div>
                 </div>
 
-                <div className="pt-2 border-t border-slate-800 flex items-center justify-between text-[11px] font-mono text-slate-500">
-                  <span>Location: Sri Lanka</span>
+                <div className="pt-2 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between text-[11px] font-mono text-slate-500">
+                  <span>Location: {settings.location || 'Sri Lanka'}</span>
                   <span>Reach: Worldwide</span>
                 </div>
               </div>
@@ -394,27 +359,26 @@ export const HomePage: React.FC = () => {
           <div className="md:col-span-7 space-y-6">
             <ScrollReveal direction="right" distance={30}>
               <div className="space-y-6">
-                <span className="text-xs font-mono uppercase tracking-[0.2em] text-[#C59B63] font-semibold flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#C59B63]" />
+                <span className="text-xs font-mono uppercase tracking-[0.2em] text-[#9E6B24] dark:text-[#C59B63] font-semibold block">
                   Biography &amp; Philosophy
                 </span>
-                <h2 className="editorial-section-title font-semibold tracking-tight text-white">
+                <h2 className="editorial-section-title font-semibold tracking-tight text-slate-900 dark:text-white">
                   Discipline, restraint, and visual clarity.
                 </h2>
-                <p className="text-base sm:text-lg leading-relaxed text-slate-300">
+                <p className="text-base sm:text-lg leading-relaxed text-slate-600 dark:text-slate-300">
                   {settings.aboutBio || settings.bio}
                 </p>
-                <div className="pt-2 flex flex-wrap items-center gap-4 font-mono">
+                <div className="pt-2 flex flex-wrap items-center gap-4">
                   <Link
                     to="/about"
-                    className="inline-flex items-center gap-2 px-5 py-2.5 text-xs uppercase tracking-widest font-semibold rounded-full bg-white text-[#0A0D14] hover:bg-[#C59B63] hover:text-white transition-colors shadow-sm"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 text-xs uppercase tracking-widest font-semibold rounded-full bg-slate-900 dark:bg-white text-white dark:text-[#0A0D14] hover:bg-[#C59B63] hover:text-[#0A0D14] transition-colors shadow-sm"
                   >
                     <span>Read Full Story</span>
                     <ArrowRight size={14} />
                   </Link>
                   <Link
                     to="/cv"
-                    className="inline-flex items-center gap-2 px-5 py-2.5 text-xs uppercase tracking-widest font-medium rounded-full border border-slate-700 text-slate-300 hover:text-white hover:border-[#C59B63] transition-colors"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 text-xs uppercase tracking-widest font-medium rounded-full border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white hover:border-[#C59B63] transition-colors"
                   >
                     <span>Inspect CV / Resume</span>
                     <ArrowUpRight size={14} />
@@ -426,23 +390,22 @@ export const HomePage: React.FC = () => {
         </div>
       </section>
 
-      {/* 5. WRITING & ARTICLES PREVIEW */}
+      {/* Writing & Articles Preview */}
       {recentArticles.length > 0 && (
-        <section className="py-20 border-t border-neutral-800/60 dark:border-neutral-800/60 light:border-neutral-200 px-6 sm:px-8 lg:px-12 max-w-7xl mx-auto">
+        <section className="py-20 border-t border-slate-200 dark:border-neutral-800/60 px-6 sm:px-8 lg:px-12 max-w-7xl mx-auto">
           <ScrollReveal direction="up" distance={20}>
             <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-12 gap-4">
               <div className="space-y-2">
-                <span className="text-xs uppercase tracking-widest text-accent font-semibold flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#C59B63]" />
+                <span className="text-xs uppercase tracking-widest text-[#9E6B24] dark:text-[#C59B63] font-semibold">
                   Publications &amp; Notes
                 </span>
-                <h2 className="editorial-section-title font-semibold tracking-tight text-neutral-100 dark:text-neutral-100 light:text-neutral-900">
+                <h2 className="editorial-section-title font-semibold tracking-tight text-slate-900 dark:text-neutral-100">
                   Writing &amp; Perspectives
                 </h2>
               </div>
               <Link
                 to="/writing"
-                className="inline-flex items-center gap-1 text-xs uppercase tracking-widest font-medium text-neutral-400 hover:text-white dark:hover:text-white light:hover:text-neutral-950 transition-colors"
+                className="inline-flex items-center gap-1.5 text-xs uppercase tracking-widest font-medium text-slate-600 dark:text-neutral-400 hover:text-slate-950 dark:hover:text-white transition-colors"
               >
                 <span>All Articles ({articles.length})</span>
                 <ArrowRight size={14} />
@@ -464,31 +427,31 @@ export const HomePage: React.FC = () => {
                       className="flex h-full"
                     >
                       <Link
-                        to={`/writing#${article.slug}`}
+                        to={`/writing/${article.slug}`}
                         onClick={() => trackArticleView(article.id, article.title, article.category, readingTime.text)}
-                        className="group flex flex-col justify-between p-6 rounded-xl border border-neutral-800/80 dark:border-neutral-800/80 light:border-neutral-200 bg-neutral-900/30 dark:bg-neutral-900/30 light:bg-white hover:border-[#C59B63]/40 transition-colors w-full"
+                        className="group flex flex-col justify-between p-6 rounded-xl border border-slate-200 dark:border-neutral-800/80 bg-white dark:bg-[#111622]/70 hover:border-[#C59B63]/50 transition-colors w-full shadow-sm dark:shadow-none"
                       >
                         <div className="space-y-4">
-                          <div className="flex items-center justify-between text-xs text-neutral-400">
-                            <span className="text-accent uppercase tracking-wider text-[11px] font-medium">
+                          <div className="flex items-center justify-between text-xs text-slate-500 dark:text-neutral-400">
+                            <span className="text-[#9E6B24] dark:text-[#C59B63] uppercase tracking-wider text-[11px] font-semibold">
                               {article.category}
                             </span>
-                            <span className="inline-flex items-center gap-1 text-neutral-400">
-                              <Clock size={11} className="text-[#C59B63]" />
+                            <span className="inline-flex items-center gap-1">
+                              <Clock size={11} className="text-[#9E6B24] dark:text-[#C59B63]" />
                               {readingTime.text}
                             </span>
                           </div>
-                          <h3 className="text-base sm:text-lg font-medium tracking-tight text-neutral-100 dark:text-neutral-100 light:text-neutral-900 group-hover:text-accent transition-colors">
+                          <h3 className="text-base sm:text-lg font-semibold tracking-tight text-slate-900 dark:text-neutral-100 group-hover:text-[#9E6B24] dark:group-hover:text-[#C59B63] transition-colors">
                             {article.title}
                           </h3>
-                          <p className="text-xs sm:text-sm text-neutral-400 dark:text-neutral-400 light:text-neutral-600 line-clamp-3 leading-relaxed">
+                          <p className="text-xs sm:text-sm text-slate-600 dark:text-neutral-400 line-clamp-3 leading-relaxed">
                             {article.excerpt}
                           </p>
                         </div>
 
-                        <div className="pt-6 mt-6 border-t border-neutral-800/60 dark:border-neutral-800/60 light:border-neutral-200 flex items-center justify-between text-xs text-neutral-500">
+                        <div className="pt-6 mt-6 border-t border-slate-100 dark:border-neutral-800/60 flex items-center justify-between text-xs text-slate-500">
                           <span>By {article.author}</span>
-                          <span className="group-hover:translate-x-1 transition-transform inline-flex items-center gap-1 text-neutral-300">
+                          <span className="group-hover:translate-x-1 transition-transform inline-flex items-center gap-1 text-slate-700 dark:text-neutral-300 font-medium">
                             Read Article <ChevronRight size={13} />
                           </span>
                         </div>
@@ -502,15 +465,15 @@ export const HomePage: React.FC = () => {
         </section>
       )}
 
-      {/* 6. CLIENT TESTIMONIALS */}
+      {/* Client Testimonials */}
       {settings.testimonials && settings.testimonials.length > 0 && (
-        <section className="py-20 border-t border-neutral-800/60 dark:border-neutral-800/60 light:border-neutral-200 px-6 sm:px-8 lg:px-12 max-w-7xl mx-auto">
+        <section className="py-20 border-t border-slate-200 dark:border-neutral-800/60 px-6 sm:px-8 lg:px-12 max-w-7xl mx-auto">
           <ScrollReveal direction="up" distance={20}>
             <div className="space-y-2 mb-12">
-              <span className="text-xs uppercase tracking-widest text-accent font-semibold">
+              <span className="text-xs uppercase tracking-widest text-[#9E6B24] dark:text-[#C59B63] font-semibold">
                 Endorsements
               </span>
-              <h2 className="editorial-section-title font-semibold tracking-tight text-neutral-100 dark:text-neutral-100 light:text-neutral-900">
+              <h2 className="editorial-section-title font-semibold tracking-tight text-slate-900 dark:text-neutral-100">
                 Client Testimonials
               </h2>
             </div>
@@ -519,17 +482,15 @@ export const HomePage: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {settings.testimonials.map((t, index) => (
               <ScrollReveal key={t.id} delay={index * 0.1} direction="up" distance={24}>
-                <div
-                  className="p-8 rounded-xl border border-neutral-800/80 dark:border-neutral-800/80 light:border-neutral-200 bg-neutral-900/20 dark:bg-neutral-900/20 light:bg-white space-y-6 flex flex-col justify-between h-full"
-                >
-                  <p className="text-sm leading-relaxed text-neutral-300 dark:text-neutral-300 light:text-neutral-700 italic">
-                    "{t.content}"
+                <div className="p-8 rounded-xl border border-slate-200 dark:border-neutral-800/80 bg-white dark:bg-[#111622]/50 space-y-6 flex flex-col justify-between h-full shadow-sm dark:shadow-none">
+                  <p className="text-sm leading-relaxed text-slate-700 dark:text-neutral-300 italic">
+                    &ldquo;{t.content}&rdquo;
                   </p>
-                  <div className="pt-4 border-t border-neutral-800/60 dark:border-neutral-800/60 light:border-neutral-200">
-                    <div className="font-medium text-neutral-100 dark:text-neutral-100 light:text-neutral-900 text-sm">
+                  <div className="pt-4 border-t border-slate-100 dark:border-neutral-800/60">
+                    <div className="font-semibold text-slate-900 dark:text-neutral-100 text-sm">
                       {t.clientName}
                     </div>
-                    <div className="text-xs text-neutral-500">
+                    <div className="text-xs text-slate-500">
                       {t.role}, {t.company}
                     </div>
                   </div>
@@ -540,23 +501,23 @@ export const HomePage: React.FC = () => {
         </section>
       )}
 
-      {/* 7. CONTACT BANNER CTA */}
-      <section className="py-24 border-t border-neutral-800/60 dark:border-neutral-800/60 light:border-neutral-200 px-6 sm:px-8 lg:px-12 max-w-7xl mx-auto text-center">
+      {/* Contact Banner CTA */}
+      <section className="py-24 border-t border-slate-200 dark:border-neutral-800/60 px-6 sm:px-8 lg:px-12 max-w-7xl mx-auto text-center">
         <ScrollReveal direction="up" distance={30}>
           <div className="max-w-2xl mx-auto space-y-6">
-            <span className="text-xs uppercase tracking-widest text-accent font-semibold">
+            <span className="text-xs uppercase tracking-widest text-[#9E6B24] dark:text-[#C59B63] font-semibold">
               Inquiries &amp; Collaboration
             </span>
-            <h2 className="editorial-section-title font-semibold tracking-tight text-neutral-100 dark:text-neutral-100 light:text-neutral-900">
-              Have a project in mind? Let's craft something timeless.
+            <h2 className="editorial-section-title font-semibold tracking-tight text-slate-900 dark:text-neutral-100">
+              Have a project in mind? Let&apos;s craft something timeless.
             </h2>
-            <p className="text-sm sm:text-base text-neutral-400 dark:text-neutral-400 light:text-neutral-600">
+            <p className="text-sm sm:text-base text-slate-600 dark:text-neutral-400">
               Currently booking brand identity systems, social media retainers, and editorial design projects.
             </p>
             <div className="pt-2">
               <Link
                 to="/contact"
-                className="inline-flex items-center gap-2 px-8 py-4 text-xs uppercase tracking-widest font-medium rounded-full bg-neutral-100 text-neutral-950 hover:opacity-90 transition-all shadow-md"
+                className="inline-flex items-center gap-2 px-8 py-4 text-xs uppercase tracking-widest font-bold rounded-full bg-[#C59B63] hover:bg-[#D4AF37] text-[#0A0D14] transition-all shadow-md"
               >
                 <span>Start a Conversation</span>
                 <ArrowUpRight size={15} />
@@ -566,11 +527,7 @@ export const HomePage: React.FC = () => {
         </ScrollReveal>
       </section>
 
-      {/* Project Detail Modal */}
-      <ProjectModal 
-        project={selectedProject} 
-        onClose={() => setSelectedProject(null)} 
-      />
+      <ProjectModal project={selectedProject} onClose={() => setSelectedProject(null)} />
     </div>
   );
 };

@@ -6,6 +6,23 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    function isOwnerEmail() {
+      return isAuthenticated() &&
+        request.auth.token.email_verified == true &&
+        (request.auth.token.email == 'kushanashvika216@gmail.com' ||
+         request.auth.token.email == 'Kushanashvika216@gmail.com');
+    }
+
+    function isAdmin() {
+      return isOwnerEmail() || (
+        isAuthenticated() &&
+        request.auth.token.email_verified == true &&
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.status == 'active' &&
+        get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role in ['super_admin', 'admin', 'editor']
+      );
+    }
+
     function isValidId(id) {
       return id is string && id.size() > 0 && id.size() <= 128;
     }
@@ -14,69 +31,85 @@ service cloud.firestore {
       return val is string && val.size() >= minLen && val.size() <= maxLen;
     }
 
-    // Site Settings: Public read, full admin CMS updates
+    // Site Settings: Public read for portfolio rendering, Admin-only write
     match /site_settings/{document} {
       allow get, list: if true;
-      allow create, update: if true;
-      allow delete: if isAuthenticated();
+      allow create, update, delete: if isAdmin();
     }
 
-    // Settings (including settings/cv for active CV configuration): Public read, CMS updates
+    // Settings (settings/cv): Public read, Admin-only write
     match /settings/{document} {
       allow get, list: if true;
-      allow create, update: if true;
-      allow delete: if true;
+      allow create, update, delete: if isAdmin();
     }
 
-    // Portfolio Projects: Public catalog read, full CMS management
+    // Portfolio Projects: Public catalog read, Admin-only write
     match /projects/{projectId} {
       allow get, list: if true;
-      allow create, update: if isValidId(projectId) && (
-        request.resource.data.title is string && request.resource.data.title.size() > 0
-      );
-      allow delete: if true;
+      allow create, update: if isAdmin()
+        && isValidId(projectId)
+        && isValidString(request.resource.data.title, 1, 240);
+      allow delete: if isAdmin();
     }
 
-    // Editorial Articles: Public reading, full CMS management
+    // Editorial Articles: Public reading, Admin-only write
     match /articles/{articleId} {
       allow get, list: if true;
-      allow create, update: if isValidId(articleId) && (
-        request.resource.data.title is string && request.resource.data.title.size() > 0
-      );
-      allow delete: if true;
+      allow create, update: if isAdmin()
+        && isValidId(articleId)
+        && isValidString(request.resource.data.title, 1, 240);
+      allow delete: if isAdmin();
     }
 
-    // Media Library: Public asset access, full catalog management
+    // Media Library: Public asset metadata read, Admin-only management
     match /media/{mediaId} {
       allow get, list: if true;
-      allow create, update: if isValidId(mediaId);
-      allow delete: if true;
+      allow create, update: if isAdmin() && isValidId(mediaId);
+      allow delete: if isAdmin();
     }
 
-    // Inbound Contact Messages
+    // Inbound Contact Messages (Strict PII Isolation: Public create only, Admin-only read/update/delete)
     match /contact_messages/{messageId} {
       allow create: if isValidId(messageId)
-        && isValidString(request.resource.data.name, 1, 200)
-        && isValidString(request.resource.data.email, 3, 300)
-        && isValidString(request.resource.data.message, 1, 10000);
-      allow get, list, update, delete: if true;
+        && isValidString(request.resource.data.name, 2, 200)
+        && isValidString(request.resource.data.email, 5, 300)
+        && isValidString(request.resource.data.message, 5, 10000);
+      allow get, list, update, delete: if isAdmin();
     }
 
     match /messages/{messageId} {
-      allow create: if isValidId(messageId);
-      allow get, list, update, delete: if true;
+      allow create: if isValidId(messageId)
+        && isValidString(request.resource.data.name, 2, 200)
+        && isValidString(request.resource.data.email, 5, 300)
+        && isValidString(request.resource.data.message, 5, 10000);
+      allow get, list, update, delete: if isAdmin();
     }
 
-    // Analytics Telemetry
+    // Analytics Telemetry: Privacy counters writable, Admin-only read/delete
     match /analytics/{docId} {
-      allow get, list: if true;
-      allow create, update, delete: if true;
+      allow get, list: if isAdmin();
+      allow create, update: if isValidId(docId)
+        && request.resource.data.keys().hasOnly([
+          'date',
+          'views',
+          'inquiries',
+          'lastPath',
+          'lastEvent',
+          'events',
+          'updatedAt'
+        ]);
+      allow delete: if isAdmin();
     }
 
-    // Lockdown unspecified paths
+    // Authorized Admin Allowlist
+    match /admins/{uid} {
+      allow get: if isAuthenticated() && (request.auth.uid == uid || isAdmin());
+      allow list, create, update, delete: if isOwnerEmail();
+    }
+
+    // Global Fail-Closed Security Net
     match /{document=**} {
-      allow read: if true;
-      allow write: if false;
+      allow read, write: if false;
     }
   }
 }
